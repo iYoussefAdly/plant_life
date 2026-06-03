@@ -9,6 +9,8 @@ import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/home/presentation/bloc/home_cubit.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/main_shell/presentation/main_shell.dart';
+import '../../features/sensors/presentation/bloc/sensors_cubit.dart';
+import '../../features/sensors/presentation/screens/sensors_screen.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
 import '../di/service_locator.dart';
 
@@ -51,7 +53,10 @@ abstract final class AppRouter {
             routes: [
               GoRoute(
                 path: AppRoutes.sensors,
-                builder: (context, state) => const _Placeholder('Sensors'),
+                builder: (context, state) => BlocProvider(
+                  create: (_) => sl<SensorsCubit>()..loadSensorsData(),
+                  child: const SensorsScreen(),
+                ),
               ),
             ],
           ),

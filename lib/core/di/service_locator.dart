@@ -9,6 +9,10 @@ import '../../features/home/data/repos/home_repository_impl.dart';
 import '../../features/home/domain/repos/home_repository.dart';
 import '../../features/home/domain/usecases/get_home_data_usecase.dart';
 import '../../features/home/presentation/bloc/home_cubit.dart';
+import '../../features/sensors/data/repos/sensors_repository_impl.dart';
+import '../../features/sensors/domain/repos/sensors_repository.dart';
+import '../../features/sensors/domain/usecases/get_sensors_data_usecase.dart';
+import '../../features/sensors/presentation/bloc/sensors_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -23,4 +27,9 @@ void setupServiceLocator() {
   sl.registerLazySingleton<HomeRepository>(() => HomeRepositoryImpl());
   sl.registerLazySingleton(() => GetHomeDataUseCase(sl<HomeRepository>()));
   sl.registerFactory(() => HomeCubit(sl<GetHomeDataUseCase>()));
+
+  // Sensors
+  sl.registerLazySingleton<SensorsRepository>(() => SensorsRepositoryImpl());
+  sl.registerLazySingleton(() => GetSensorsDataUseCase(sl<SensorsRepository>()));
+  sl.registerFactory(() => SensorsCubit(sl<GetSensorsDataUseCase>()));
 }
