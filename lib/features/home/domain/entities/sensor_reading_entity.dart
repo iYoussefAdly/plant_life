@@ -1,6 +1,6 @@
-enum SensorType { temperature, humidity, soilMoisture, light }
+import '../../../../core/enums/sensor_enums.dart';
 
-enum SensorStatus { normal, warning, critical }
+export '../../../../core/enums/sensor_enums.dart';
 
 class SensorReadingEntity {
   final SensorType type;
