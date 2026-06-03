@@ -13,6 +13,11 @@ import '../../features/sensors/data/repos/sensors_repository_impl.dart';
 import '../../features/sensors/domain/repos/sensors_repository.dart';
 import '../../features/sensors/domain/usecases/get_sensors_data_usecase.dart';
 import '../../features/sensors/presentation/bloc/sensors_cubit.dart';
+import '../../features/scan/data/repos/scan_repository_impl.dart';
+import '../../features/scan/domain/repos/scan_repository.dart';
+import '../../features/scan/domain/usecases/get_scan_history_usecase.dart';
+import '../../features/scan/domain/usecases/scan_image_usecase.dart';
+import '../../features/scan/presentation/bloc/scan_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -32,4 +37,10 @@ void setupServiceLocator() {
   sl.registerLazySingleton<SensorsRepository>(() => SensorsRepositoryImpl());
   sl.registerLazySingleton(() => GetSensorsDataUseCase(sl<SensorsRepository>()));
   sl.registerFactory(() => SensorsCubit(sl<GetSensorsDataUseCase>()));
+
+  // Scan
+  sl.registerLazySingleton<ScanRepository>(() => ScanRepositoryImpl());
+  sl.registerLazySingleton(() => ScanImageUseCase(sl<ScanRepository>()));
+  sl.registerLazySingleton(() => GetScanHistoryUseCase(sl<ScanRepository>()));
+  sl.registerFactory(() => ScanCubit(sl<ScanImageUseCase>(), sl<GetScanHistoryUseCase>()));
 }
