@@ -14,6 +14,10 @@ import '../../features/scan/presentation/bloc/scan_cubit.dart';
 import '../../features/scan/presentation/screens/scan_screen.dart';
 import '../../features/sensors/presentation/screens/sensors_screen.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
+import '../../features/treatments/presentation/bloc/treatments_cubit.dart';
+import '../../features/treatments/presentation/bloc/treatment_detail_cubit.dart';
+import '../../features/treatments/presentation/screens/treatments_screen.dart';
+import '../../features/treatments/presentation/screens/treatment_detail_screen.dart';
 import '../di/service_locator.dart';
 
 abstract final class AppRouter {
@@ -34,6 +38,16 @@ abstract final class AppRouter {
       GoRoute(
         path: AppRoutes.register,
         builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.treatmentDetail,
+        builder: (context, state) {
+          final planId = state.extra is String ? state.extra as String : '';
+          return BlocProvider(
+            create: (_) => sl<TreatmentDetailCubit>()..loadDetail(planId),
+            child: const TreatmentDetailScreen(),
+          );
+        },
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
@@ -77,8 +91,10 @@ abstract final class AppRouter {
             routes: [
               GoRoute(
                 path: AppRoutes.treatments,
-                builder: (context, state) =>
-                    const _Placeholder('Treatments'),
+                builder: (context, state) => BlocProvider(
+                  create: (_) => sl<TreatmentsCubit>()..loadPlans(),
+                  child: const TreatmentsScreen(),
+                ),
               ),
             ],
           ),
@@ -86,21 +102,4 @@ abstract final class AppRouter {
       ),
     ],
   );
-}
-
-class _Placeholder extends StatelessWidget {
-  final String title;
-  const _Placeholder(this.title);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Text(
-          title,
-          style: Theme.of(context).textTheme.headlineMedium,
-        ),
-      ),
-    );
-  }
 }
