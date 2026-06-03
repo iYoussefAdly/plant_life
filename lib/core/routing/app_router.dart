@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'app_routes.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
+import '../../features/home/presentation/bloc/home_cubit.dart';
+import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/main_shell/presentation/main_shell.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
+import '../di/service_locator.dart';
 
 abstract final class AppRouter {
   static final navigatorKey = GlobalKey<NavigatorState>();
@@ -35,7 +40,10 @@ abstract final class AppRouter {
             routes: [
               GoRoute(
                 path: AppRoutes.home,
-                builder: (context, state) => const _Placeholder('Home'),
+                builder: (context, state) => BlocProvider(
+                  create: (_) => sl<HomeCubit>()..loadHomeData(),
+                  child: const HomeScreen(),
+                ),
               ),
             ],
           ),
