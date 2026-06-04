@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/error_view.dart';
+import '../../../notifications/presentation/bloc/notifications_cubit.dart';
+import '../../../notifications/presentation/bloc/notifications_state.dart';
 import '../../domain/entities/home_data_entity.dart';
 import '../bloc/home_cubit.dart';
 import '../bloc/home_state.dart';
@@ -20,6 +24,22 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('PlantLife', style: AppTextStyles.headlineMedium),
         actions: [
+          BlocBuilder<NotificationsCubit, NotificationsState>(
+            builder: (context, state) {
+              final unread = switch (state) {
+                NotificationsLoaded(:final unreadCount) => unreadCount,
+                _ => 0,
+              };
+              return IconButton(
+                icon: Badge(
+                  isLabelVisible: unread > 0,
+                  label: Text('$unread'),
+                  child: const Icon(Icons.notifications_outlined),
+                ),
+                onPressed: () => context.push(AppRoutes.notifications),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.refresh_outlined),
             onPressed: () => context.read<HomeCubit>().loadHomeData(),

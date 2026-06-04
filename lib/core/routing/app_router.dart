@@ -20,6 +20,8 @@ import '../../features/treatments/presentation/screens/treatments_screen.dart';
 import '../../features/treatments/presentation/screens/treatment_detail_screen.dart';
 import '../../features/recovery/presentation/bloc/recovery_cubit.dart';
 import '../../features/recovery/presentation/screens/recovery_progress_screen.dart';
+import '../../features/notifications/presentation/bloc/notifications_cubit.dart';
+import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../di/service_locator.dart';
 
 abstract final class AppRouter {
@@ -61,9 +63,19 @@ abstract final class AppRouter {
           );
         },
       ),
+      GoRoute(
+        path: AppRoutes.notifications,
+        builder: (context, state) => BlocProvider.value(
+          value: sl<NotificationsCubit>(),
+          child: const NotificationsScreen(),
+        ),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
-          return MainShell(navigationShell: navigationShell);
+          return BlocProvider.value(
+            value: sl<NotificationsCubit>()..loadNotifications(),
+            child: MainShell(navigationShell: navigationShell),
+          );
         },
         branches: [
           StatefulShellBranch(

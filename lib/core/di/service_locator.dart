@@ -16,6 +16,7 @@ import '../../features/sensors/presentation/bloc/sensors_cubit.dart';
 import '../../features/scan/data/repos/scan_repository_impl.dart';
 import '../../features/scan/domain/repos/scan_repository.dart';
 import '../../features/scan/domain/usecases/get_scan_history_usecase.dart';
+import '../../features/scan/domain/usecases/save_reminder_usecase.dart';
 import '../../features/scan/domain/usecases/scan_image_usecase.dart';
 import '../../features/scan/presentation/bloc/scan_cubit.dart';
 import '../../features/treatments/data/repos/treatments_repository_impl.dart';
@@ -29,6 +30,11 @@ import '../../features/recovery/data/repos/recovery_repository_impl.dart';
 import '../../features/recovery/domain/repos/recovery_repository.dart';
 import '../../features/recovery/domain/usecases/get_recovery_progress_usecase.dart';
 import '../../features/recovery/presentation/bloc/recovery_cubit.dart';
+import '../../features/notifications/data/repos/notifications_repository_impl.dart';
+import '../../features/notifications/domain/repos/notifications_repository.dart';
+import '../../features/notifications/domain/usecases/get_notifications_usecase.dart';
+import '../../features/notifications/domain/usecases/mark_notification_read_usecase.dart';
+import '../../features/notifications/presentation/bloc/notifications_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -53,7 +59,8 @@ void setupServiceLocator() {
   sl.registerLazySingleton<ScanRepository>(() => ScanRepositoryImpl());
   sl.registerLazySingleton(() => ScanImageUseCase(sl<ScanRepository>()));
   sl.registerLazySingleton(() => GetScanHistoryUseCase(sl<ScanRepository>()));
-  sl.registerFactory(() => ScanCubit(sl<ScanImageUseCase>(), sl<GetScanHistoryUseCase>()));
+  sl.registerLazySingleton(() => SaveReminderUseCase(sl<ScanRepository>()));
+  sl.registerFactory(() => ScanCubit(sl<ScanImageUseCase>(), sl<GetScanHistoryUseCase>(), sl<SaveReminderUseCase>()));
 
   // Treatments
   sl.registerLazySingleton<TreatmentsRepository>(() => TreatmentsRepositoryImpl());
@@ -67,4 +74,10 @@ void setupServiceLocator() {
   sl.registerLazySingleton<RecoveryRepository>(() => RecoveryRepositoryImpl());
   sl.registerLazySingleton(() => GetRecoveryProgressUseCase(sl<RecoveryRepository>()));
   sl.registerFactory(() => RecoveryCubit(sl<GetRecoveryProgressUseCase>()));
+
+  // Notifications
+  sl.registerLazySingleton<NotificationsRepository>(() => NotificationsRepositoryImpl());
+  sl.registerLazySingleton(() => GetNotificationsUseCase(sl<NotificationsRepository>()));
+  sl.registerLazySingleton(() => MarkNotificationReadUseCase(sl<NotificationsRepository>()));
+  sl.registerLazySingleton(() => NotificationsCubit(sl<GetNotificationsUseCase>(), sl<MarkNotificationReadUseCase>()));
 }

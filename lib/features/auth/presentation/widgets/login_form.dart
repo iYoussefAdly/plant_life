@@ -57,8 +57,8 @@ class _LoginFormState extends State<LoginForm> {
             suffixIcon: IconButton(
               icon: Icon(
                 _obscurePassword
-                    ? Icons.visibility_outlined
-                    : Icons.visibility_off_outlined,
+                    ? Icons.visibility_off_outlined
+                    : Icons.visibility,
                 size: 20,
               ),
               onPressed: () {

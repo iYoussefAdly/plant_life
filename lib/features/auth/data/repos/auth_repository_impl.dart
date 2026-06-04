@@ -1,3 +1,4 @@
+import '../../../../core/enums/plant_type.dart';
 import '../../../../core/errors/api_result.dart';
 import '../../../../core/errors/failure.dart';
 import '../../domain/repos/auth_repository.dart';
@@ -25,6 +26,7 @@ class AuthRepositoryImpl implements AuthRepository {
     required String email,
     required String password,
     required String deviceId,
+    required PlantType selectedPlant,
   }) async {
     try {
       await Future.delayed(const Duration(seconds: 1));

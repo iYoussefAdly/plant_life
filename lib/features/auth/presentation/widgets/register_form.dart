@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/enums/plant_type.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/app_button.dart';
@@ -22,6 +23,7 @@ class _RegisterFormState extends State<RegisterForm> {
   final _passwordController = TextEditingController();
   final _deviceIdController = TextEditingController();
   bool _obscurePassword = true;
+  PlantType? _selectedPlant;
 
   @override
   void dispose() {
@@ -75,8 +77,8 @@ class _RegisterFormState extends State<RegisterForm> {
             suffixIcon: IconButton(
               icon: Icon(
                 _obscurePassword
-                    ? Icons.visibility_outlined
-                    : Icons.visibility_off_outlined,
+                    ? Icons.visibility_off_outlined
+                    : Icons.visibility_outlined,
                 size: 20,
               ),
               onPressed: () {
@@ -113,6 +115,33 @@ class _RegisterFormState extends State<RegisterForm> {
               ),
             ),
           ),
+          const SizedBox(height: 16),
+          DropdownButtonFormField<PlantType>(
+            initialValue: _selectedPlant,
+            decoration: InputDecoration(
+              labelText: 'Plant Type',
+              hintText: 'Select your plant',
+              prefixIcon: const Icon(Icons.eco_outlined, size: 20),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            items: PlantType.values
+                .map((plant) => DropdownMenuItem(
+                      value: plant,
+                      child: Text(plant.label),
+                    ))
+                .toList(),
+            onChanged: (value) {
+              setState(() => _selectedPlant = value);
+            },
+            validator: (value) {
+              if (value == null) {
+                return 'Please select a plant type';
+              }
+              return null;
+            },
+          ),
           const SizedBox(height: 24),
           BlocBuilder<AuthCubit, AuthState>(
             builder: (context, state) {
@@ -128,6 +157,7 @@ class _RegisterFormState extends State<RegisterForm> {
                           email: _emailController.text.trim(),
                           password: _passwordController.text,
                           deviceId: _deviceIdController.text.trim(),
+                          selectedPlant: _selectedPlant!,
                         );
                   }
                 },
