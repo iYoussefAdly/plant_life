@@ -18,6 +18,17 @@ import '../../features/scan/domain/repos/scan_repository.dart';
 import '../../features/scan/domain/usecases/get_scan_history_usecase.dart';
 import '../../features/scan/domain/usecases/scan_image_usecase.dart';
 import '../../features/scan/presentation/bloc/scan_cubit.dart';
+import '../../features/treatments/data/repos/treatments_repository_impl.dart';
+import '../../features/treatments/domain/repos/treatments_repository.dart';
+import '../../features/treatments/domain/usecases/get_treatment_plans_usecase.dart';
+import '../../features/treatments/domain/usecases/get_treatment_detail_usecase.dart';
+import '../../features/treatments/domain/usecases/toggle_step_usecase.dart';
+import '../../features/treatments/presentation/bloc/treatments_cubit.dart';
+import '../../features/treatments/presentation/bloc/treatment_detail_cubit.dart';
+import '../../features/recovery/data/repos/recovery_repository_impl.dart';
+import '../../features/recovery/domain/repos/recovery_repository.dart';
+import '../../features/recovery/domain/usecases/get_recovery_progress_usecase.dart';
+import '../../features/recovery/presentation/bloc/recovery_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -43,4 +54,17 @@ void setupServiceLocator() {
   sl.registerLazySingleton(() => ScanImageUseCase(sl<ScanRepository>()));
   sl.registerLazySingleton(() => GetScanHistoryUseCase(sl<ScanRepository>()));
   sl.registerFactory(() => ScanCubit(sl<ScanImageUseCase>(), sl<GetScanHistoryUseCase>()));
+
+  // Treatments
+  sl.registerLazySingleton<TreatmentsRepository>(() => TreatmentsRepositoryImpl());
+  sl.registerLazySingleton(() => GetTreatmentPlansUseCase(sl<TreatmentsRepository>()));
+  sl.registerLazySingleton(() => GetTreatmentDetailUseCase(sl<TreatmentsRepository>()));
+  sl.registerLazySingleton(() => ToggleStepUseCase(sl<TreatmentsRepository>()));
+  sl.registerFactory(() => TreatmentsCubit(sl<GetTreatmentPlansUseCase>()));
+  sl.registerFactory(() => TreatmentDetailCubit(sl<GetTreatmentDetailUseCase>(), sl<ToggleStepUseCase>()));
+
+  // Recovery
+  sl.registerLazySingleton<RecoveryRepository>(() => RecoveryRepositoryImpl());
+  sl.registerLazySingleton(() => GetRecoveryProgressUseCase(sl<RecoveryRepository>()));
+  sl.registerFactory(() => RecoveryCubit(sl<GetRecoveryProgressUseCase>()));
 }
