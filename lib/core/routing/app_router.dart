@@ -18,6 +18,8 @@ import '../../features/treatments/presentation/bloc/treatments_cubit.dart';
 import '../../features/treatments/presentation/bloc/treatment_detail_cubit.dart';
 import '../../features/treatments/presentation/screens/treatments_screen.dart';
 import '../../features/treatments/presentation/screens/treatment_detail_screen.dart';
+import '../../features/recovery/presentation/bloc/recovery_cubit.dart';
+import '../../features/recovery/presentation/screens/recovery_progress_screen.dart';
 import '../di/service_locator.dart';
 
 abstract final class AppRouter {
@@ -46,6 +48,16 @@ abstract final class AppRouter {
           return BlocProvider(
             create: (_) => sl<TreatmentDetailCubit>()..loadDetail(planId),
             child: const TreatmentDetailScreen(),
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.recoveryProgress,
+        builder: (context, state) {
+          final treatmentId = state.extra is String ? state.extra as String : '';
+          return BlocProvider(
+            create: (_) => sl<RecoveryCubit>()..loadRecovery(treatmentId),
+            child: const RecoveryProgressScreen(),
           );
         },
       ),

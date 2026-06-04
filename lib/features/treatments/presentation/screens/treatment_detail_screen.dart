@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 
+import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../domain/entities/treatment_plan_entity.dart';
@@ -125,6 +127,18 @@ class _DetailContent extends StatelessWidget {
             },
           );
         }),
+        const SizedBox(height: 20),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: () => context.push(
+              AppRoutes.recoveryProgress,
+              extra: plan.id,
+            ),
+            icon: const Icon(Icons.trending_up),
+            label: const Text('View Recovery Progress'),
+          ),
+        ),
         const SizedBox(height: 16),
       ],
     );

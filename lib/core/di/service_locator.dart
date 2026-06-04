@@ -25,6 +25,10 @@ import '../../features/treatments/domain/usecases/get_treatment_detail_usecase.d
 import '../../features/treatments/domain/usecases/toggle_step_usecase.dart';
 import '../../features/treatments/presentation/bloc/treatments_cubit.dart';
 import '../../features/treatments/presentation/bloc/treatment_detail_cubit.dart';
+import '../../features/recovery/data/repos/recovery_repository_impl.dart';
+import '../../features/recovery/domain/repos/recovery_repository.dart';
+import '../../features/recovery/domain/usecases/get_recovery_progress_usecase.dart';
+import '../../features/recovery/presentation/bloc/recovery_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -58,4 +62,9 @@ void setupServiceLocator() {
   sl.registerLazySingleton(() => ToggleStepUseCase(sl<TreatmentsRepository>()));
   sl.registerFactory(() => TreatmentsCubit(sl<GetTreatmentPlansUseCase>()));
   sl.registerFactory(() => TreatmentDetailCubit(sl<GetTreatmentDetailUseCase>(), sl<ToggleStepUseCase>()));
+
+  // Recovery
+  sl.registerLazySingleton<RecoveryRepository>(() => RecoveryRepositoryImpl());
+  sl.registerLazySingleton(() => GetRecoveryProgressUseCase(sl<RecoveryRepository>()));
+  sl.registerFactory(() => RecoveryCubit(sl<GetRecoveryProgressUseCase>()));
 }
