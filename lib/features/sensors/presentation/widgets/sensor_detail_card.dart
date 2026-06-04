@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/extensions/sensor_type_extensions.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/sensor_card_decoration.dart';
 import '../../domain/entities/sensor_detail_entity.dart';
 
 class SensorDetailCard extends StatelessWidget {
@@ -15,17 +16,7 @@ class SensorDetailCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      decoration: SensorCardDecoration.forStatus(sensor.status),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -50,16 +41,25 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final badge = SensorCardDecoration.statusBadgeIcon(sensor.status);
+
     return Row(
       children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(_icon, size: 22, color: color),
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(_icon, size: 22, color: color),
+            ),
+            if (badge != null)
+              Positioned(right: -5, top: -5, child: badge),
+          ],
         ),
         const SizedBox(width: 12),
         Expanded(

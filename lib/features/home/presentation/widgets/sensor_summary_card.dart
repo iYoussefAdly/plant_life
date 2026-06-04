@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/extensions/sensor_type_extensions.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/sensor_card_decoration.dart';
 import '../../domain/entities/sensor_reading_entity.dart';
 
 class SensorSummaryCard extends StatelessWidget {
@@ -14,31 +15,13 @@ class SensorSummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      decoration: SensorCardDecoration.forStatus(reading.status),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: reading.type.color.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(reading.type.icon, size: 20, color: reading.type.color),
-              ),
+              _SensorIcon(reading: reading),
               const Spacer(),
               _StatusBadge(status: reading.status),
             ],
@@ -59,6 +42,33 @@ class SensorSummaryCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _SensorIcon extends StatelessWidget {
+  final SensorReadingEntity reading;
+
+  const _SensorIcon({required this.reading});
+
+  @override
+  Widget build(BuildContext context) {
+    final badge = SensorCardDecoration.statusBadgeIcon(reading.status);
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: reading.type.color.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(reading.type.icon, size: 20, color: reading.type.color),
+        ),
+        if (badge != null)
+          Positioned(right: -5, top: -5, child: badge),
+      ],
     );
   }
 }

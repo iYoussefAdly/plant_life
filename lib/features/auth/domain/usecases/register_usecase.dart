@@ -1,3 +1,4 @@
+import '../../../../core/enums/plant_type.dart';
 import '../../../../core/errors/api_result.dart';
 import '../../../../core/errors/failure.dart';
 import '../repos/auth_repository.dart';
@@ -12,6 +13,7 @@ class RegisterUseCase {
     required String email,
     required String password,
     required String deviceId,
+    required PlantType selectedPlant,
   }) {
     if (!_isValidEmail(email)) {
       return Future.value(
@@ -28,6 +30,7 @@ class RegisterUseCase {
       email: email,
       password: password,
       deviceId: deviceId,
+      selectedPlant: selectedPlant,
     );
   }
 

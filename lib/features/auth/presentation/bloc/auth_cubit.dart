@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/enums/plant_type.dart';
 import '../../../../core/errors/api_result.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/register_usecase.dart';
@@ -31,6 +32,7 @@ class AuthCubit extends Cubit<AuthState> {
     required String email,
     required String password,
     required String deviceId,
+    required PlantType selectedPlant,
   }) async {
     emit(const AuthLoading());
     final result = await _registerUseCase(
@@ -38,6 +40,7 @@ class AuthCubit extends Cubit<AuthState> {
       email: email,
       password: password,
       deviceId: deviceId,
+      selectedPlant: selectedPlant,
     );
     switch (result) {
       case Success():

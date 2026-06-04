@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/error_view.dart';
@@ -121,9 +123,68 @@ class _ResultView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final treatment = result.suggestedTreatment;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
-      child: ScanResultCard(result: result, onScanAgain: onScanAgain),
+      child: ScanResultCard(
+        result: result,
+        onScanAgain: onScanAgain,
+        onStartTreatment: treatment != null
+            ? () => context.push(
+                  AppRoutes.treatmentDetail,
+                  extra: treatment.treatmentPlanId,
+                )
+            : null,
+        onRemindLater: treatment != null
+            ? (_) => _showReminderPicker(context, treatment.treatmentPlanId)
+            : null,
+      ),
+    );
+  }
+
+  Future<void> _showReminderPicker(
+    BuildContext context,
+    String treatmentPlanId,
+  ) async {
+    final now = DateTime.now();
+    final date = await showDatePicker(
+      context: context,
+      initialDate: now.add(const Duration(days: 1)),
+      firstDate: now,
+      lastDate: now.add(const Duration(days: 30)),
+    );
+    if (date == null || !context.mounted) return;
+
+    final time = await showTimePicker(
+      context: context,
+      initialTime: const TimeOfDay(hour: 9, minute: 0),
+    );
+    if (time == null || !context.mounted) return;
+
+    final scheduledAt = DateTime(
+      date.year,
+      date.month,
+      date.day,
+      time.hour,
+      time.minute,
+    );
+
+    final saved = await context.read<ScanCubit>().saveReminder(
+          treatmentPlanId: treatmentPlanId,
+          scanResultId: result.id,
+          scheduledAt: scheduledAt,
+        );
+
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          saved
+              ? 'Reminder set for ${date.day}/${date.month} at ${time.format(context)}'
+              : 'Failed to set reminder',
+        ),
+      ),
     );
   }
 }

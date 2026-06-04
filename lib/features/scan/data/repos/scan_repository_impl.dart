@@ -1,7 +1,9 @@
 import '../../../../core/errors/api_result.dart';
 import '../../../../core/errors/failure.dart';
 import '../../domain/entities/disease_entity.dart';
+import '../../domain/entities/reminder_entity.dart';
 import '../../domain/entities/scan_result_entity.dart';
+import '../../domain/entities/suggested_treatment_entity.dart';
 import '../../domain/repos/scan_repository.dart';
 
 class ScanRepositoryImpl implements ScanRepository {
@@ -112,6 +114,15 @@ class ScanRepositoryImpl implements ScanRepository {
         ),
       ],
       scannedAt: DateTime.now(),
+      suggestedTreatment: const SuggestedTreatmentEntity(
+        treatmentPlanId: 'plan-1',
+        title: 'Powdery Mildew Treatment',
+        summary:
+            'Apply fungicide spray every 3 days, remove affected leaves, '
+            'and improve air circulation around the plant.',
+        estimatedDuration: '7 days',
+        totalSteps: 4,
+      ),
     );
   }
 
@@ -137,6 +148,25 @@ class ScanRepositoryImpl implements ScanRepository {
         ),
       ],
       scannedAt: DateTime.now(),
+      suggestedTreatment: const SuggestedTreatmentEntity(
+        treatmentPlanId: 'plan-2',
+        title: 'Leaf Blight & Bacterial Spot Treatment',
+        summary:
+            'Remove infected foliage, apply copper-based bactericide, '
+            'and adjust watering schedule to reduce leaf wetness.',
+        estimatedDuration: '14 days',
+        totalSteps: 6,
+      ),
     );
+  }
+
+  @override
+  Future<ApiResult<void>> saveReminder(ReminderEntity reminder) async {
+    try {
+      await Future.delayed(const Duration(milliseconds: 500));
+      return const Success(null);
+    } catch (e) {
+      return const Error(ServerFailure('Failed to save reminder'));
+    }
   }
 }

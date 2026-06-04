@@ -1,3 +1,4 @@
+import '../../../../core/enums/plant_type.dart';
 import '../../../../core/errors/api_result.dart';
 
 abstract class AuthRepository {
@@ -11,5 +12,6 @@ abstract class AuthRepository {
     required String email,
     required String password,
     required String deviceId,
+    required PlantType selectedPlant,
   });
 }
