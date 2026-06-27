@@ -7,14 +7,14 @@ abstract final class SensorCardDecoration {
   static BoxDecoration forStatus(SensorStatus status) => BoxDecoration(
         color: switch (status) {
           SensorStatus.normal => AppColors.surface,
-          SensorStatus.warning => AppColors.warning.withValues(alpha: 0.06),
+          SensorStatus.warning => AppColors.error.withValues(alpha: 0.06),
           SensorStatus.critical => AppColors.error.withValues(alpha: 0.06),
         },
         borderRadius: BorderRadius.circular(16),
         border: switch (status) {
           SensorStatus.normal => null,
           SensorStatus.warning =>
-            Border.all(color: AppColors.warning.withValues(alpha: 0.4), width: 1.5),
+            Border.all(color: AppColors.error.withValues(alpha: 0.4), width: 1.5),
           SensorStatus.critical =>
             Border.all(color: AppColors.error.withValues(alpha: 0.5), width: 2),
         },
@@ -22,7 +22,7 @@ abstract final class SensorCardDecoration {
           BoxShadow(
             color: switch (status) {
               SensorStatus.normal => Colors.black.withValues(alpha: 0.05),
-              SensorStatus.warning => AppColors.warning.withValues(alpha: 0.1),
+              SensorStatus.warning => AppColors.error.withValues(alpha: 0.1),
               SensorStatus.critical => AppColors.error.withValues(alpha: 0.1),
             },
             blurRadius: 10,
@@ -38,18 +38,20 @@ abstract final class SensorCardDecoration {
       };
 
   static Widget _buildBadge(IconData icon, Color color) => Container(
-        width: 18,
-        height: 18,
+        width: 22,
+        height: 22,
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: color,
           shape: BoxShape.circle,
+          border: Border.all(color: Colors.white, width: 2),
           boxShadow: [
             BoxShadow(
-              color: color.withValues(alpha: 0.3),
-              blurRadius: 4,
+              color: color.withValues(alpha: 0.45),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
-        child: Icon(icon, size: 14, color: color),
+        child: const Icon(Icons.priority_high_rounded, size: 12, color: Colors.white),
       );
 }

@@ -1,3 +1,4 @@
+import 'treatment_day_entity.dart';
 import 'treatment_step_entity.dart';
 
 class TreatmentPlanEntity {
@@ -20,6 +21,18 @@ class TreatmentPlanEntity {
   double get progress {
     if (steps.isEmpty) return 0;
     return steps.where((s) => s.isCompleted).length / steps.length;
+  }
+
+  /// Steps grouped by [TreatmentStepEntity.dayNumber], ordered ascending.
+  List<TreatmentDayEntity> get days {
+    final grouped = <int, List<TreatmentStepEntity>>{};
+    for (final step in steps) {
+      grouped.putIfAbsent(step.dayNumber, () => []).add(step);
+    }
+    final dayNumbers = grouped.keys.toList()..sort();
+    return dayNumbers
+        .map((d) => TreatmentDayEntity(dayNumber: d, tasks: grouped[d]!))
+        .toList();
   }
 
   TreatmentPlanEntity copyWithStep(String stepId, {required bool isCompleted}) {
