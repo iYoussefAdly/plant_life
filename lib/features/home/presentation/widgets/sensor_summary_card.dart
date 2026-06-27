@@ -31,6 +31,9 @@ class SensorSummaryCard extends StatelessWidget {
             '${reading.value.toStringAsFixed(1)}${reading.unit}',
             style: AppTextStyles.headlineSmall.copyWith(
               fontWeight: FontWeight.w700,
+              color: reading.status == SensorStatus.normal
+                  ? AppColors.textPrimary
+                  : reading.status.color,
             ),
           ),
           const SizedBox(height: 2),

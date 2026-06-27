@@ -117,7 +117,7 @@ class _NotificationsList extends StatelessWidget {
           context.push(AppRoutes.treatmentDetail, extra: n.relatedId);
         }
       case NotificationType.sensorWarning:
-        context.push(AppRoutes.sensors);
+        context.go(AppRoutes.sensors);
     }
   }
 

@@ -31,7 +31,7 @@ extension SensorTypeUI on SensorType {
 extension SensorStatusUI on SensorStatus {
   Color get color => switch (this) {
         SensorStatus.normal => AppColors.success,
-        SensorStatus.warning => AppColors.warning,
+        SensorStatus.warning => AppColors.error,
         SensorStatus.critical => AppColors.error,
       };
 
