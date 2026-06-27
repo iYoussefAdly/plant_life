@@ -9,8 +9,8 @@ import '../../../../core/theme/app_text_styles.dart';
 import '../../domain/entities/treatment_plan_entity.dart';
 import '../bloc/treatment_detail_cubit.dart';
 import '../bloc/treatment_detail_state.dart';
+import '../widgets/treatment_day_section.dart';
 import '../widgets/treatment_progress_color.dart';
-import '../widgets/treatment_step_tile.dart';
 
 class TreatmentDetailScreen extends StatelessWidget {
   const TreatmentDetailScreen({super.key});
@@ -80,7 +80,7 @@ class _DetailContent extends StatelessWidget {
                 children: [
                   Text('Progress', style: AppTextStyles.labelLarge),
                   Text(
-                    '$completedCount of ${plan.steps.length} steps',
+                    '$completedCount of ${plan.steps.length} tasks',
                     style: AppTextStyles.bodySmall.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -110,24 +110,22 @@ class _DetailContent extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 20),
-        Text('Steps', style: AppTextStyles.headlineSmall),
+        Text('Daily Tasks', style: AppTextStyles.headlineSmall),
         const SizedBox(height: 12),
-        ...plan.steps.asMap().entries.map((entry) {
-          final index = entry.key;
-          final step = entry.value;
-          return TreatmentStepTile(
-            step: step,
-            stepNumber: index + 1,
-            onToggle: (isCompleted) {
-              context.read<TreatmentDetailCubit>().toggleStep(
-                    planId: plan.id,
-                    stepId: step.id,
-                    isCompleted: isCompleted,
-                  );
-            },
-          );
-        }),
-        const SizedBox(height: 20),
+        ...plan.days.map((day) => Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: TreatmentDaySection(
+                day: day,
+                onToggleTask: (stepId, isCompleted) {
+                  context.read<TreatmentDetailCubit>().toggleStep(
+                        planId: plan.id,
+                        stepId: stepId,
+                        isCompleted: isCompleted,
+                      );
+                },
+              ),
+            )),
+        const SizedBox(height: 4),
         SizedBox(
           width: double.infinity,
           child: OutlinedButton.icon(

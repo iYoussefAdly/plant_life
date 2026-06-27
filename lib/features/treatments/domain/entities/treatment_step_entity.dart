@@ -4,6 +4,7 @@ class TreatmentStepEntity {
   final String description;
   final bool isCompleted;
   final DateTime scheduledAt;
+  final int dayNumber;
 
   const TreatmentStepEntity({
     required this.id,
@@ -11,6 +12,7 @@ class TreatmentStepEntity {
     required this.description,
     required this.isCompleted,
     required this.scheduledAt,
+    required this.dayNumber,
   });
 
   TreatmentStepEntity copyWith({bool? isCompleted}) {
@@ -20,6 +22,7 @@ class TreatmentStepEntity {
       description: description,
       isCompleted: isCompleted ?? this.isCompleted,
       scheduledAt: scheduledAt,
+      dayNumber: dayNumber,
     );
   }
 }
