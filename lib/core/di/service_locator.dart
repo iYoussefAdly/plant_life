@@ -1,5 +1,9 @@
+import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 
+import '../networking/dio_factory.dart';
+import '../storage/token_storage.dart';
 import '../../features/auth/data/repos/auth_repository_impl.dart';
 import '../../features/auth/domain/repos/auth_repository.dart';
 import '../../features/auth/domain/usecases/login_usecase.dart';
@@ -39,6 +43,15 @@ import '../../features/notifications/presentation/bloc/notifications_cubit.dart'
 final sl = GetIt.instance;
 
 void setupServiceLocator() {
+  // Core infrastructure (networking + secure storage)
+  sl.registerLazySingleton(() => const FlutterSecureStorage());
+  sl.registerLazySingleton(() => TokenStorage(sl<FlutterSecureStorage>()));
+  // TODO(auth): wire `onUnauthorized` to redirect to login (router navigatorKey)
+  // when the Auth step lands, before real features consume this Dio instance.
+  sl.registerLazySingleton<Dio>(
+    () => DioFactory.create(tokenStorage: sl<TokenStorage>()),
+  );
+
   // Auth
   sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl());
   sl.registerLazySingleton(() => LoginUseCase(sl<AuthRepository>()));
