@@ -1,4 +1,3 @@
-import '../../../../core/enums/plant_type.dart';
 import '../../../../core/errors/api_result.dart';
 import '../../../../core/errors/failure.dart';
 import '../repos/auth_repository.dart';
@@ -12,9 +11,12 @@ class RegisterUseCase {
     required String name,
     required String email,
     required String password,
-    required String deviceId,
-    required PlantType selectedPlant,
   }) {
+    if (name.trim().isEmpty) {
+      return Future.value(
+        const Error(ServerFailure('Please enter your name')),
+      );
+    }
     if (!_isValidEmail(email)) {
       return Future.value(
         const Error(ServerFailure('Please enter a valid email address')),
@@ -29,8 +31,6 @@ class RegisterUseCase {
       name: name,
       email: email,
       password: password,
-      deviceId: deviceId,
-      selectedPlant: selectedPlant,
     );
   }
 

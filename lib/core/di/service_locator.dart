@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 
 import '../networking/dio_factory.dart';
 import '../storage/token_storage.dart';
+import '../../features/auth/data/datasources/auth_data_source.dart';
 import '../../features/auth/data/repos/auth_repository_impl.dart';
 import '../../features/auth/domain/repos/auth_repository.dart';
 import '../../features/auth/domain/usecases/login_usecase.dart';
@@ -42,18 +43,30 @@ import '../../features/notifications/presentation/bloc/notifications_cubit.dart'
 
 final sl = GetIt.instance;
 
+/// Invoked when an authenticated request fails unrecoverably (refresh failed).
+/// Wired in `main.dart` to redirect to login — kept as a late-bound hook so the
+/// DI layer does not depend on the router (avoids a service_locator ↔ app_router
+/// import cycle and keeps it swappable in tests).
+void Function()? onSessionExpired;
+
 void setupServiceLocator() {
   // Core infrastructure (networking + secure storage)
   sl.registerLazySingleton(() => const FlutterSecureStorage());
   sl.registerLazySingleton(() => TokenStorage(sl<FlutterSecureStorage>()));
-  // TODO(auth): wire `onUnauthorized` to redirect to login (router navigatorKey)
-  // when the Auth step lands, before real features consume this Dio instance.
   sl.registerLazySingleton<Dio>(
-    () => DioFactory.create(tokenStorage: sl<TokenStorage>()),
+    () => DioFactory.create(
+      tokenStorage: sl<TokenStorage>(),
+      // On unrecoverable 401 (refresh failed), tokens are cleared and the
+      // late-bound hook (set in main.dart) sends the user back to login.
+      onUnauthorized: () => onSessionExpired?.call(),
+    ),
   );
 
   // Auth
-  sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl());
+  sl.registerLazySingleton(() => AuthDataSource(sl<Dio>()));
+  sl.registerLazySingleton<AuthRepository>(
+    () => AuthRepositoryImpl(sl<AuthDataSource>(), sl<TokenStorage>()),
+  );
   sl.registerLazySingleton(() => LoginUseCase(sl<AuthRepository>()));
   sl.registerLazySingleton(() => RegisterUseCase(sl<AuthRepository>()));
   sl.registerFactory(() => AuthCubit(sl<LoginUseCase>(), sl<RegisterUseCase>()));

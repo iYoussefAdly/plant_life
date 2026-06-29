@@ -1,22 +1,27 @@
-import '../../../../core/enums/plant_type.dart';
 import '../../../../core/errors/api_result.dart';
 import '../../../../core/errors/failure.dart';
+import '../../../../core/networking/api_error_handler.dart';
+import '../../../../core/storage/token_storage.dart';
 import '../../domain/repos/auth_repository.dart';
+import '../datasources/auth_data_source.dart';
+import '../models/responses/auth_response.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
+  final AuthDataSource _dataSource;
+  final TokenStorage _tokenStorage;
+
+  AuthRepositoryImpl(this._dataSource, this._tokenStorage);
+
   @override
   Future<ApiResult<void>> login({
     required String email,
     required String password,
   }) async {
     try {
-      await Future.delayed(const Duration(seconds: 1));
-      if (email == 'error@test.com') {
-        return const Error(ServerFailure('Invalid email or password'));
-      }
-      return const Success(null);
+      final auth = await _dataSource.login(email: email, password: password);
+      return _persistTokens(auth);
     } catch (e) {
-      return const Error(ServerFailure('An unexpected error occurred'));
+      return Error(ApiErrorHandler.handle(e));
     }
   }
 
@@ -25,17 +30,32 @@ class AuthRepositoryImpl implements AuthRepository {
     required String name,
     required String email,
     required String password,
-    required String deviceId,
-    required PlantType selectedPlant,
   }) async {
     try {
-      await Future.delayed(const Duration(seconds: 1));
-      if (email == 'taken@test.com') {
-        return const Error(ServerFailure('Email already registered'));
-      }
-      return const Success(null);
+      final auth = await _dataSource.register(
+        name: name,
+        email: email,
+        password: password,
+      );
+      return _persistTokens(auth);
     } catch (e) {
-      return const Error(ServerFailure('An unexpected error occurred'));
+      return Error(ApiErrorHandler.handle(e));
     }
+  }
+
+  /// Persists the tokens from a nominally successful auth call. If the server
+  /// returned no usable tokens, surface it as an error rather than silently
+  /// succeeding (which would leave the user "logged in" with no credentials).
+  Future<ApiResult<void>> _persistTokens(AuthResponse auth) async {
+    if (auth.accessToken.isEmpty || auth.refreshToken.isEmpty) {
+      return const Error(
+        ServerFailure('Invalid server response. Please try again.'),
+      );
+    }
+    await _tokenStorage.saveTokens(
+      accessToken: auth.accessToken,
+      refreshToken: auth.refreshToken,
+    );
+    return const Success(null);
   }
 }

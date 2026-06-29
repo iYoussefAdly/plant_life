@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/enums/plant_type.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../bloc/auth_cubit.dart';
@@ -21,16 +18,13 @@ class _RegisterFormState extends State<RegisterForm> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _deviceIdController = TextEditingController();
   bool _obscurePassword = true;
-  PlantType? _selectedPlant;
 
   @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
-    _deviceIdController.dispose();
     super.dispose();
   }
 
@@ -92,56 +86,6 @@ class _RegisterFormState extends State<RegisterForm> {
               return null;
             },
           ),
-          const SizedBox(height: 16),
-          AppTextField(
-            label: 'Device ID',
-            hint: 'Enter your hardware device ID',
-            controller: _deviceIdController,
-            prefixIcon: const Icon(Icons.devices_outlined, size: 20),
-            validator: (value) {
-              if (value == null || value.trim().isEmpty) {
-                return 'Please enter your device ID';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 8),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'The device ID is printed on your PlantLife sensor kit',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textHint,
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          DropdownButtonFormField<PlantType>(
-            initialValue: _selectedPlant,
-            decoration: InputDecoration(
-              labelText: 'Plant Type',
-              hintText: 'Select your plant',
-              prefixIcon: const Icon(Icons.eco_outlined, size: 20),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            items: PlantType.values
-                .map((plant) => DropdownMenuItem(
-                      value: plant,
-                      child: Text(plant.label),
-                    ))
-                .toList(),
-            onChanged: (value) {
-              setState(() => _selectedPlant = value);
-            },
-            validator: (value) {
-              if (value == null) {
-                return 'Please select a plant type';
-              }
-              return null;
-            },
-          ),
           const SizedBox(height: 24),
           BlocBuilder<AuthCubit, AuthState>(
             builder: (context, state) {
@@ -156,8 +100,6 @@ class _RegisterFormState extends State<RegisterForm> {
                           name: _nameController.text.trim(),
                           email: _emailController.text.trim(),
                           password: _passwordController.text,
-                          deviceId: _deviceIdController.text.trim(),
-                          selectedPlant: _selectedPlant!,
                         );
                   }
                 },
