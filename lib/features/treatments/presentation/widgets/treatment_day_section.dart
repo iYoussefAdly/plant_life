@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/utils/date_formatter.dart';
 import '../../domain/entities/treatment_day_entity.dart';
 import 'treatment_step_tile.dart';
 
@@ -54,6 +55,21 @@ class TreatmentDaySection extends StatelessWidget {
                   color: completed ? AppColors.success : AppColors.textPrimary,
                 ),
               ),
+              if (day.date != null) ...[
+                const SizedBox(width: 8),
+                if (!completed && !day.isUnlocked) ...[
+                  const Icon(Icons.lock_outline,
+                      size: 13, color: AppColors.textHint),
+                  const SizedBox(width: 3),
+                ],
+                Text(
+                  formatShortDate(day.date!),
+                  style: AppTextStyles.labelMedium.copyWith(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
               const Spacer(),
               if (completed)
                 Text(
