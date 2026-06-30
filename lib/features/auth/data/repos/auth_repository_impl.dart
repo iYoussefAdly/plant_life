@@ -43,6 +43,9 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+  @override
+  Future<void> logout() => _tokenStorage.clear();
+
   /// Persists the tokens from a nominally successful auth call. If the server
   /// returned no usable tokens, surface it as an error rather than silently
   /// succeeding (which would leave the user "logged in" with no credentials).

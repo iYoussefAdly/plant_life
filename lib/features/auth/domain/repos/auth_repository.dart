@@ -11,4 +11,8 @@ abstract class AuthRepository {
     required String email,
     required String password,
   });
+
+  /// Clears the persisted session (tokens). No backend call — the API has no
+  /// logout endpoint.
+  Future<void> logout();
 }

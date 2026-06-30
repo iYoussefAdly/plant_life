@@ -8,6 +8,7 @@ import '../../features/auth/data/datasources/auth_data_source.dart';
 import '../../features/auth/data/repos/auth_repository_impl.dart';
 import '../../features/auth/domain/repos/auth_repository.dart';
 import '../../features/auth/domain/usecases/login_usecase.dart';
+import '../../features/auth/domain/usecases/logout_usecase.dart';
 import '../../features/auth/domain/usecases/register_usecase.dart';
 import '../../features/auth/presentation/bloc/auth_cubit.dart';
 import '../../features/home/data/repos/home_repository_impl.dart';
@@ -73,7 +74,12 @@ void setupServiceLocator() {
   );
   sl.registerLazySingleton(() => LoginUseCase(sl<AuthRepository>()));
   sl.registerLazySingleton(() => RegisterUseCase(sl<AuthRepository>()));
-  sl.registerFactory(() => AuthCubit(sl<LoginUseCase>(), sl<RegisterUseCase>()));
+  sl.registerLazySingleton(() => LogoutUseCase(sl<AuthRepository>()));
+  sl.registerFactory(() => AuthCubit(
+        sl<LoginUseCase>(),
+        sl<RegisterUseCase>(),
+        sl<LogoutUseCase>(),
+      ));
 
   // Home (Today's Tasks compose from the active heal plan; sensors stay mock)
   sl.registerLazySingleton<HomeRepository>(
