@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -8,10 +9,21 @@ import '../../domain/entities/recovery_entity.dart';
 import '../bloc/recovery_cubit.dart';
 import '../bloc/recovery_state.dart';
 import '../widgets/recovery_header.dart';
-import '../widgets/weekly_image_card.dart';
+import '../widgets/rescan_card.dart';
+
+/// Navigation argument for the Recovery route: the original scan id (parent of
+/// the rescans) plus a title for the header.
+class RecoveryArgs {
+  final String scanId;
+  final String title;
+
+  const RecoveryArgs({required this.scanId, this.title = ''});
+}
 
 class RecoveryProgressScreen extends StatelessWidget {
   const RecoveryProgressScreen({super.key});
+
+  static final _picker = ImagePicker();
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +45,16 @@ class RecoveryProgressScreen extends StatelessWidget {
       ),
     );
   }
+
+  static Future<void> startRescan(BuildContext context) async {
+    final cubit = context.read<RecoveryCubit>();
+    final picked = await _picker.pickImage(
+      source: ImageSource.camera,
+      imageQuality: 85,
+    );
+    if (picked == null) return;
+    await cubit.createRescan(picked.path);
+  }
 }
 
 class _RecoveryContent extends StatelessWidget {
@@ -46,8 +68,17 @@ class _RecoveryContent extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       children: [
         RecoveryHeader(recovery: recovery),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton.icon(
+            onPressed: () => RecoveryProgressScreen.startRescan(context),
+            icon: const Icon(Icons.add_a_photo_outlined),
+            label: const Text('Rescan now'),
+          ),
+        ),
         const SizedBox(height: 24),
-        if (recovery.weeklyImages.isEmpty)
+        if (recovery.rescans.isEmpty)
           const _EmptyTimeline()
         else ...[
           Row(
@@ -55,21 +86,18 @@ class _RecoveryContent extends StatelessWidget {
               const Icon(Icons.timeline_outlined,
                   size: 20, color: AppColors.textPrimary),
               const SizedBox(width: 8),
-              Text('Weekly Timeline', style: AppTextStyles.headlineSmall),
+              Text('Rescan History', style: AppTextStyles.headlineSmall),
             ],
           ),
           const SizedBox(height: 12),
-          ...recovery.weeklyImages.reversed.toList().asMap().entries.map(
-            (entry) {
-              final isLatest = entry.key == 0;
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: WeeklyImageCard(
-                  weeklyImage: entry.value,
-                  isLatest: isLatest,
-                ),
-              );
-            },
+          ...recovery.rescans.asMap().entries.map(
+            (entry) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: RescanCard(
+                rescan: entry.value,
+                isLatest: entry.key == 0,
+              ),
+            ),
           ),
         ],
         const SizedBox(height: 16),
@@ -98,14 +126,14 @@ class _EmptyTimeline extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            'No progress photos yet',
+            'No follow-up scans yet',
             style: AppTextStyles.bodyLarge.copyWith(
               color: AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: 4),
           Text(
-            'Weekly photos will appear here as you track recovery',
+            'Tap "Rescan now" to track your plant\'s recovery over time',
             style: AppTextStyles.bodySmall.copyWith(
               color: AppColors.textHint,
             ),

@@ -1,17 +1,18 @@
-import 'weekly_image_entity.dart';
+import 'rescan_entity.dart';
 
 class RecoveryEntity {
-  final String treatmentId;
-  final String treatmentTitle;
-  final String plantName;
+  /// The original scan the heal plan was created from (parent of the rescans).
+  final String scanId;
+  final String title;
+
+  /// Overall recovery, 0.0–1.0 (derived from severity reduction).
   final double progressPercent;
-  final List<WeeklyImageEntity> weeklyImages;
+  final List<RescanEntity> rescans;
 
   const RecoveryEntity({
-    required this.treatmentId,
-    required this.treatmentTitle,
-    required this.plantName,
+    required this.scanId,
+    required this.title,
     required this.progressPercent,
-    required this.weeklyImages,
+    required this.rescans,
   });
 }

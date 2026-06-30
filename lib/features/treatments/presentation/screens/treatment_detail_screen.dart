@@ -6,6 +6,7 @@ import 'package:percent_indicator/linear_percent_indicator.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../recovery/presentation/screens/recovery_progress_screen.dart';
 import '../../domain/entities/treatment_plan_entity.dart';
 import '../bloc/treatment_detail_cubit.dart';
 import '../bloc/treatment_detail_state.dart';
@@ -145,7 +146,7 @@ class _DetailContent extends StatelessWidget {
           child: OutlinedButton.icon(
             onPressed: () => context.push(
               AppRoutes.recoveryProgress,
-              extra: plan.id,
+              extra: RecoveryArgs(scanId: plan.scanId, title: plan.title),
             ),
             icon: const Icon(Icons.trending_up),
             label: const Text('View Recovery Progress'),

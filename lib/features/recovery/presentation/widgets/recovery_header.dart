@@ -13,6 +13,7 @@ class RecoveryHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final percentage = (recovery.progressPercent * 100).toStringAsFixed(0);
+    final count = recovery.rescans.length;
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -57,30 +58,16 @@ class RecoveryHeader extends StatelessWidget {
             backgroundColor: AppColors.textHint.withValues(alpha: 0.15),
             circularStrokeCap: CircularStrokeCap.round,
           ),
-          const SizedBox(height: 20),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
+          const SizedBox(height: 16),
+          if (recovery.title.isNotEmpty)
+            Text(
+              recovery.title,
+              style: AppTextStyles.headlineSmall,
+              textAlign: TextAlign.center,
             ),
-            child: Text(
-              recovery.plantName,
-              style: AppTextStyles.labelLarge.copyWith(
-                color: AppColors.primary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            recovery.treatmentTitle,
-            style: AppTextStyles.headlineSmall,
-            textAlign: TextAlign.center,
-          ),
           const SizedBox(height: 4),
           Text(
-            '${recovery.weeklyImages.length} week${recovery.weeklyImages.length != 1 ? 's' : ''} tracked',
+            '$count follow-up scan${count != 1 ? 's' : ''}',
             style: AppTextStyles.bodySmall.copyWith(
               color: AppColors.textSecondary,
             ),

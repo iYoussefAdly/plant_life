@@ -7,6 +7,7 @@ class HealPlanModel extends TreatmentPlanEntity {
     required super.title,
     required super.description,
     required super.status,
+    required super.scanId,
     required super.steps,
     required super.createdAt,
   });
@@ -40,6 +41,7 @@ class HealPlanModel extends TreatmentPlanEntity {
       title: _title(json['disease_display'] as String?, disease),
       description: json['description'] as String? ?? '',
       status: _status(json['status'] as String?),
+      scanId: (json['scanId'] ?? json['scan'] ?? '').toString(),
       steps: steps,
       createdAt:
           DateTime.tryParse(json['createdAt'] as String? ?? '')?.toLocal() ??
