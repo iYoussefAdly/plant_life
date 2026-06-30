@@ -75,8 +75,10 @@ void setupServiceLocator() {
   sl.registerLazySingleton(() => RegisterUseCase(sl<AuthRepository>()));
   sl.registerFactory(() => AuthCubit(sl<LoginUseCase>(), sl<RegisterUseCase>()));
 
-  // Home
-  sl.registerLazySingleton<HomeRepository>(() => HomeRepositoryImpl());
+  // Home (Today's Tasks compose from the active heal plan; sensors stay mock)
+  sl.registerLazySingleton<HomeRepository>(
+    () => HomeRepositoryImpl(sl<TreatmentsRepository>()),
+  );
   sl.registerLazySingleton(() => GetHomeDataUseCase(sl<HomeRepository>()));
   sl.registerFactory(() => HomeCubit(sl<GetHomeDataUseCase>()));
 
