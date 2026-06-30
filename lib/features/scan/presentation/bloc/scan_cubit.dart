@@ -29,7 +29,7 @@ class ScanCubit extends Cubit<ScanState> {
   }
 
   Future<void> loadHistory() async {
-    emit(const ScanAnalyzing());
+    emit(const ScanHistoryLoading());
     final result = await _getScanHistoryUseCase();
     switch (result) {
       case Success(:final data):

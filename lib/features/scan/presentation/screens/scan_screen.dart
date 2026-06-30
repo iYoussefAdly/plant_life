@@ -31,6 +31,9 @@ class ScanScreen extends StatelessWidget {
               onSourceSelected: (source) => _handleScan(context, source),
             ),
           ScanAnalyzing() => const _AnalyzingView(),
+          ScanHistoryLoading() => const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            ),
           ScanResultReady(:final result) => _ResultView(
               result: result,
               onScanAgain: () => context.read<ScanCubit>().reset(),
