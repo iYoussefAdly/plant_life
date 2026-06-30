@@ -6,6 +6,9 @@ abstract class TreatmentsRepository {
 
   Future<ApiResult<TreatmentPlanEntity>> getTreatmentDetail(String planId);
 
+  /// Creates a heal plan from an infected scan.
+  Future<ApiResult<TreatmentPlanEntity>> createPlan(String scanId);
+
   Future<ApiResult<TreatmentPlanEntity>> toggleStepCompletion({
     required String planId,
     required String stepId,

@@ -1,172 +1,31 @@
 import '../../../../core/errors/api_result.dart';
-import '../../../../core/errors/failure.dart';
-import '../../domain/entities/disease_entity.dart';
-import '../../domain/entities/reminder_entity.dart';
+import '../../../../core/networking/api_error_handler.dart';
 import '../../domain/entities/scan_result_entity.dart';
-import '../../domain/entities/suggested_treatment_entity.dart';
 import '../../domain/repos/scan_repository.dart';
+import '../datasources/scan_data_source.dart';
 
 class ScanRepositoryImpl implements ScanRepository {
-  int _scanCounter = 0;
+  final ScanDataSource _dataSource;
+
+  ScanRepositoryImpl(this._dataSource);
 
   @override
   Future<ApiResult<ScanResultEntity>> scanImage({
     required String imagePath,
   }) async {
     try {
-      await Future.delayed(const Duration(seconds: 2));
-
-      _scanCounter++;
-      final result = switch (_scanCounter % 3) {
-        0 => _buildHealthyResult(imagePath),
-        1 => _buildSingleDiseaseResult(imagePath),
-        _ => _buildMultipleDiseaseResult(imagePath),
-      };
-
-      return Success(result);
+      return Success(await _dataSource.createScan(imagePath));
     } catch (e) {
-      return const Error(ServerFailure('Failed to analyze image'));
+      return Error(ApiErrorHandler.handle(e));
     }
   }
 
   @override
   Future<ApiResult<List<ScanResultEntity>>> getScanHistory() async {
     try {
-      await Future.delayed(const Duration(milliseconds: 600));
-
-      final now = DateTime.now();
-      final history = [
-        ScanResultEntity(
-          id: 'scan-1',
-          imagePath: '',
-          status: ScanStatus.diseased,
-          diseases: const [
-            DiseaseEntity(
-              name: 'Powdery Mildew',
-              confidence: 0.89,
-              description: 'White powdery spots on leaves and stems',
-            ),
-          ],
-          scannedAt: now.subtract(const Duration(hours: 2)),
-        ),
-        ScanResultEntity(
-          id: 'scan-2',
-          imagePath: '',
-          status: ScanStatus.healthy,
-          diseases: const [],
-          scannedAt: now.subtract(const Duration(days: 1)),
-        ),
-        ScanResultEntity(
-          id: 'scan-3',
-          imagePath: '',
-          status: ScanStatus.diseased,
-          diseases: const [
-            DiseaseEntity(
-              name: 'Leaf Spot',
-              confidence: 0.75,
-              description: 'Brown or black spots on leaf surfaces',
-            ),
-            DiseaseEntity(
-              name: 'Root Rot',
-              confidence: 0.42,
-              description: 'Yellowing leaves with mushy brown roots',
-            ),
-          ],
-          scannedAt: now.subtract(const Duration(days: 3)),
-        ),
-        ScanResultEntity(
-          id: 'scan-4',
-          imagePath: '',
-          status: ScanStatus.healthy,
-          diseases: const [],
-          scannedAt: now.subtract(const Duration(days: 5)),
-        ),
-      ];
-
-      return Success(history);
+      return Success(await _dataSource.getScans());
     } catch (e) {
-      return const Error(ServerFailure('Failed to load scan history'));
-    }
-  }
-
-  ScanResultEntity _buildHealthyResult(String imagePath) {
-    return ScanResultEntity(
-      id: 'scan-${DateTime.now().millisecondsSinceEpoch}',
-      imagePath: imagePath,
-      status: ScanStatus.healthy,
-      diseases: const [],
-      scannedAt: DateTime.now(),
-    );
-  }
-
-  ScanResultEntity _buildSingleDiseaseResult(String imagePath) {
-    return ScanResultEntity(
-      id: 'scan-${DateTime.now().millisecondsSinceEpoch}',
-      imagePath: imagePath,
-      status: ScanStatus.diseased,
-      diseases: const [
-        DiseaseEntity(
-          name: 'Powdery Mildew',
-          confidence: 0.92,
-          description:
-              'A fungal disease causing white powdery coating on leaves. '
-              'Thrives in warm, dry climates with high humidity.',
-        ),
-      ],
-      scannedAt: DateTime.now(),
-      suggestedTreatment: const SuggestedTreatmentEntity(
-        treatmentPlanId: 'plan-1',
-        title: 'Powdery Mildew Treatment',
-        summary:
-            'Apply fungicide spray every 3 days, remove affected leaves, '
-            'and improve air circulation around the plant.',
-        estimatedDuration: '7 days',
-        totalSteps: 4,
-      ),
-    );
-  }
-
-  ScanResultEntity _buildMultipleDiseaseResult(String imagePath) {
-    return ScanResultEntity(
-      id: 'scan-${DateTime.now().millisecondsSinceEpoch}',
-      imagePath: imagePath,
-      status: ScanStatus.diseased,
-      diseases: [
-        const DiseaseEntity(
-          name: 'Leaf Blight',
-          confidence: 0.85,
-          description:
-              'Rapidly spreading brown lesions on leaves. '
-              'Can cause significant defoliation if untreated.',
-        ),
-        DiseaseEntity(
-          name: 'Bacterial Spot',
-          confidence: 0.48,
-          description:
-              'Small, dark, water-soaked spots on leaves. '
-              'Spread by splashing water and contaminated tools.',
-        ),
-      ],
-      scannedAt: DateTime.now(),
-      suggestedTreatment: const SuggestedTreatmentEntity(
-        treatmentPlanId: 'plan-2',
-        title: 'Leaf Blight & Bacterial Spot Treatment',
-        summary:
-            'Remove infected foliage, apply copper-based bactericide, '
-            'and adjust watering schedule to reduce leaf wetness.',
-        estimatedDuration: '14 days',
-        totalSteps: 6,
-      ),
-    );
-  }
-
-  @override
-  Future<ApiResult<void>> saveReminder(ReminderEntity reminder) async {
-    try {
-      await Future.delayed(const Duration(milliseconds: 500));
-      return const Success(null);
-    } catch (e) {
-      return const Error(ServerFailure('Failed to save reminder'));
+      return Error(ApiErrorHandler.handle(e));
     }
   }
 }

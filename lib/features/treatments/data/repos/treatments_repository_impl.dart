@@ -31,6 +31,15 @@ class TreatmentsRepositoryImpl implements TreatmentsRepository {
   }
 
   @override
+  Future<ApiResult<TreatmentPlanEntity>> createPlan(String scanId) async {
+    try {
+      return Success(await _dataSource.createPlan(scanId));
+    } catch (e) {
+      return Error(ApiErrorHandler.handle(e));
+    }
+  }
+
+  @override
   Future<ApiResult<TreatmentPlanEntity>> toggleStepCompletion({
     required String planId,
     required String stepId,

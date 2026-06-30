@@ -1,0 +1,78 @@
+import '../../domain/entities/disease_entity.dart';
+import '../../domain/entities/scan_result_entity.dart';
+
+class ScanModel extends ScanResultEntity {
+  const ScanModel({
+    required super.id,
+    required super.imagePath,
+    required super.status,
+    required super.diseases,
+    required super.scannedAt,
+  });
+
+  factory ScanModel.fromJson(Map<String, dynamic> json) {
+    final result = json['result'] as Map<String, dynamic>? ?? const {};
+    final isInfected = result['is_infected'] as bool? ??
+        (result['tree_status'] as String?)?.toLowerCase() == 'diseased';
+
+    final images = json['images'] as List?;
+    final firstImage = (images != null && images.isNotEmpty)
+        ? images.first as Map<String, dynamic>?
+        : null;
+
+    return ScanModel(
+      id: (json['_id'] ?? json['id'] ?? '').toString(),
+      imagePath: firstImage?['url'] as String? ?? '',
+      status: isInfected ? ScanStatus.diseased : ScanStatus.healthy,
+      diseases: isInfected ? _diseases(result) : const [],
+      scannedAt:
+          DateTime.tryParse(json['createdAt'] as String? ?? '')?.toLocal() ??
+              DateTime.now(),
+    );
+  }
+
+  /// Builds the disease list from `per_image_details`, falling back to the
+  /// overall `main_disease` + `avg_severity_all_images` when details are absent.
+  static List<DiseaseEntity> _diseases(Map<String, dynamic> result) {
+    final details = result['per_image_details'] as List?;
+    if (details != null && details.isNotEmpty) {
+      final diseases = <DiseaseEntity>[];
+      for (final raw in details.whereType<Map<String, dynamic>>()) {
+        final name = raw['disease'] as String? ?? '';
+        if (name.isEmpty || name.toLowerCase() == 'healthy') continue;
+        diseases.add(
+          DiseaseEntity(
+            name: _prettify(name),
+            confidence: (raw['confidence'] as num?)?.toDouble() ?? 0,
+            severityPercent: (raw['severity_percent'] as num?)?.toDouble() ?? 0,
+          ),
+        );
+      }
+      if (diseases.isNotEmpty) return diseases;
+    }
+
+    final main = result['main_disease'] as String?;
+    if (main != null && main.isNotEmpty && main.toLowerCase() != 'healthy') {
+      return [
+        DiseaseEntity(
+          name: _prettify(main),
+          confidence: 1,
+          severityPercent:
+              (result['avg_severity_all_images'] as num?)?.toDouble() ?? 0,
+        ),
+      ];
+    }
+    return const [];
+  }
+
+  /// `Early_blight` -> `Early Blight`.
+  static String _prettify(String raw) {
+    return raw
+        .replaceAll('_', ' ')
+        .replaceAll('-', ' ')
+        .split(' ')
+        .where((w) => w.isNotEmpty)
+        .map((w) => '${w[0].toUpperCase()}${w.substring(1)}')
+        .join(' ');
+  }
+}

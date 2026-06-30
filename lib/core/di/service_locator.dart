@@ -18,15 +18,16 @@ import '../../features/sensors/data/repos/sensors_repository_impl.dart';
 import '../../features/sensors/domain/repos/sensors_repository.dart';
 import '../../features/sensors/domain/usecases/get_sensors_data_usecase.dart';
 import '../../features/sensors/presentation/bloc/sensors_cubit.dart';
+import '../../features/scan/data/datasources/scan_data_source.dart';
 import '../../features/scan/data/repos/scan_repository_impl.dart';
 import '../../features/scan/domain/repos/scan_repository.dart';
 import '../../features/scan/domain/usecases/get_scan_history_usecase.dart';
-import '../../features/scan/domain/usecases/save_reminder_usecase.dart';
 import '../../features/scan/domain/usecases/scan_image_usecase.dart';
 import '../../features/scan/presentation/bloc/scan_cubit.dart';
 import '../../features/treatments/data/datasources/treatments_data_source.dart';
 import '../../features/treatments/data/repos/treatments_repository_impl.dart';
 import '../../features/treatments/domain/repos/treatments_repository.dart';
+import '../../features/treatments/domain/usecases/create_heal_plan_usecase.dart';
 import '../../features/treatments/domain/usecases/get_treatment_plans_usecase.dart';
 import '../../features/treatments/domain/usecases/get_treatment_detail_usecase.dart';
 import '../../features/treatments/domain/usecases/toggle_step_usecase.dart';
@@ -85,11 +86,17 @@ void setupServiceLocator() {
   sl.registerFactory(() => SensorsCubit(sl<GetSensorsDataUseCase>()));
 
   // Scan
-  sl.registerLazySingleton<ScanRepository>(() => ScanRepositoryImpl());
+  sl.registerLazySingleton(() => ScanDataSource(sl<Dio>()));
+  sl.registerLazySingleton<ScanRepository>(
+    () => ScanRepositoryImpl(sl<ScanDataSource>()),
+  );
   sl.registerLazySingleton(() => ScanImageUseCase(sl<ScanRepository>()));
   sl.registerLazySingleton(() => GetScanHistoryUseCase(sl<ScanRepository>()));
-  sl.registerLazySingleton(() => SaveReminderUseCase(sl<ScanRepository>()));
-  sl.registerFactory(() => ScanCubit(sl<ScanImageUseCase>(), sl<GetScanHistoryUseCase>(), sl<SaveReminderUseCase>()));
+  sl.registerFactory(() => ScanCubit(
+        sl<ScanImageUseCase>(),
+        sl<GetScanHistoryUseCase>(),
+        sl<CreateHealPlanUseCase>(),
+      ));
 
   // Treatments
   sl.registerLazySingleton(() => TreatmentsDataSource(sl<Dio>()));
@@ -99,6 +106,7 @@ void setupServiceLocator() {
   sl.registerLazySingleton(() => GetTreatmentPlansUseCase(sl<TreatmentsRepository>()));
   sl.registerLazySingleton(() => GetTreatmentDetailUseCase(sl<TreatmentsRepository>()));
   sl.registerLazySingleton(() => ToggleStepUseCase(sl<TreatmentsRepository>()));
+  sl.registerLazySingleton(() => CreateHealPlanUseCase(sl<TreatmentsRepository>()));
   sl.registerFactory(() => TreatmentsCubit(sl<GetTreatmentPlansUseCase>()));
   sl.registerFactory(() => TreatmentDetailCubit(sl<GetTreatmentDetailUseCase>(), sl<ToggleStepUseCase>()));
 
