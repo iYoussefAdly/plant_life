@@ -78,18 +78,34 @@ class _ScanHistoryTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: (isHealthy ? AppColors.success : AppColors.error)
-                  .withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(
-              isHealthy ? Icons.check_circle_outline : Icons.bug_report_outlined,
-              size: 22,
-              color: isHealthy ? AppColors.success : AppColors.error,
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: SizedBox(
+              width: 48,
+              height: 48,
+              child: scan.imagePath.isNotEmpty
+                  ? Image.network(
+                      scan.imagePath,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => _StatusIcon(isHealthy: isHealthy),
+                      loadingBuilder: (context, child, progress) =>
+                          progress == null
+                              ? child
+                              : Container(
+                                  color: AppColors.textHint.withValues(alpha: 0.1),
+                                  child: const Center(
+                                    child: SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: AppColors.primary,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                    )
+                  : _StatusIcon(isHealthy: isHealthy),
             ),
           ),
           const SizedBox(width: 12),
@@ -134,6 +150,26 @@ class _ScanHistoryTile extends StatelessWidget {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// Leading fallback shown when a scan has no image (or it fails to load).
+class _StatusIcon extends StatelessWidget {
+  final bool isHealthy;
+
+  const _StatusIcon({required this.isHealthy});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isHealthy ? AppColors.success : AppColors.error;
+    return Container(
+      color: color.withValues(alpha: 0.1),
+      child: Icon(
+        isHealthy ? Icons.check_circle_outline : Icons.bug_report_outlined,
+        size: 22,
+        color: color,
       ),
     );
   }
