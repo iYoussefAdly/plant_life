@@ -8,6 +8,9 @@ class TreatmentPlanEntity {
   final String title;
   final String description;
   final TreatmentPlanStatus status;
+
+  /// The scan this plan was created from — used to open the Recovery screen.
+  final String scanId;
   final List<TreatmentStepEntity> steps;
   final DateTime createdAt;
 
@@ -16,6 +19,7 @@ class TreatmentPlanEntity {
     required this.title,
     required this.description,
     required this.status,
+    required this.scanId,
     required this.steps,
     required this.createdAt,
   });
@@ -45,6 +49,7 @@ class TreatmentPlanEntity {
       title: title,
       description: description,
       status: status,
+      scanId: scanId,
       steps: steps
           .map((s) =>
               s.id == stepId ? s.copyWith(isCompleted: isCompleted) : s)

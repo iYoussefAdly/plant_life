@@ -21,6 +21,7 @@ abstract final class ApiEndpoints {
   static const scans = '/scans';
   static String scan(String id) => '/scans/$id';
   static String rescan(String parentScanId) => '/scans/$parentScanId/rescan';
+  static String scanRescans(String scanId) => '/scans/$scanId/rescans';
 
   // Heal plans
   static const healPlans = '/heal-plans';

@@ -64,9 +64,13 @@ abstract final class AppRouter {
       GoRoute(
         path: AppRoutes.recoveryProgress,
         builder: (context, state) {
-          final treatmentId = state.extra is String ? state.extra as String : '';
+          final extra = state.extra;
+          final args = extra is RecoveryArgs
+              ? extra
+              : RecoveryArgs(scanId: extra is String ? extra : '');
           return BlocProvider(
-            create: (_) => sl<RecoveryCubit>()..loadRecovery(treatmentId),
+            create: (_) =>
+                sl<RecoveryCubit>()..load(args.scanId, args.title),
             child: const RecoveryProgressScreen(),
           );
         },
