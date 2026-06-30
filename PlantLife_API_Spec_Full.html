@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PlantLife — API Endpoints Spec</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f4f6f9;
+    color: #212121;
+    font-size: 13.5px;
+    line-height: 1.5;
+  }
+
+  .page {
+    max-width: 900px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 48px 56px;
+  }
+
+  /* Header */
+  .doc-header {
+    text-align: center;
+    padding-bottom: 28px;
+    border-bottom: 3px solid #2E7D32;
+    margin-bottom: 36px;
+  }
+  .doc-header h1 {
+    font-size: 28px;
+    color: #2E7D32;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  .doc-header p {
+    color: #757575;
+    font-size: 13px;
+    margin-top: 4px;
+  }
+
+  /* Section */
+  .section {
+    margin-bottom: 40px;
+  }
+  .section-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #fff;
+    background: #2E7D32;
+    padding: 8px 16px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+  }
+  .section-title span {
+    font-weight: 400;
+    font-size: 13px;
+    opacity: 0.85;
+    margin-left: 8px;
+  }
+
+  /* Table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 12px;
+    font-size: 13px;
+  }
+  thead tr {
+    background: #E8F5E9;
+  }
+  thead th {
+    text-align: left;
+    padding: 9px 12px;
+    font-weight: 700;
+    color: #1B5E20;
+    border-bottom: 2px solid #A5D6A7;
+  }
+  tbody tr {
+    border-bottom: 1px solid #F0F0F0;
+  }
+  tbody tr:last-child {
+    border-bottom: none;
+  }
+  tbody td {
+    padding: 10px 12px;
+    vertical-align: top;
+  }
+  tbody tr:hover {
+    background: #FAFAFA;
+  }
+
+  /* Method badges */
+  .badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.3px;
+  }
+  .badge-post   { background: #FFF3E0; color: #E65100; }
+  .badge-get    { background: #E3F2FD; color: #1565C0; }
+  .badge-patch  { background: #F3E5F5; color: #6A1B9A; }
+
+  /* New badge */
+  .new {
+    display: inline-block;
+    background: #D32F2F;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 800;
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-left: 6px;
+    vertical-align: middle;
+    letter-spacing: 0.5px;
+  }
+
+  /* Updated badge */
+  .updated {
+    display: inline-block;
+    background: #1565C0;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 800;
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-left: 6px;
+    vertical-align: middle;
+    letter-spacing: 0.5px;
+  }
+
+  /* Code blocks */
+  code {
+    font-family: 'Consolas', 'Courier New', monospace;
+    background: #F5F5F5;
+    border: 1px solid #E0E0E0;
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-size: 12px;
+    color: #212121;
+  }
+  pre {
+    font-family: 'Consolas', 'Courier New', monospace;
+    background: #F5F5F5;
+    border: 1px solid #E0E0E0;
+    border-radius: 6px;
+    padding: 12px 16px;
+    font-size: 12px;
+    white-space: pre-wrap;
+    margin: 8px 0;
+    line-height: 1.7;
+  }
+
+  /* Object layout sub-section */
+  .sub-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #2E7D32;
+    margin: 16px 0 8px;
+    padding-left: 4px;
+    border-left: 3px solid #2E7D32;
+    padding-left: 10px;
+  }
+
+  /* Notes box */
+  .notes-box {
+    background: #FFF8E1;
+    border-left: 4px solid #F9A825;
+    padding: 12px 16px;
+    border-radius: 4px;
+    margin-top: 16px;
+    font-size: 12.5px;
+  }
+  .notes-box strong {
+    color: #E65100;
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+  }
+  .notes-box ul {
+    padding-left: 18px;
+  }
+  .notes-box li {
+    margin-bottom: 4px;
+  }
+
+  /* Footer */
+  .doc-footer {
+    text-align: center;
+    margin-top: 48px;
+    padding-top: 16px;
+    border-top: 1px solid #E0E0E0;
+    color: #9E9E9E;
+    font-size: 11.5px;
+  }
+
+  /* Page break hints for print */
+  @media print {
+    body { background: #fff; }
+    .page { padding: 20px 28px; }
+    .section { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="doc-header">
+    <h1>🌿 PlantLife — API Endpoints Spec</h1>
+    <p>Full specification including all endpoints required by the Flutter application &nbsp;|&nbsp; v2.0</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       1. AUTHENTICATION
+  ════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">1. Authentication <span>(التوثيق والصلاحيات)</span></div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:70px">Method</th>
+          <th style="width:220px">Endpoint</th>
+          <th>Request Body</th>
+          <th>Response</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-post">POST</span></td>
+          <td><code>/api/auth/login</code></td>
+          <td><pre>{ email, password }</pre></td>
+          <td><pre>{ token, user: {
+  id, name, email
+} }</pre></td>
+          <td>Returns JWT token</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-post">POST</span></td>
+          <td><code>/api/auth/register</code> <span class="updated">UPDATED</span></td>
+          <td><pre>{ name, email,
+  password, deviceId,
+  selectedPlant }</pre></td>
+          <td><pre>{ token, user: {
+  id, name, email,
+  deviceId,
+  selectedPlant
+} }</pre></td>
+          <td>Links user to hardware device. <code>selectedPlant</code> added: <code>tomato | pepper | basil | lettuce | strawberry</code></td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-post">POST</span></td>
+          <td><code>/api/auth/forgot-password</code></td>
+          <td><pre>{ email }</pre></td>
+          <td><pre>{ message }</pre></td>
+          <td>Sends reset email</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       2. DASHBOARD
+  ════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">2. Dashboard <span>(الرئيسية)</span></div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:70px">Method</th>
+          <th style="width:220px">Endpoint</th>
+          <th>Response</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-get">GET</span></td>
+          <td><code>/api/dashboard</code></td>
+          <td><pre>{ sensorReadings: [...],
+  alerts: [...],
+  todayTasks: [...] }</pre></td>
+          <td>Aggregated dashboard data</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="sub-title">Dashboard Object Structures</div>
+    <table>
+      <thead>
+        <tr><th>Object Array</th><th>Structure</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>sensorReadings[]</code></td>
+          <td><pre>{ type: "temperature"|"humidity"|"soilMoisture"|"light",
+  value: double, unit: string,
+  status: "normal"|"warning"|"critical",
+  timestamp: ISO8601 }</pre></td>
+        </tr>
+        <tr>
+          <td><code>alerts[]</code></td>
+          <td><pre>{ id, message,
+  severity: "info"|"warning"|"critical",
+  timestamp: ISO8601 }</pre></td>
+        </tr>
+        <tr>
+          <td><code>todayTasks[]</code></td>
+          <td><pre>{ id, title, description,
+  isCompleted: bool,
+  scheduledAt: ISO8601 }</pre></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       3. SENSORS
+  ════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">3. Sensors <span>(المستشعرات)</span></div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:70px">Method</th>
+          <th style="width:220px">Endpoint</th>
+          <th>Query Params</th>
+          <th>Response</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-get">GET</span></td>
+          <td><code>/api/sensors/current</code> <span class="updated">UPDATED</span></td>
+          <td>—</td>
+          <td><pre>{ readings: [{
+  type, value, unit,
+  status, timestamp,
+  minRange, maxRange
+}] }</pre></td>
+          <td><code>minRange</code> and <code>maxRange</code> added — required for the range bar and chart reference lines in the sensors screen</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-get">GET</span></td>
+          <td><code>/api/sensors/history</code></td>
+          <td><code>?type=temperature &period=24h</code></td>
+          <td><pre>{ data: [{
+  value, timestamp
+}] }</pre></td>
+          <td>Historical data for charts</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-get">GET</span></td>
+          <td><code>/api/sensors/alerts</code></td>
+          <td><code>?page=1 &limit=20</code></td>
+          <td><pre>{ alerts: [...],
+  total: int }</pre></td>
+          <td>Paginated alert history</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="sub-title">Sensor Threshold Ranges (Backend calculates status)</div>
+    <table>
+      <thead>
+        <tr><th>Sensor</th><th>Optimal Range</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Temperature</td><td>18 – 30 °C</td></tr>
+        <tr><td>Humidity</td><td>40 – 70 %</td></tr>
+        <tr><td>Soil Moisture</td><td>30 – 80 %</td></tr>
+        <tr><td>Light</td><td>200 – 800 lux</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       4. AI DISEASE DETECTION
+  ════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">4. AI Disease Detection <span>(فحص وتشخيص الأمراض)</span></div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:70px">Method</th>
+          <th style="width:220px">Endpoint</th>
+          <th>Request / Params</th>
+          <th>Response</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-post">POST</span></td>
+          <td><code>/api/scan/detect</code> <span class="updated">UPDATED</span></td>
+          <td><pre>multipart:
+{ image: File }</pre></td>
+          <td><pre>{ scanId,
+  result: "healthy"|"diseased",
+  diseases: [{
+    name, confidence,
+    description
+  }],
+  suggestedTreatment: {
+    treatmentPlanId,
+    title, summary,
+    estimatedDuration,
+    totalSteps
+  }
+}</pre></td>
+          <td><code>suggestedTreatment</code> added — required for the "Start Treatment" and "Remind Me Later" flow. <code>null</code> if result is healthy.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-get">GET</span></td>
+          <td><code>/api/scan/history</code></td>
+          <td><code>?page=1&limit=20</code></td>
+          <td><pre>{ scans: [{ id, imageUrl,
+  result, diseases,
+  createdAt }],
+  total }</pre></td>
+          <td>Past scan results</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-get">GET</span></td>
+          <td><code>/api/scan/{scanId}</code></td>
+          <td>—</td>
+          <td><pre>{ id, imageUrl, result,
+  diseases: [...],
+  createdAt }</pre></td>
+          <td>Single scan detail</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-get">GET</span></td>
+          <td><code>/api/scan/esp32-cam/capture</code></td>
+          <td>—</td>
+          <td><pre>{ imageUrl }</pre></td>
+          <td>Trigger ESP32-CAM snapshot</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       5. TREATMENT PLANS
+  ════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">5. Treatment Plans <span>(خطط العلاج)</span></div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:70px">Method</th>
+          <th style="width:220px">Endpoint</th>
+          <th>Request / Query</th>
+          <th>Response</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-get">GET</span></td>
+          <td><code>/api/treatments</code> <span class="updated">UPDATED</span></td>
+          <td><code>?page=1&limit=20</code></td>
+          <td><pre>{ treatments: [{
+  id, title, plantName,
+  steps, progress,
+  createdAt
+}], total }</pre></td>
+          <td><code>plantName</code> added — displayed on the treatment card in the UI</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-get">GET</span></td>
+          <td><code>/api/treatments/{id}</code></td>
+          <td>—</td>
+          <td><pre>{ id, title, description,
+  plantName,
+  steps: [{
+    id, title, description,
+    isCompleted,
+    scheduledAt
+  }],
+  progress: double }</pre></td>
+          <td>Single plan with steps</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-patch">PATCH</span></td>
+          <td><code>/api/treatments/{id}/steps/{stepId}</code></td>
+          <td><pre>{ isCompleted: bool }</pre></td>
+          <td><pre>{ step }</pre></td>
+          <td>Toggle step completion</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-post">POST</span></td>
+          <td><code>/api/treatments/reminders</code> <span class="new">NEW</span></td>
+          <td><pre>{ treatmentPlanId,
+  scanResultId,
+  scheduledAt: ISO8601 }</pre></td>
+          <td><pre>{ id, scheduledAt }</pre></td>
+          <td>Save a "Remind Me Later" reminder. Backend should trigger a notification at <code>scheduledAt</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       6. NOTIFICATIONS
+  ════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">6. Notifications <span>(الإشعارات)</span> <span class="new" style="font-size:12px;vertical-align:middle;">NEW</span></div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:70px">Method</th>
+          <th style="width:220px">Endpoint</th>
+          <th>Request / Query</th>
+          <th>Response</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-get">GET</span></td>
+          <td><code>/api/notifications</code></td>
+          <td>—</td>
+          <td><pre>{ notifications: [{
+  id,
+  type: "treatmentTask"
+      |"sensorWarning",
+  title, message,
+  timestamp: ISO8601,
+  isRead: bool,
+  relatedId
+}] }</pre></td>
+          <td><code>relatedId</code> = treatmentPlanId (for treatmentTask) or sensorType string (for sensorWarning). Used for deep-link navigation on tap.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-patch">PATCH</span></td>
+          <td><code>/api/notifications/{id}/read</code></td>
+          <td>—</td>
+          <td><pre>200 OK</pre></td>
+          <td>Mark a single notification as read</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="sub-title">Notification Generation Rules</div>
+    <table>
+      <thead>
+        <tr><th>Type</th><th>Trigger</th><th>Example Message</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>treatmentTask</code></td>
+          <td>Scheduled treatment step is due today</td>
+          <td>"Water plant — Step 2 of Mildew Treatment"</td>
+        </tr>
+        <tr>
+          <td><code>treatmentTask</code></td>
+          <td>Treatment reminder time reached (<code>/reminders</code>)</td>
+          <td>"Time to start your Powdery Mildew Treatment"</td>
+        </tr>
+        <tr>
+          <td><code>sensorWarning</code></td>
+          <td>Sensor enters warning or critical status</td>
+          <td>"Temperature Critical: 38.5°C exceeds safe range"</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       7. RECOVERY PROGRESS
+  ════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">7. Recovery Progress <span>(متابعة مراحل الشفاء)</span></div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:70px">Method</th>
+          <th style="width:220px">Endpoint</th>
+          <th>Request / Query</th>
+          <th>Response</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-get">GET</span></td>
+          <td><code>/api/recovery/{treatmentId}</code></td>
+          <td>—</td>
+          <td><pre>{ treatmentId,
+  treatmentTitle,
+  plantName,
+  progressPercent: double,
+  weeklyImages: [{
+    weekNumber,
+    imageUrl,
+    date: ISO8601,
+    notes
+  }] }</pre></td>
+          <td>Recovery timeline with weekly images</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-post">POST</span></td>
+          <td><code>/api/recovery/{treatmentId}/image</code></td>
+          <td><pre>multipart:
+{ image: File,
+  notes: string }</pre></td>
+          <td><pre>{ weeklyImage }</pre></td>
+          <td>Upload weekly progress photo</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       GENERAL NOTES
+  ════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">General Notes for Backend Team</div>
+    <div class="notes-box">
+      <strong>📋 Standards & Conventions</strong>
+      <ul>
+        <li><strong>Authentication:</strong> All endpoints except <code>/auth/login</code>, <code>/auth/register</code>, and <code>/auth/forgot-password</code> require <code>Authorization: Bearer &lt;token&gt;</code></li>
+        <li><strong>Error Format:</strong> All errors must return <code>{ error: { code: int, message: string } }</code></li>
+        <li><strong>Timestamps:</strong> All date/time fields must use ISO 8601 format</li>
+        <li><strong>Pagination:</strong> Use <code>page</code> (starts at 1) and <code>limit</code> (default 20). Always return <code>total</code> in paginated responses</li>
+        <li><strong>Images:</strong> All image uploads via <code>multipart/form-data</code></li>
+        <li><strong>Sensor Status:</strong> Backend is responsible for calculating <code>normal / warning / critical</code> based on threshold ranges defined above</li>
+        <li><strong>suggestedTreatment:</strong> The scan detect endpoint must return a linked treatment plan when disease is detected — this powers the "Start Treatment" and "Remind Me Later" flows in the app</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SUMMARY CHECKLIST
+  ════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">Summary Checklist</div>
+    <table>
+      <thead>
+        <tr><th>#</th><th>Endpoint</th><th>Method</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td><code>/api/auth/login</code></td><td><span class="badge badge-post">POST</span></td><td>✅ In original spec</td></tr>
+        <tr><td>2</td><td><code>/api/auth/register</code></td><td><span class="badge badge-post">POST</span></td><td>🔵 Updated — add <code>selectedPlant</code></td></tr>
+        <tr><td>3</td><td><code>/api/auth/forgot-password</code></td><td><span class="badge badge-post">POST</span></td><td>✅ In original spec</td></tr>
+        <tr><td>4</td><td><code>/api/dashboard</code></td><td><span class="badge badge-get">GET</span></td><td>✅ In original spec</td></tr>
+        <tr><td>5</td><td><code>/api/sensors/current</code></td><td><span class="badge badge-get">GET</span></td><td>🔵 Updated — add <code>minRange</code>, <code>maxRange</code></td></tr>
+        <tr><td>6</td><td><code>/api/sensors/history</code></td><td><span class="badge badge-get">GET</span></td><td>✅ In original spec</td></tr>
+        <tr><td>7</td><td><code>/api/sensors/alerts</code></td><td><span class="badge badge-get">GET</span></td><td>✅ In original spec</td></tr>
+        <tr><td>8</td><td><code>/api/scan/detect</code></td><td><span class="badge badge-post">POST</span></td><td>🔵 Updated — add <code>suggestedTreatment</code></td></tr>
+        <tr><td>9</td><td><code>/api/scan/history</code></td><td><span class="badge badge-get">GET</span></td><td>✅ In original spec</td></tr>
+        <tr><td>10</td><td><code>/api/scan/{scanId}</code></td><td><span class="badge badge-get">GET</span></td><td>✅ In original spec</td></tr>
+        <tr><td>11</td><td><code>/api/scan/esp32-cam/capture</code></td><td><span class="badge badge-get">GET</span></td><td>✅ In original spec</td></tr>
+        <tr><td>12</td><td><code>/api/treatments</code></td><td><span class="badge badge-get">GET</span></td><td>🔵 Updated — add <code>plantName</code></td></tr>
+        <tr><td>13</td><td><code>/api/treatments/{id}</code></td><td><span class="badge badge-get">GET</span></td><td>✅ In original spec</td></tr>
+        <tr><td>14</td><td><code>/api/treatments/{id}/steps/{stepId}</code></td><td><span class="badge badge-patch">PATCH</span></td><td>✅ In original spec</td></tr>
+        <tr><td>15</td><td><code>/api/treatments/reminders</code></td><td><span class="badge badge-post">POST</span></td><td>🔴 New — required for reminder flow</td></tr>
+        <tr><td>16</td><td><code>/api/notifications</code></td><td><span class="badge badge-get">GET</span></td><td>🔴 New — required for notification center</td></tr>
+        <tr><td>17</td><td><code>/api/notifications/{id}/read</code></td><td><span class="badge badge-patch">PATCH</span></td><td>🔴 New — required for mark as read</td></tr>
+        <tr><td>18</td><td><code>/api/recovery/{treatmentId}</code></td><td><span class="badge badge-get">GET</span></td><td>✅ In original spec</td></tr>
+        <tr><td>19</td><td><code>/api/recovery/{treatmentId}/image</code></td><td><span class="badge badge-post">POST</span></td><td>✅ In original spec</td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top:12px; font-size:12.5px; color:#555; line-height:2">
+      ✅ In original spec &nbsp;&nbsp;
+      🔵 Updated (field added) &nbsp;&nbsp;
+      🔴 New endpoint
+    </div>
+  </div>
+
+  <div class="doc-footer">
+    PlantLife API Spec v2.0 &nbsp;|&nbsp; Flutter Integration Ready &nbsp;|&nbsp; 19 Total Endpoints
+  </div>
+
+</div>
+</body>
+</html>
