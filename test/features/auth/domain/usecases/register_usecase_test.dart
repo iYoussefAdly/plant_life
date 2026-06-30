@@ -21,7 +21,6 @@ void main() {
     const validName = 'Alice';
     const validEmail = 'alice@example.com';
     const validPassword = 'securepass';
-    const validDeviceId = 'device-001';
 
     // ── Validation: email ────────────────────────────────────────────────────
 
@@ -30,7 +29,6 @@ void main() {
         name: validName,
         email: '',
         password: validPassword,
-        deviceId: validDeviceId,
       );
 
       expect(result, isA<Error<void>>());
@@ -43,7 +41,6 @@ void main() {
           name: any(named: 'name'),
           email: any(named: 'email'),
           password: any(named: 'password'),
-          deviceId: any(named: 'deviceId'),
         ),
       );
     });
@@ -53,7 +50,6 @@ void main() {
         name: validName,
         email: 'invalidemail',
         password: validPassword,
-        deviceId: validDeviceId,
       );
 
       expect(result, isA<Error<void>>());
@@ -68,7 +64,6 @@ void main() {
         name: validName,
         email: 'alice@example',
         password: validPassword,
-        deviceId: validDeviceId,
       );
 
       expect(result, isA<Error<void>>());
@@ -85,7 +80,6 @@ void main() {
         name: validName,
         email: validEmail,
         password: '',
-        deviceId: validDeviceId,
       );
 
       expect(result, isA<Error<void>>());
@@ -98,7 +92,6 @@ void main() {
           name: any(named: 'name'),
           email: any(named: 'email'),
           password: any(named: 'password'),
-          deviceId: any(named: 'deviceId'),
         ),
       );
     });
@@ -108,7 +101,6 @@ void main() {
         name: validName,
         email: validEmail,
         password: 'abc12',
-        deviceId: validDeviceId,
       );
 
       expect(result, isA<Error<void>>());
@@ -123,7 +115,6 @@ void main() {
         name: validName,
         email: validEmail,
         password: 'abc12',
-        deviceId: validDeviceId,
       );
 
       verifyNever(
@@ -131,7 +122,6 @@ void main() {
           name: any(named: 'name'),
           email: any(named: 'email'),
           password: any(named: 'password'),
-          deviceId: any(named: 'deviceId'),
         ),
       );
     });
@@ -144,7 +134,6 @@ void main() {
           name: validName,
           email: validEmail,
           password: validPassword,
-          deviceId: validDeviceId,
         ),
       ).thenAnswer((_) async => const Success(null));
 
@@ -152,7 +141,6 @@ void main() {
         name: validName,
         email: validEmail,
         password: validPassword,
-        deviceId: validDeviceId,
       );
 
       verify(
@@ -160,7 +148,6 @@ void main() {
           name: validName,
           email: validEmail,
           password: validPassword,
-          deviceId: validDeviceId,
         ),
       ).called(1);
     });
@@ -171,7 +158,6 @@ void main() {
           name: validName,
           email: validEmail,
           password: validPassword,
-          deviceId: validDeviceId,
         ),
       ).thenAnswer((_) async => const Success(null));
 
@@ -179,7 +165,6 @@ void main() {
         name: validName,
         email: validEmail,
         password: validPassword,
-        deviceId: validDeviceId,
       );
 
       expect(result, isA<Success<void>>());
@@ -191,7 +176,6 @@ void main() {
           name: validName,
           email: validEmail,
           password: validPassword,
-          deviceId: validDeviceId,
         ),
       ).thenAnswer(
         (_) async => const Error(ServerFailure('Email already registered')),
@@ -201,7 +185,6 @@ void main() {
         name: validName,
         email: validEmail,
         password: validPassword,
-        deviceId: validDeviceId,
       );
 
       expect(result, isA<Error<void>>());
@@ -217,7 +200,6 @@ void main() {
           name: validName,
           email: validEmail,
           password: '123456',
-          deviceId: validDeviceId,
         ),
       ).thenAnswer((_) async => const Success(null));
 
@@ -225,7 +207,6 @@ void main() {
         name: validName,
         email: validEmail,
         password: '123456',
-        deviceId: validDeviceId,
       );
 
       expect(result, isA<Success<void>>());

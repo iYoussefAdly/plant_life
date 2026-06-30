@@ -2,11 +2,21 @@ import 'package:flutter/material.dart';
 
 import 'core/di/service_locator.dart';
 import 'core/routing/app_router.dart';
+import 'core/routing/app_routes.dart';
 import 'core/theme/app_theme.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   setupServiceLocator();
+  // Redirect to login when a session expires (refresh failed), unless already
+  // there — keeps the router dependency out of the DI layer.
+  onSessionExpired = () {
+    final path =
+        AppRouter.router.routerDelegate.currentConfiguration.uri.path;
+    if (path != AppRoutes.login) {
+      AppRouter.router.go(AppRoutes.login);
+    }
+  };
   runApp(const PlantLife());
 }
 

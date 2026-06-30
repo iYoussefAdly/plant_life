@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/di/service_locator.dart';
 import '../../../../core/routing/app_routes.dart';
+import '../../../../core/storage/token_storage.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 
@@ -35,11 +37,13 @@ class _SplashScreenState extends State<SplashScreen>
       CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
     );
     _controller.forward();
-    _navigationTimer = Timer(const Duration(seconds: 3), () {
-      if (mounted) {
-        context.go(AppRoutes.login);
-      }
-    });
+    _navigationTimer = Timer(const Duration(seconds: 3), _navigateNext);
+  }
+
+  Future<void> _navigateNext() async {
+    final hasTokens = await sl<TokenStorage>().hasTokens();
+    if (!mounted) return;
+    context.go(hasTokens ? AppRoutes.home : AppRoutes.login);
   }
 
   @override

@@ -1,5 +1,10 @@
+import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 
+import '../networking/dio_factory.dart';
+import '../storage/token_storage.dart';
+import '../../features/auth/data/datasources/auth_data_source.dart';
 import '../../features/auth/data/repos/auth_repository_impl.dart';
 import '../../features/auth/domain/repos/auth_repository.dart';
 import '../../features/auth/domain/usecases/login_usecase.dart';
@@ -30,17 +35,40 @@ import '../../features/recovery/data/repos/recovery_repository_impl.dart';
 import '../../features/recovery/domain/repos/recovery_repository.dart';
 import '../../features/recovery/domain/usecases/get_recovery_progress_usecase.dart';
 import '../../features/recovery/presentation/bloc/recovery_cubit.dart';
+import '../../features/notifications/data/datasources/notifications_data_source.dart';
 import '../../features/notifications/data/repos/notifications_repository_impl.dart';
 import '../../features/notifications/domain/repos/notifications_repository.dart';
 import '../../features/notifications/domain/usecases/get_notifications_usecase.dart';
+import '../../features/notifications/domain/usecases/get_unread_count_usecase.dart';
 import '../../features/notifications/domain/usecases/mark_notification_read_usecase.dart';
 import '../../features/notifications/presentation/bloc/notifications_cubit.dart';
 
 final sl = GetIt.instance;
 
+/// Invoked when an authenticated request fails unrecoverably (refresh failed).
+/// Wired in `main.dart` to redirect to login — kept as a late-bound hook so the
+/// DI layer does not depend on the router (avoids a service_locator ↔ app_router
+/// import cycle and keeps it swappable in tests).
+void Function()? onSessionExpired;
+
 void setupServiceLocator() {
+  // Core infrastructure (networking + secure storage)
+  sl.registerLazySingleton(() => const FlutterSecureStorage());
+  sl.registerLazySingleton(() => TokenStorage(sl<FlutterSecureStorage>()));
+  sl.registerLazySingleton<Dio>(
+    () => DioFactory.create(
+      tokenStorage: sl<TokenStorage>(),
+      // On unrecoverable 401 (refresh failed), tokens are cleared and the
+      // late-bound hook (set in main.dart) sends the user back to login.
+      onUnauthorized: () => onSessionExpired?.call(),
+    ),
+  );
+
   // Auth
-  sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl());
+  sl.registerLazySingleton(() => AuthDataSource(sl<Dio>()));
+  sl.registerLazySingleton<AuthRepository>(
+    () => AuthRepositoryImpl(sl<AuthDataSource>(), sl<TokenStorage>()),
+  );
   sl.registerLazySingleton(() => LoginUseCase(sl<AuthRepository>()));
   sl.registerLazySingleton(() => RegisterUseCase(sl<AuthRepository>()));
   sl.registerFactory(() => AuthCubit(sl<LoginUseCase>(), sl<RegisterUseCase>()));
@@ -76,8 +104,20 @@ void setupServiceLocator() {
   sl.registerFactory(() => RecoveryCubit(sl<GetRecoveryProgressUseCase>()));
 
   // Notifications
-  sl.registerLazySingleton<NotificationsRepository>(() => NotificationsRepositoryImpl());
+  sl.registerLazySingleton(() => NotificationsDataSource(sl<Dio>()));
+  sl.registerLazySingleton<NotificationsRepository>(
+    () => NotificationsRepositoryImpl(sl<NotificationsDataSource>()),
+  );
   sl.registerLazySingleton(() => GetNotificationsUseCase(sl<NotificationsRepository>()));
+  sl.registerLazySingleton(() => GetUnreadCountUseCase(sl<NotificationsRepository>()));
   sl.registerLazySingleton(() => MarkNotificationReadUseCase(sl<NotificationsRepository>()));
-  sl.registerLazySingleton(() => NotificationsCubit(sl<GetNotificationsUseCase>(), sl<MarkNotificationReadUseCase>()));
+  // Intentionally a lazySingleton (not a factory like other cubits): the home
+  // app-bar badge and the notifications screen share this one instance so that
+  // marking a notification read updates the badge. Reset it on logout when a
+  // logout/session-switch flow is added.
+  sl.registerLazySingleton(() => NotificationsCubit(
+        sl<GetNotificationsUseCase>(),
+        sl<GetUnreadCountUseCase>(),
+        sl<MarkNotificationReadUseCase>(),
+      ));
 }
