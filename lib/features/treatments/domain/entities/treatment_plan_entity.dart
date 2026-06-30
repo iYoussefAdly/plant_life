@@ -1,11 +1,13 @@
 import 'treatment_day_entity.dart';
 import 'treatment_step_entity.dart';
 
+enum TreatmentPlanStatus { active, completed, cancelled }
+
 class TreatmentPlanEntity {
   final String id;
   final String title;
   final String description;
-  final String plantName;
+  final TreatmentPlanStatus status;
   final List<TreatmentStepEntity> steps;
   final DateTime createdAt;
 
@@ -13,7 +15,7 @@ class TreatmentPlanEntity {
     required this.id,
     required this.title,
     required this.description,
-    required this.plantName,
+    required this.status,
     required this.steps,
     required this.createdAt,
   });
@@ -35,16 +37,18 @@ class TreatmentPlanEntity {
         .toList();
   }
 
+  /// Returns a copy with the given step's completion flipped — used for the
+  /// optimistic UI update while the toggle request is in flight.
   TreatmentPlanEntity copyWithStep(String stepId, {required bool isCompleted}) {
     return TreatmentPlanEntity(
       id: id,
       title: title,
       description: description,
-      plantName: plantName,
-      steps: steps.map((s) {
-        if (s.id == stepId) return s.copyWith(isCompleted: isCompleted);
-        return s;
-      }).toList(),
+      status: status,
+      steps: steps
+          .map((s) =>
+              s.id == stepId ? s.copyWith(isCompleted: isCompleted) : s)
+          .toList(),
       createdAt: createdAt,
     );
   }

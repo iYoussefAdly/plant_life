@@ -33,16 +33,27 @@ class TreatmentDetailCubit extends Cubit<TreatmentDetailState> {
     required String stepId,
     required bool isCompleted,
   }) async {
+    final current = state;
+    if (current is! TreatmentDetailSuccess) return;
+
+    // Optimistically reflect the toggle so the checkbox responds immediately;
+    // confirm with the server's plan on success, or revert on failure (rather
+    // than replacing the whole detail view with an error screen).
+    emit(TreatmentDetailSuccess(
+      current.plan.copyWithStep(stepId, isCompleted: isCompleted),
+    ));
+
     final result = await _toggleStepUseCase(
       planId: planId,
       stepId: stepId,
       isCompleted: isCompleted,
     );
+    if (isClosed) return;
     switch (result) {
       case Success(:final data):
         emit(TreatmentDetailSuccess(data));
-      case Error(:final failure):
-        emit(TreatmentDetailError(failure.message));
+      case Error():
+        emit(current);
     }
   }
 }

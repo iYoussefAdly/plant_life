@@ -68,14 +68,6 @@ class TreatmentPlanCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    plan.plantName,
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
                     '$completedCount of ${plan.steps.length} steps completed',
                     style: AppTextStyles.bodySmall.copyWith(
                       color: AppColors.textSecondary,

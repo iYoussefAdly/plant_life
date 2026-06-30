@@ -155,30 +155,17 @@ class _PlanHeader extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Text(
-            plan.plantName,
-            style: AppTextStyles.labelLarge.copyWith(
-              color: AppColors.primary,
-              fontWeight: FontWeight.w600,
+        Text(plan.title, style: AppTextStyles.headlineMedium),
+        if (plan.description.isNotEmpty) ...[
+          const SizedBox(height: 6),
+          Text(
+            plan.description,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+              height: 1.4,
             ),
           ),
-        ),
-        const SizedBox(height: 10),
-        Text(plan.title, style: AppTextStyles.headlineMedium),
-        const SizedBox(height: 6),
-        Text(
-          plan.description,
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textSecondary,
-            height: 1.4,
-          ),
-        ),
+        ],
       ],
     );
   }
