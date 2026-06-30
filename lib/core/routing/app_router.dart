@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'app_routes.dart';
+import '../../features/auth/presentation/bloc/auth_cubit.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/home/presentation/bloc/home_cubit.dart';
@@ -82,8 +83,11 @@ abstract final class AppRouter {
             routes: [
               GoRoute(
                 path: AppRoutes.home,
-                builder: (context, state) => BlocProvider(
-                  create: (_) => sl<HomeCubit>()..loadHomeData(),
+                builder: (context, state) => MultiBlocProvider(
+                  providers: [
+                    BlocProvider(create: (_) => sl<HomeCubit>()..loadHomeData()),
+                    BlocProvider(create: (_) => sl<AuthCubit>()),
+                  ],
                   child: const HomeScreen(),
                 ),
               ),

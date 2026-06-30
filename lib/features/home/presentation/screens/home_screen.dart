@@ -6,6 +6,8 @@ import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/error_view.dart';
+import '../../../auth/presentation/bloc/auth_cubit.dart';
+import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../notifications/presentation/bloc/notifications_cubit.dart';
 import '../../../notifications/presentation/bloc/notifications_state.dart';
 import '../../domain/entities/home_data_entity.dart';
@@ -20,44 +22,77 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('PlantLife', style: AppTextStyles.headlineMedium),
+    return BlocListener<AuthCubit, AuthState>(
+      listener: (context, state) {
+        if (state is AuthLoggedOut) context.go(AppRoutes.login);
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('PlantLife', style: AppTextStyles.headlineMedium),
+          actions: [
+            BlocBuilder<NotificationsCubit, NotificationsState>(
+              builder: (context, state) {
+                final unread = switch (state) {
+                  NotificationsLoaded(:final unreadCount) => unreadCount,
+                  _ => 0,
+                };
+                return IconButton(
+                  icon: Badge(
+                    isLabelVisible: unread > 0,
+                    label: Text('$unread'),
+                    child: const Icon(Icons.notifications_outlined),
+                  ),
+                  onPressed: () => context.push(AppRoutes.notifications),
+                );
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.refresh_outlined),
+              onPressed: () => context.read<HomeCubit>().loadHomeData(),
+            ),
+            IconButton(
+              icon: const Icon(Icons.logout_outlined),
+              tooltip: 'Log out',
+              onPressed: () => _confirmLogout(context),
+            ),
+          ],
+        ),
+        body: BlocBuilder<HomeCubit, HomeState>(
+          builder: (context, state) => switch (state) {
+            HomeInitial() => const SizedBox.shrink(),
+            HomeLoading() => const Center(child: CircularProgressIndicator()),
+            HomeSuccess(:final data) => _HomeContent(data: data),
+            HomeError(:final message) => ErrorView(
+                message: message,
+                onRetry: () => context.read<HomeCubit>().loadHomeData(),
+              ),
+          },
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmLogout(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Log out'),
+        content: const Text('Are you sure you want to log out?'),
         actions: [
-          BlocBuilder<NotificationsCubit, NotificationsState>(
-            builder: (context, state) {
-              final unread = switch (state) {
-                NotificationsLoaded(:final unreadCount) => unreadCount,
-                _ => 0,
-              };
-              return IconButton(
-                icon: Badge(
-                  isLabelVisible: unread > 0,
-                  label: Text('$unread'),
-                  child: const Icon(Icons.notifications_outlined),
-                ),
-                onPressed: () => context.push(AppRoutes.notifications),
-              );
-            },
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
           ),
-          IconButton(
-            icon: const Icon(Icons.refresh_outlined),
-            onPressed: () => context.read<HomeCubit>().loadHomeData(),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Log out'),
           ),
         ],
       ),
-      body: BlocBuilder<HomeCubit, HomeState>(
-        builder: (context, state) => switch (state) {
-          HomeInitial() => const SizedBox.shrink(),
-          HomeLoading() => const Center(child: CircularProgressIndicator()),
-          HomeSuccess(:final data) => _HomeContent(data: data),
-          HomeError(:final message) => ErrorView(
-              message: message,
-              onRetry: () => context.read<HomeCubit>().loadHomeData(),
-            ),
-        },
-      ),
     );
+    if (confirmed == true && context.mounted) {
+      context.read<AuthCubit>().logout();
+    }
   }
 }
 
