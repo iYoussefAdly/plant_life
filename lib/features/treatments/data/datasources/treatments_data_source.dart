@@ -26,6 +26,16 @@ class TreatmentsDataSource {
     return _planFromResponse(response);
   }
 
+  /// Creates a heal plan from an infected scan (`POST /heal-plans { scanId }`)
+  /// and returns the new plan.
+  Future<HealPlanModel> createPlan(String scanId) async {
+    final response = await _dio.post<dynamic>(
+      ApiEndpoints.healPlans,
+      data: {'scanId': scanId},
+    );
+    return _planFromResponse(response);
+  }
+
   /// Toggles a task's completed state (the endpoint is a pure toggle — it
   /// takes no body) and returns the updated plan.
   Future<HealPlanModel> toggleTask(String planId, int taskIndex) async {

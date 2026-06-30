@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -15,6 +16,8 @@ import '../widgets/scan_result_card.dart';
 
 class ScanScreen extends StatelessWidget {
   const ScanScreen({super.key});
+
+  static final _picker = ImagePicker();
 
   @override
   Widget build(BuildContext context) {
@@ -45,8 +48,25 @@ class ScanScreen extends StatelessWidget {
     );
   }
 
-  void _handleScan(BuildContext context, ScanImageSource source) {
-    context.read<ScanCubit>().scanImage('mock_image_${source.name}.jpg');
+  Future<void> _handleScan(
+    BuildContext context,
+    ScanImageSource source,
+  ) async {
+    if (source == ScanImageSource.esp32Cam) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ESP32 camera support is coming soon')),
+      );
+      return;
+    }
+
+    final picked = await _picker.pickImage(
+      source: source == ScanImageSource.camera
+          ? ImageSource.camera
+          : ImageSource.gallery,
+      imageQuality: 85,
+    );
+    if (picked == null || !context.mounted) return;
+    context.read<ScanCubit>().scanImage(picked.path);
   }
 }
 
@@ -123,69 +143,41 @@ class _ResultView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final treatment = result.suggestedTreatment;
+    final isDiseased = result.status == ScanStatus.diseased;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: ScanResultCard(
         result: result,
         onScanAgain: onScanAgain,
-        onStartTreatment: treatment != null
-            ? () => context.push(
-                  AppRoutes.treatmentDetail,
-                  extra: treatment.treatmentPlanId,
-                )
-            : null,
-        onRemindLater: treatment != null
-            ? (_) => _showReminderPicker(context, treatment.treatmentPlanId)
-            : null,
+        onStartTreatment:
+            isDiseased ? () => _startTreatment(context) : null,
       ),
     );
   }
 
-  Future<void> _showReminderPicker(
-    BuildContext context,
-    String treatmentPlanId,
-  ) async {
-    final now = DateTime.now();
-    final date = await showDatePicker(
+  /// Creates a heal plan from this scan, then opens its detail screen.
+  Future<void> _startTreatment(BuildContext context) async {
+    final cubit = context.read<ScanCubit>();
+    showDialog<void>(
       context: context,
-      initialDate: now.add(const Duration(days: 1)),
-      firstDate: now,
-      lastDate: now.add(const Duration(days: 30)),
-    );
-    if (date == null || !context.mounted) return;
-
-    final time = await showTimePicker(
-      context: context,
-      initialTime: const TimeOfDay(hour: 9, minute: 0),
-    );
-    if (time == null || !context.mounted) return;
-
-    final scheduledAt = DateTime(
-      date.year,
-      date.month,
-      date.day,
-      time.hour,
-      time.minute,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
     );
 
-    final saved = await context.read<ScanCubit>().saveReminder(
-          treatmentPlanId: treatmentPlanId,
-          scanResultId: result.id,
-          scheduledAt: scheduledAt,
-        );
-
+    final outcome = await cubit.createPlan(result.id);
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          saved
-              ? 'Reminder set for ${date.day}/${date.month} at ${time.format(context)}'
-              : 'Failed to set reminder',
+    Navigator.of(context).pop(); // dismiss the loader
+
+    if (outcome.planId != null) {
+      context.push(AppRoutes.treatmentDetail, extra: outcome.planId);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(outcome.error ?? 'Could not start the treatment plan'),
         ),
-      ),
-    );
+      );
+    }
   }
 }
 

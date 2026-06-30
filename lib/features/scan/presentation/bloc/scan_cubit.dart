@@ -1,21 +1,20 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/errors/api_result.dart';
-import '../../domain/entities/reminder_entity.dart';
+import '../../../treatments/domain/usecases/create_heal_plan_usecase.dart';
 import '../../domain/usecases/get_scan_history_usecase.dart';
-import '../../domain/usecases/save_reminder_usecase.dart';
 import '../../domain/usecases/scan_image_usecase.dart';
 import 'scan_state.dart';
 
 class ScanCubit extends Cubit<ScanState> {
   final ScanImageUseCase _scanImageUseCase;
   final GetScanHistoryUseCase _getScanHistoryUseCase;
-  final SaveReminderUseCase _saveReminderUseCase;
+  final CreateHealPlanUseCase _createHealPlanUseCase;
 
   ScanCubit(
     this._scanImageUseCase,
     this._getScanHistoryUseCase,
-    this._saveReminderUseCase,
+    this._createHealPlanUseCase,
   ) : super(const ScanInitial());
 
   Future<void> scanImage(String imagePath) async {
@@ -40,21 +39,14 @@ class ScanCubit extends Cubit<ScanState> {
     }
   }
 
-  Future<bool> saveReminder({
-    required String treatmentPlanId,
-    required String scanResultId,
-    required DateTime scheduledAt,
-  }) async {
-    final reminder = ReminderEntity(
-      id: 'reminder-${DateTime.now().millisecondsSinceEpoch}',
-      treatmentPlanId: treatmentPlanId,
-      scanResultId: scanResultId,
-      scheduledAt: scheduledAt,
-    );
-    final result = await _saveReminderUseCase(reminder);
+  /// Creates a heal plan from a scan. Returns the new plan id on success, or
+  /// the failure message so the screen can surface the real backend reason.
+  /// The result view stays visible; the screen drives the loader + navigation.
+  Future<({String? planId, String? error})> createPlan(String scanId) async {
+    final result = await _createHealPlanUseCase(scanId);
     return switch (result) {
-      Success() => true,
-      Error() => false,
+      Success(:final data) => (planId: data.id, error: null),
+      Error(:final failure) => (planId: null, error: failure.message),
     };
   }
 
