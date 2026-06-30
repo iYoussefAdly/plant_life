@@ -36,6 +36,10 @@ class TreatmentDetailCubit extends Cubit<TreatmentDetailState> {
     final current = state;
     if (current is! TreatmentDetailSuccess) return;
 
+    // Future-day tasks stay locked until their scheduled date.
+    final match = current.plan.steps.where((s) => s.id == stepId);
+    if (match.isNotEmpty && !match.first.isUnlocked) return;
+
     // Optimistically reflect the toggle so the checkbox responds immediately;
     // confirm with the server's plan on success, or revert on failure (rather
     // than replacing the whole detail view with an error screen).

@@ -47,10 +47,17 @@ abstract final class AppRouter {
       GoRoute(
         path: AppRoutes.treatmentDetail,
         builder: (context, state) {
-          final planId = state.extra is String ? state.extra as String : '';
+          final extra = state.extra;
+          final planId = switch (extra) {
+            TreatmentDetailArgs(:final planId) => planId,
+            String() => extra,
+            _ => '',
+          };
+          final highlightStepId =
+              extra is TreatmentDetailArgs ? extra.highlightStepId : null;
           return BlocProvider(
             create: (_) => sl<TreatmentDetailCubit>()..loadDetail(planId),
-            child: const TreatmentDetailScreen(),
+            child: TreatmentDetailScreen(highlightStepId: highlightStepId),
           );
         },
       ),

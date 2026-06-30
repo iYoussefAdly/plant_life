@@ -12,6 +12,10 @@ final class ScanAnalyzing extends ScanState {
   const ScanAnalyzing();
 }
 
+final class ScanHistoryLoading extends ScanState {
+  const ScanHistoryLoading();
+}
+
 final class ScanResultReady extends ScanState {
   final ScanResultEntity result;
   const ScanResultReady(this.result);

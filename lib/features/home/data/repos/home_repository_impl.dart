@@ -50,9 +50,8 @@ class HomeRepositoryImpl implements HomeRepository {
         if (_isSameDay(step.scheduledAt, now)) {
           tasks.add(
             TreatmentTaskEntity(
-              // Prefix with the plan id — step ids are per-plan indices and
-              // would otherwise collide across multiple active plans.
-              id: '${plan.id}_${step.id}',
+              planId: plan.id,
+              stepId: step.id,
               title: step.title,
               description: step.description,
               isCompleted: step.isCompleted,

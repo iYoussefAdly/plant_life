@@ -43,7 +43,7 @@ class ScanModel extends ScanResultEntity {
         diseases.add(
           DiseaseEntity(
             name: _prettify(name),
-            confidence: (raw['confidence'] as num?)?.toDouble() ?? 0,
+            confidence: _normalizeConfidence(raw['confidence'] as num?),
             severityPercent: (raw['severity_percent'] as num?)?.toDouble() ?? 0,
           ),
         );
@@ -63,6 +63,15 @@ class ScanModel extends ScanResultEntity {
       ];
     }
     return const [];
+  }
+
+  /// Confidence comes back inconsistently — sometimes a 0–1 fraction (e.g.
+  /// 0.98), sometimes a 0–100 percentage (e.g. 99.95). Normalize to a 0–1
+  /// fraction so the UI's `* 100` always yields a valid percentage.
+  static double _normalizeConfidence(num? raw) {
+    final value = raw?.toDouble() ?? 0;
+    final fraction = value > 1 ? value / 100 : value;
+    return fraction.clamp(0.0, 1.0);
   }
 
   /// `Early_blight` -> `Early Blight`.
