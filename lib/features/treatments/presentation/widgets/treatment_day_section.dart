@@ -9,10 +9,14 @@ class TreatmentDaySection extends StatelessWidget {
   final TreatmentDayEntity day;
   final void Function(String stepId, bool isCompleted) onToggleTask;
 
+  /// Step id to emphasize (e.g. opened from Home's Today's Tasks).
+  final String? highlightStepId;
+
   const TreatmentDaySection({
     super.key,
     required this.day,
     required this.onToggleTask,
+    this.highlightStepId,
   });
 
   @override
@@ -74,6 +78,7 @@ class TreatmentDaySection extends StatelessWidget {
         ...day.tasks.map((task) => TreatmentStepTile(
               key: ValueKey(task.id),
               step: task,
+              highlight: task.id == highlightStepId,
               onToggle: (isCompleted) => onToggleTask(task.id, isCompleted),
             )),
       ],

@@ -8,10 +8,15 @@ class TreatmentStepTile extends StatefulWidget {
   final TreatmentStepEntity step;
   final ValueChanged<bool> onToggle;
 
+  /// When true, the tile is emphasized and expanded (e.g. when opened from a
+  /// Home "Today's Tasks" tap).
+  final bool highlight;
+
   const TreatmentStepTile({
     super.key,
     required this.step,
     required this.onToggle,
+    this.highlight = false,
   });
 
   @override
@@ -19,22 +24,28 @@ class TreatmentStepTile extends StatefulWidget {
 }
 
 class _TreatmentStepTileState extends State<TreatmentStepTile> {
-  bool _expanded = false;
+  late bool _expanded = widget.highlight;
 
   @override
   Widget build(BuildContext context) {
     final step = widget.step;
+    final locked = !step.isUnlocked;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: widget.highlight
+            ? AppColors.primary.withValues(alpha: 0.06)
+            : AppColors.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: step.isCompleted
-              ? AppColors.success.withValues(alpha: 0.3)
-              : AppColors.textHint.withValues(alpha: 0.2),
+          color: widget.highlight
+              ? AppColors.primary
+              : step.isCompleted
+                  ? AppColors.success.withValues(alpha: 0.3)
+                  : AppColors.textHint.withValues(alpha: 0.2),
+          width: widget.highlight ? 1.5 : 1,
         ),
       ),
       child: Column(
@@ -42,28 +53,7 @@ class _TreatmentStepTileState extends State<TreatmentStepTile> {
         children: [
           Row(
             children: [
-              GestureDetector(
-                onTap: () => widget.onToggle(!step.isCompleted),
-                child: Container(
-                  width: 28,
-                  height: 28,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: step.isCompleted
-                        ? AppColors.success
-                        : Colors.transparent,
-                    border: Border.all(
-                      color: step.isCompleted
-                          ? AppColors.success
-                          : AppColors.textHint,
-                      width: 2,
-                    ),
-                  ),
-                  child: step.isCompleted
-                      ? const Icon(Icons.check, size: 16, color: Colors.white)
-                      : null,
-                ),
-              ),
+              _buildCheckbox(step, locked),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -72,7 +62,7 @@ class _TreatmentStepTileState extends State<TreatmentStepTile> {
                     fontWeight: FontWeight.w600,
                     decoration:
                         step.isCompleted ? TextDecoration.lineThrough : null,
-                    color: step.isCompleted
+                    color: step.isCompleted || locked
                         ? AppColors.textHint
                         : AppColors.textPrimary,
                   ),
@@ -92,6 +82,23 @@ class _TreatmentStepTileState extends State<TreatmentStepTile> {
               ),
             ],
           ),
+          if (locked)
+            Padding(
+              padding: const EdgeInsets.only(left: 40, top: 6),
+              child: Row(
+                children: [
+                  const Icon(Icons.lock_outline,
+                      size: 14, color: AppColors.textHint),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Unlocks ${_formatDate(step.scheduledAt)}',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.textHint,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           AnimatedCrossFade(
             duration: const Duration(milliseconds: 200),
             crossFadeState: _expanded
@@ -112,5 +119,48 @@ class _TreatmentStepTileState extends State<TreatmentStepTile> {
         ],
       ),
     );
+  }
+
+  Widget _buildCheckbox(TreatmentStepEntity step, bool locked) {
+    if (locked) {
+      // Future task — visible but not actionable yet.
+      return Container(
+        width: 28,
+        height: 28,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: AppColors.textHint.withValues(alpha: 0.12),
+          border: Border.all(color: AppColors.textHint.withValues(alpha: 0.4)),
+        ),
+        child: const Icon(Icons.lock_outline, size: 14, color: AppColors.textHint),
+      );
+    }
+
+    return GestureDetector(
+      onTap: () => widget.onToggle(!step.isCompleted),
+      child: Container(
+        width: 28,
+        height: 28,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: step.isCompleted ? AppColors.success : Colors.transparent,
+          border: Border.all(
+            color: step.isCompleted ? AppColors.success : AppColors.textHint,
+            width: 2,
+          ),
+        ),
+        child: step.isCompleted
+            ? const Icon(Icons.check, size: 16, color: Colors.white)
+            : null,
+      ),
+    );
+  }
+
+  static String _formatDate(DateTime date) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    return '${months[date.month - 1]} ${date.day}';
   }
 }

@@ -15,6 +15,18 @@ class TreatmentStepEntity {
     required this.dayNumber,
   });
 
+  /// A task can only be acted on once its scheduled day has arrived — future
+  /// days stay locked. Completed tasks are always considered unlocked so a
+  /// past completion never appears disabled.
+  bool get isUnlocked {
+    if (isCompleted) return true;
+    final now = DateTime.now();
+    final scheduledDay =
+        DateTime(scheduledAt.year, scheduledAt.month, scheduledAt.day);
+    final today = DateTime(now.year, now.month, now.day);
+    return !scheduledDay.isAfter(today);
+  }
+
   TreatmentStepEntity copyWith({bool? isCompleted}) {
     return TreatmentStepEntity(
       id: id,

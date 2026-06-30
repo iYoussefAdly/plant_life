@@ -12,8 +12,19 @@ import '../bloc/treatment_detail_state.dart';
 import '../widgets/treatment_day_section.dart';
 import '../widgets/treatment_progress_color.dart';
 
+/// Navigation argument for the treatment detail route. Accepts the plan id and
+/// an optional task to highlight (e.g. when opened from Home's Today's Tasks).
+class TreatmentDetailArgs {
+  final String planId;
+  final String? highlightStepId;
+
+  const TreatmentDetailArgs({required this.planId, this.highlightStepId});
+}
+
 class TreatmentDetailScreen extends StatelessWidget {
-  const TreatmentDetailScreen({super.key});
+  final String? highlightStepId;
+
+  const TreatmentDetailScreen({super.key, this.highlightStepId});
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +37,8 @@ class TreatmentDetailScreen extends StatelessWidget {
           TreatmentDetailInitial() => const SizedBox.shrink(),
           TreatmentDetailLoading() =>
             const Center(child: CircularProgressIndicator()),
-          TreatmentDetailSuccess(:final plan) => _DetailContent(plan: plan),
+          TreatmentDetailSuccess(:final plan) =>
+            _DetailContent(plan: plan, highlightStepId: highlightStepId),
           TreatmentDetailError(:final message) => Center(
               child: Padding(
                 padding: const EdgeInsets.all(24),
@@ -54,8 +66,9 @@ class TreatmentDetailScreen extends StatelessWidget {
 
 class _DetailContent extends StatelessWidget {
   final TreatmentPlanEntity plan;
+  final String? highlightStepId;
 
-  const _DetailContent({required this.plan});
+  const _DetailContent({required this.plan, this.highlightStepId});
 
   @override
   Widget build(BuildContext context) {
@@ -116,6 +129,7 @@ class _DetailContent extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 16),
               child: TreatmentDaySection(
                 day: day,
+                highlightStepId: highlightStepId,
                 onToggleTask: (stepId, isCompleted) {
                   context.read<TreatmentDetailCubit>().toggleStep(
                         planId: plan.id,
