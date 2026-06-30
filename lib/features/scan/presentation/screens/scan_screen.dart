@@ -159,6 +159,13 @@ class _ResultView extends StatelessWidget {
   /// Creates a heal plan from this scan, then opens its detail screen.
   Future<void> _startTreatment(BuildContext context) async {
     final cubit = context.read<ScanCubit>();
+    // The loader dialog lives on the root navigator (showDialog default), so it
+    // must be dismissed via the root navigator — not Navigator.of(context),
+    // which resolves to the bottom-nav shell's branch navigator. Captured
+    // before the await to avoid using context across the async gap.
+    final rootNavigator = Navigator.of(context, rootNavigator: true);
+    final messenger = ScaffoldMessenger.of(context);
+
     showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -166,13 +173,13 @@ class _ResultView extends StatelessWidget {
     );
 
     final outcome = await cubit.createPlan(result.id);
-    if (!context.mounted) return;
-    Navigator.of(context).pop(); // dismiss the loader
+    rootNavigator.pop(); // dismiss the loader
 
     if (outcome.planId != null) {
+      if (!context.mounted) return;
       context.push(AppRoutes.treatmentDetail, extra: outcome.planId);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(
           content: Text(outcome.error ?? 'Could not start the treatment plan'),
         ),
