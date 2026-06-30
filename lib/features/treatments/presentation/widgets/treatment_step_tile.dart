@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/utils/date_formatter.dart';
 import '../../domain/entities/treatment_step_entity.dart';
 
 class TreatmentStepTile extends StatefulWidget {
@@ -91,7 +92,7 @@ class _TreatmentStepTileState extends State<TreatmentStepTile> {
                       size: 14, color: AppColors.textHint),
                   const SizedBox(width: 4),
                   Text(
-                    'Unlocks ${_formatDate(step.scheduledAt)}',
+                    'Unlocks ${formatShortDate(step.scheduledAt)}',
                     style: AppTextStyles.bodySmall.copyWith(
                       color: AppColors.textHint,
                     ),
@@ -156,11 +157,4 @@ class _TreatmentStepTileState extends State<TreatmentStepTile> {
     );
   }
 
-  static String _formatDate(DateTime date) {
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-    ];
-    return '${months[date.month - 1]} ${date.day}';
-  }
 }
