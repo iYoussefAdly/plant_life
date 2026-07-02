@@ -40,6 +40,8 @@ class HomeScreen extends StatelessWidget {
               return IconButton(
                 icon: Badge(
                   isLabelVisible: unread > 0,
+                  backgroundColor: AppColors.error,
+                  textColor: Colors.white,
                   label: Text('$unread'),
                   child: const Icon(Icons.notifications_outlined),
                 ),

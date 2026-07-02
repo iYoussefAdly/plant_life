@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -13,11 +12,10 @@ import '../bloc/scan_state.dart';
 import '../widgets/image_source_picker.dart';
 import '../widgets/scan_history_list.dart';
 import '../widgets/scan_result_card.dart';
+import '../widgets/scan_source_sheet.dart';
 
 class ScanScreen extends StatelessWidget {
   const ScanScreen({super.key});
-
-  static final _picker = ImagePicker();
 
   @override
   Widget build(BuildContext context) {
@@ -55,21 +53,9 @@ class ScanScreen extends StatelessWidget {
     BuildContext context,
     ScanImageSource source,
   ) async {
-    if (source == ScanImageSource.esp32Cam) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('ESP32 camera support is coming soon')),
-      );
-      return;
-    }
-
-    final picked = await _picker.pickImage(
-      source: source == ScanImageSource.camera
-          ? ImageSource.camera
-          : ImageSource.gallery,
-      imageQuality: 85,
-    );
-    if (picked == null || !context.mounted) return;
-    context.read<ScanCubit>().scanImage(picked.path);
+    final path = await pickScanImagePath(context, source);
+    if (path == null || !context.mounted) return;
+    context.read<ScanCubit>().scanImage(path);
   }
 }
 

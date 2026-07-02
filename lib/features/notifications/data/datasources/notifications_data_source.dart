@@ -43,8 +43,15 @@ class NotificationsDataSource {
     final response = await _dio.get<dynamic>(
       ApiEndpoints.notificationsUnreadCount,
     );
-    final data = ApiResponseParser.dataMap(response);
-    return (data['count'] as num?)?.toInt() ?? 0;
+    // Tolerate the count arriving as a bare number or under different keys.
+    final data = ApiResponseParser.data(response);
+    if (data is num) return data.toInt();
+    if (data is Map<String, dynamic>) {
+      final count = data['count'] ?? data['unreadCount'] ?? data['unread'];
+      if (count is num) return count.toInt();
+      if (count is String) return int.tryParse(count) ?? 0;
+    }
+    return 0;
   }
 
   Future<void> markAsRead(String id) async {
