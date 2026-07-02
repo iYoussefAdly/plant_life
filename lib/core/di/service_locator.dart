@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 
+import '../events/app_event_bus.dart';
 import '../networking/dio_factory.dart';
 import '../networking/socket_service.dart';
 import '../storage/token_storage.dart';
@@ -63,6 +64,8 @@ void setupServiceLocator() {
   sl.registerLazySingleton(() => const FlutterSecureStorage());
   sl.registerLazySingleton(() => TokenStorage(sl<FlutterSecureStorage>()));
   sl.registerLazySingleton(() => SocketService(sl<TokenStorage>()));
+  // App-wide bus for automatic cross-feature UI sync after data changes.
+  sl.registerLazySingleton(() => AppEventBus());
   sl.registerLazySingleton<Dio>(
     () => DioFactory.create(
       tokenStorage: sl<TokenStorage>(),
@@ -91,7 +94,7 @@ void setupServiceLocator() {
     () => HomeRepositoryImpl(sl<TreatmentsRepository>()),
   );
   sl.registerLazySingleton(() => GetHomeDataUseCase(sl<HomeRepository>()));
-  sl.registerFactory(() => HomeCubit(sl<GetHomeDataUseCase>()));
+  sl.registerFactory(() => HomeCubit(sl<GetHomeDataUseCase>(), sl<AppEventBus>()));
 
   // Sensors
   sl.registerLazySingleton<SensorsRepository>(() => SensorsRepositoryImpl());
@@ -109,6 +112,7 @@ void setupServiceLocator() {
         sl<ScanImageUseCase>(),
         sl<GetScanHistoryUseCase>(),
         sl<CreateHealPlanUseCase>(),
+        sl<AppEventBus>(),
       ));
 
   // Treatments
@@ -120,8 +124,14 @@ void setupServiceLocator() {
   sl.registerLazySingleton(() => GetTreatmentDetailUseCase(sl<TreatmentsRepository>()));
   sl.registerLazySingleton(() => ToggleStepUseCase(sl<TreatmentsRepository>()));
   sl.registerLazySingleton(() => CreateHealPlanUseCase(sl<TreatmentsRepository>()));
-  sl.registerFactory(() => TreatmentsCubit(sl<GetTreatmentPlansUseCase>()));
-  sl.registerFactory(() => TreatmentDetailCubit(sl<GetTreatmentDetailUseCase>(), sl<ToggleStepUseCase>()));
+  sl.registerFactory(
+    () => TreatmentsCubit(sl<GetTreatmentPlansUseCase>(), sl<AppEventBus>()),
+  );
+  sl.registerFactory(() => TreatmentDetailCubit(
+        sl<GetTreatmentDetailUseCase>(),
+        sl<ToggleStepUseCase>(),
+        sl<AppEventBus>(),
+      ));
 
   // Recovery
   sl.registerLazySingleton(() => RecoveryDataSource(sl<Dio>()));
@@ -133,6 +143,7 @@ void setupServiceLocator() {
   sl.registerFactory(() => RecoveryCubit(
         sl<GetRescansUseCase>(),
         sl<CreateRescanUseCase>(),
+        sl<AppEventBus>(),
       ));
 
   // Notifications
