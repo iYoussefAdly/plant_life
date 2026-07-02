@@ -9,14 +9,17 @@ class SensorsCubit extends Cubit<SensorsState> {
 
   SensorsCubit(this._getSensorsDataUseCase) : super(const SensorsInitial());
 
-  Future<void> loadSensorsData() async {
-    emit(const SensorsLoading());
+  /// [silent] refreshes without flashing the loading placeholder (used by
+  /// pull-to-refresh) and keeps the current data on a background failure.
+  Future<void> loadSensorsData({bool silent = false}) async {
+    if (!silent) emit(const SensorsLoading());
     final result = await _getSensorsDataUseCase();
+    if (isClosed) return;
     switch (result) {
       case Success(:final data):
         emit(SensorsSuccess(data));
       case Error(:final failure):
-        emit(SensorsError(failure.message));
+        if (!silent) emit(SensorsError(failure.message));
     }
   }
 }

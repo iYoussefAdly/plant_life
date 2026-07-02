@@ -4,9 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'app_routes.dart';
-import '../../features/auth/presentation/bloc/auth_cubit.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
+import '../../features/profile/presentation/bloc/profile_cubit.dart';
+import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/home/presentation/bloc/home_cubit.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/main_shell/presentation/main_shell.dart';
@@ -82,10 +83,24 @@ abstract final class AppRouter {
           child: const NotificationsScreen(),
         ),
       ),
+      GoRoute(
+        path: AppRoutes.profile,
+        builder: (context, state) => BlocProvider.value(
+          value: sl<ProfileCubit>()..loadProfile(),
+          child: const ProfileScreen(),
+        ),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
-          return BlocProvider.value(
-            value: sl<NotificationsCubit>()..loadNotifications(),
+          return MultiBlocProvider(
+            providers: [
+              BlocProvider.value(
+                value: sl<NotificationsCubit>()..loadNotifications(),
+              ),
+              // Shared with the profile route so the Home greeting/avatar and
+              // the Profile screen read the same user state.
+              BlocProvider.value(value: sl<ProfileCubit>()..loadProfile()),
+            ],
             child: MainShell(navigationShell: navigationShell),
           );
         },
@@ -94,11 +109,8 @@ abstract final class AppRouter {
             routes: [
               GoRoute(
                 path: AppRoutes.home,
-                builder: (context, state) => MultiBlocProvider(
-                  providers: [
-                    BlocProvider(create: (_) => sl<HomeCubit>()..loadHomeData()),
-                    BlocProvider(create: (_) => sl<AuthCubit>()),
-                  ],
+                builder: (context, state) => BlocProvider(
+                  create: (_) => sl<HomeCubit>()..loadHomeData(),
                   child: const HomeScreen(),
                 ),
               ),

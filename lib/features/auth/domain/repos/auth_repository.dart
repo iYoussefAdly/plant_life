@@ -1,6 +1,10 @@
 import '../../../../core/errors/api_result.dart';
+import '../entities/user_entity.dart';
 
 abstract class AuthRepository {
+  /// The currently signed-in user's profile.
+  Future<ApiResult<UserEntity>> getMe();
+
   Future<ApiResult<void>> login({
     required String email,
     required String password,

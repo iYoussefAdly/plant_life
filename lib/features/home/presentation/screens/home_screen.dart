@@ -2,16 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/di/service_locator.dart';
-import '../../../../core/networking/socket_service.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/error_view.dart';
-import '../../../auth/presentation/bloc/auth_cubit.dart';
-import '../../../auth/presentation/bloc/auth_state.dart';
+import '../../../../core/widgets/fade_slide_in.dart';
+import '../../../../core/widgets/section_header.dart';
+import '../../../../core/widgets/skeleton.dart';
 import '../../../notifications/presentation/bloc/notifications_cubit.dart';
 import '../../../notifications/presentation/bloc/notifications_state.dart';
+import '../../../profile/presentation/bloc/profile_cubit.dart';
+import '../../../profile/presentation/bloc/profile_state.dart';
 import '../../domain/entities/home_data_entity.dart';
 import '../bloc/home_cubit.dart';
 import '../bloc/home_state.dart';
@@ -24,80 +25,112 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AuthCubit, AuthState>(
-      listener: (context, state) {
-        if (state is AuthLoggedOut) {
-          sl<SocketService>().disconnect();
-          context.go(AppRoutes.login);
-        }
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text('PlantLife', style: AppTextStyles.headlineMedium),
-          actions: [
-            BlocBuilder<NotificationsCubit, NotificationsState>(
-              builder: (context, state) {
-                final unread = switch (state) {
-                  NotificationsLoaded(:final unreadCount) => unreadCount,
-                  _ => 0,
-                };
-                return IconButton(
-                  icon: Badge(
-                    isLabelVisible: unread > 0,
-                    label: Text('$unread'),
-                    child: const Icon(Icons.notifications_outlined),
-                  ),
-                  onPressed: () => context.push(AppRoutes.notifications),
-                );
-              },
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: false,
+        titleSpacing: 16,
+        title: const _GreetingHeader(),
+        actions: [
+          BlocBuilder<NotificationsCubit, NotificationsState>(
+            builder: (context, state) {
+              final unread = switch (state) {
+                NotificationsLoaded(:final unreadCount) => unreadCount,
+                _ => 0,
+              };
+              return IconButton(
+                icon: Badge(
+                  isLabelVisible: unread > 0,
+                  label: Text('$unread'),
+                  child: const Icon(Icons.notifications_outlined),
+                ),
+                onPressed: () => context.push(AppRoutes.notifications),
+              );
+            },
+          ),
+          const SizedBox(width: 4),
+        ],
+      ),
+      body: BlocBuilder<HomeCubit, HomeState>(
+        builder: (context, state) => switch (state) {
+          HomeInitial() => const SizedBox.shrink(),
+          HomeLoading() => const _HomeSkeleton(),
+          HomeSuccess(:final data) => _HomeContent(data: data),
+          HomeError(:final message) => ErrorView(
+              message: message,
+              onRetry: () => context.read<HomeCubit>().loadHomeData(),
             ),
-            IconButton(
-              icon: const Icon(Icons.refresh_outlined),
-              onPressed: () => context.read<HomeCubit>().loadHomeData(),
-            ),
-            IconButton(
-              icon: const Icon(Icons.logout_outlined),
-              tooltip: 'Log out',
-              onPressed: () => _confirmLogout(context),
-            ),
-          ],
-        ),
-        body: BlocBuilder<HomeCubit, HomeState>(
-          builder: (context, state) => switch (state) {
-            HomeInitial() => const SizedBox.shrink(),
-            HomeLoading() => const Center(child: CircularProgressIndicator()),
-            HomeSuccess(:final data) => _HomeContent(data: data),
-            HomeError(:final message) => ErrorView(
-                message: message,
-                onRetry: () => context.read<HomeCubit>().loadHomeData(),
-              ),
-          },
-        ),
+        },
       ),
     );
   }
+}
 
-  Future<void> _confirmLogout(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Log out'),
-        content: const Text('Are you sure you want to log out?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Log out'),
-          ),
-        ],
-      ),
+/// Time-based greeting + user name, with a tappable avatar that opens Profile.
+class _GreetingHeader extends StatelessWidget {
+  const _GreetingHeader();
+
+  String get _greeting {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<ProfileCubit, ProfileState>(
+      builder: (context, state) {
+        final user = state is ProfileLoaded ? state.user : null;
+        final hasAvatar = user?.avatarUrl?.isNotEmpty == true;
+        return Row(
+          children: [
+            GestureDetector(
+              onTap: () => context.push(AppRoutes.profile),
+              child: CircleAvatar(
+                radius: 19,
+                backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+                backgroundImage:
+                    hasAvatar ? NetworkImage(user!.avatarUrl!) : null,
+                child: hasAvatar
+                    ? null
+                    : (user != null
+                        ? Text(
+                            user.initials,
+                            style: AppTextStyles.labelLarge.copyWith(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                            ),
+                          )
+                        : const Icon(Icons.person_outline,
+                            size: 20, color: AppColors.primary)),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '$_greeting 👋',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                      fontSize: 11,
+                    ),
+                  ),
+                  Text(
+                    user?.name.isNotEmpty == true ? user!.name : 'PlantLife',
+                    style: AppTextStyles.headlineSmall.copyWith(fontSize: 16),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
     );
-    if (confirmed == true && context.mounted) {
-      context.read<AuthCubit>().logout();
-    }
   }
 }
 
@@ -109,12 +142,23 @@ class _HomeContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
-      onRefresh: () => context.read<HomeCubit>().loadHomeData(),
+      onRefresh: () => context.read<HomeCubit>().loadHomeData(silent: true),
       color: AppColors.primary,
       child: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
         children: [
-          Text('Sensor Overview', style: AppTextStyles.headlineSmall),
+          FadeSlideIn(
+            child: SectionHeader(
+              icon: Icons.monitor_heart_outlined,
+              title: 'Sensor Overview',
+              trailing: Text(
+                '${data.sensorReadings.length} sensors',
+                style: AppTextStyles.labelMedium.copyWith(
+                  color: AppColors.textHint,
+                ),
+              ),
+            ),
+          ),
           const SizedBox(height: 12),
           GridView.builder(
             shrinkWrap: true,
@@ -126,14 +170,61 @@ class _HomeContent extends StatelessWidget {
               childAspectRatio: 1.3,
             ),
             itemCount: data.sensorReadings.length,
-            itemBuilder: (context, index) =>
-                SensorSummaryCard(reading: data.sensorReadings[index]),
+            itemBuilder: (context, index) => FadeSlideIn(
+              index: index + 1,
+              child: SensorSummaryCard(reading: data.sensorReadings[index]),
+            ),
           ),
-          const SizedBox(height: 24),
-          AlertsSection(alerts: data.alerts),
-          const SizedBox(height: 24),
-          TreatmentTasksSection(tasks: data.todayTasks),
+          const SizedBox(height: 28),
+          FadeSlideIn(index: 2, child: AlertsSection(alerts: data.alerts)),
+          const SizedBox(height: 28),
+          FadeSlideIn(
+            index: 3,
+            child: TreatmentTasksSection(tasks: data.todayTasks),
+          ),
           const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+}
+
+/// Dashboard-shaped loading placeholder instead of a bare spinner.
+class _HomeSkeleton extends StatelessWidget {
+  const _HomeSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return SkeletonPulse(
+      child: ListView(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+        children: [
+          const SkeletonBox(width: 160, height: 22, radius: 8),
+          const SizedBox(height: 14),
+          Row(
+            children: const [
+              Expanded(child: SkeletonBox(height: 120, radius: 16)),
+              SizedBox(width: 12),
+              Expanded(child: SkeletonBox(height: 120, radius: 16)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: const [
+              Expanded(child: SkeletonBox(height: 120, radius: 16)),
+              SizedBox(width: 12),
+              Expanded(child: SkeletonBox(height: 120, radius: 16)),
+            ],
+          ),
+          const SizedBox(height: 28),
+          const SkeletonBox(width: 120, height: 22, radius: 8),
+          const SizedBox(height: 14),
+          const SkeletonBox(height: 64, radius: 12),
+          const SizedBox(height: 8),
+          const SkeletonBox(height: 64, radius: 12),
+          const SizedBox(height: 8),
+          const SkeletonBox(height: 64, radius: 12),
         ],
       ),
     );

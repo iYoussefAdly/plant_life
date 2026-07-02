@@ -48,6 +48,10 @@ class NotificationsCubit extends Cubit<NotificationsState> {
     loadNotifications();
   }
 
+  /// Clears loaded notifications (called on logout so the next session never
+  /// sees the previous user's data or badge).
+  void reset() => emit(const NotificationsInitial());
+
   @override
   Future<void> close() {
     _liveSub?.cancel();

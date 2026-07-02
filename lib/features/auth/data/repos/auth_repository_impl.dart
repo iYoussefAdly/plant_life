@@ -2,6 +2,7 @@ import '../../../../core/errors/api_result.dart';
 import '../../../../core/errors/failure.dart';
 import '../../../../core/networking/api_error_handler.dart';
 import '../../../../core/storage/token_storage.dart';
+import '../../domain/entities/user_entity.dart';
 import '../../domain/repos/auth_repository.dart';
 import '../datasources/auth_data_source.dart';
 import '../models/responses/auth_response.dart';
@@ -38,6 +39,15 @@ class AuthRepositoryImpl implements AuthRepository {
         password: password,
       );
       return _persistTokens(auth);
+    } catch (e) {
+      return Error(ApiErrorHandler.handle(e));
+    }
+  }
+
+  @override
+  Future<ApiResult<UserEntity>> getMe() async {
+    try {
+      return Success(await _dataSource.getMe());
     } catch (e) {
       return Error(ApiErrorHandler.handle(e));
     }
