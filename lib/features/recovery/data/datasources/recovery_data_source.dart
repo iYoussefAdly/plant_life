@@ -12,8 +12,13 @@ class RecoveryDataSource {
 
   Future<List<RescanModel>> getRescans(String scanId) async {
     final response = await _dio.get<dynamic>(ApiEndpoints.scanRescans(scanId));
-    final data = ApiResponseParser.dataMap(response);
-    final list = (data['rescans'] ?? data['scans']) as List? ?? const [];
+    // `data` may be a bare array or an object keyed by `rescans`/`scans`.
+    final payload = ApiResponseParser.data(response);
+    final list = payload is List
+        ? payload
+        : payload is Map<String, dynamic>
+            ? (payload['rescans'] ?? payload['scans']) as List? ?? const []
+            : const [];
     return list
         .whereType<Map<String, dynamic>>()
         .map(RescanModel.fromJson)

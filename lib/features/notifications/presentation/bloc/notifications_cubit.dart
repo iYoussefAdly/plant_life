@@ -1,21 +1,58 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/errors/api_result.dart';
+import '../../domain/entities/notification_entity.dart';
 import '../../domain/usecases/get_notifications_usecase.dart';
 import '../../domain/usecases/get_unread_count_usecase.dart';
 import '../../domain/usecases/mark_notification_read_usecase.dart';
+import '../../domain/usecases/watch_new_notifications_usecase.dart';
 import 'notifications_state.dart';
 
 class NotificationsCubit extends Cubit<NotificationsState> {
   final GetNotificationsUseCase _getNotificationsUseCase;
   final GetUnreadCountUseCase _getUnreadCountUseCase;
   final MarkNotificationReadUseCase _markNotificationReadUseCase;
+  final WatchNewNotificationsUseCase _watchNewNotificationsUseCase;
+
+  StreamSubscription<NotificationEntity>? _liveSub;
 
   NotificationsCubit(
     this._getNotificationsUseCase,
     this._getUnreadCountUseCase,
     this._markNotificationReadUseCase,
-  ) : super(const NotificationsInitial());
+    this._watchNewNotificationsUseCase,
+  ) : super(const NotificationsInitial()) {
+    // Listen for live notifications pushed over the socket. onError keeps the
+    // subscription alive if the stream ever surfaces an error.
+    _liveSub =
+        _watchNewNotificationsUseCase().listen(_onIncoming, onError: (_) {});
+  }
+
+  /// Handles a notification pushed live by the server: prepend it and bump the
+  /// unread badge, deduping by id. If the list isn't loaded yet, fetch it.
+  void _onIncoming(NotificationEntity notification) {
+    if (isClosed) return;
+    final currentState = state;
+    if (currentState is NotificationsLoaded) {
+      if (currentState.notifications.any((n) => n.id == notification.id)) return;
+      emit(NotificationsLoaded(
+        notifications: [notification, ...currentState.notifications],
+        unreadCount: currentState.unreadCount + (notification.isRead ? 0 : 1),
+      ));
+      return;
+    }
+    // Avoid a reload storm if events arrive while a load is already running.
+    if (currentState is NotificationsLoading) return;
+    loadNotifications();
+  }
+
+  @override
+  Future<void> close() {
+    _liveSub?.cancel();
+    return super.close();
+  }
 
   Future<void> loadNotifications() async {
     emit(const NotificationsLoading());

@@ -1,6 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/errors/api_result.dart';
+import '../../../../core/events/app_event.dart';
+import '../../../../core/events/app_event_bus.dart';
 import '../../domain/entities/recovery_entity.dart';
 import '../../domain/entities/rescan_entity.dart';
 import '../../domain/usecases/create_rescan_usecase.dart';
@@ -10,12 +12,16 @@ import 'recovery_state.dart';
 class RecoveryCubit extends Cubit<RecoveryState> {
   final GetRescansUseCase _getRescansUseCase;
   final CreateRescanUseCase _createRescanUseCase;
+  final AppEventBus _eventBus;
 
   String _scanId = '';
   String _title = '';
 
-  RecoveryCubit(this._getRescansUseCase, this._createRescanUseCase)
-      : super(const RecoveryInitial());
+  RecoveryCubit(
+    this._getRescansUseCase,
+    this._createRescanUseCase,
+    this._eventBus,
+  ) : super(const RecoveryInitial());
 
   Future<void> load(String scanId, String title) async {
     _scanId = scanId;
@@ -63,6 +69,7 @@ class RecoveryCubit extends Cubit<RecoveryState> {
     if (isClosed) return;
     switch (result) {
       case Success():
+        _eventBus.emit(const ScansChanged());
         await load(_scanId, _title);
       case Error(:final failure):
         emit(RecoveryError(failure.message));

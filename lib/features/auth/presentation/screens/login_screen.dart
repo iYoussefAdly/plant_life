@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/service_locator.dart';
+import '../../../../core/networking/socket_service.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../bloc/auth_cubit.dart';
@@ -22,6 +23,7 @@ class LoginScreen extends StatelessWidget {
         body: BlocListener<AuthCubit, AuthState>(
           listener: (context, state) {
             if (state is AuthSuccess) {
+              sl<SocketService>().connect();
               context.go(AppRoutes.home);
             } else if (state is AuthError) {
               ScaffoldMessenger.of(context).showSnackBar(

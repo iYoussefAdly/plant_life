@@ -2,7 +2,9 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 
+import '../events/app_event_bus.dart';
 import '../networking/dio_factory.dart';
+import '../networking/socket_service.dart';
 import '../storage/token_storage.dart';
 import '../../features/auth/data/datasources/auth_data_source.dart';
 import '../../features/auth/data/repos/auth_repository_impl.dart';
@@ -46,6 +48,7 @@ import '../../features/notifications/domain/repos/notifications_repository.dart'
 import '../../features/notifications/domain/usecases/get_notifications_usecase.dart';
 import '../../features/notifications/domain/usecases/get_unread_count_usecase.dart';
 import '../../features/notifications/domain/usecases/mark_notification_read_usecase.dart';
+import '../../features/notifications/domain/usecases/watch_new_notifications_usecase.dart';
 import '../../features/notifications/presentation/bloc/notifications_cubit.dart';
 
 final sl = GetIt.instance;
@@ -60,6 +63,9 @@ void setupServiceLocator() {
   // Core infrastructure (networking + secure storage)
   sl.registerLazySingleton(() => const FlutterSecureStorage());
   sl.registerLazySingleton(() => TokenStorage(sl<FlutterSecureStorage>()));
+  sl.registerLazySingleton(() => SocketService(sl<TokenStorage>()));
+  // App-wide bus for automatic cross-feature UI sync after data changes.
+  sl.registerLazySingleton(() => AppEventBus());
   sl.registerLazySingleton<Dio>(
     () => DioFactory.create(
       tokenStorage: sl<TokenStorage>(),
@@ -88,7 +94,7 @@ void setupServiceLocator() {
     () => HomeRepositoryImpl(sl<TreatmentsRepository>()),
   );
   sl.registerLazySingleton(() => GetHomeDataUseCase(sl<HomeRepository>()));
-  sl.registerFactory(() => HomeCubit(sl<GetHomeDataUseCase>()));
+  sl.registerFactory(() => HomeCubit(sl<GetHomeDataUseCase>(), sl<AppEventBus>()));
 
   // Sensors
   sl.registerLazySingleton<SensorsRepository>(() => SensorsRepositoryImpl());
@@ -106,6 +112,7 @@ void setupServiceLocator() {
         sl<ScanImageUseCase>(),
         sl<GetScanHistoryUseCase>(),
         sl<CreateHealPlanUseCase>(),
+        sl<AppEventBus>(),
       ));
 
   // Treatments
@@ -117,8 +124,14 @@ void setupServiceLocator() {
   sl.registerLazySingleton(() => GetTreatmentDetailUseCase(sl<TreatmentsRepository>()));
   sl.registerLazySingleton(() => ToggleStepUseCase(sl<TreatmentsRepository>()));
   sl.registerLazySingleton(() => CreateHealPlanUseCase(sl<TreatmentsRepository>()));
-  sl.registerFactory(() => TreatmentsCubit(sl<GetTreatmentPlansUseCase>()));
-  sl.registerFactory(() => TreatmentDetailCubit(sl<GetTreatmentDetailUseCase>(), sl<ToggleStepUseCase>()));
+  sl.registerFactory(
+    () => TreatmentsCubit(sl<GetTreatmentPlansUseCase>(), sl<AppEventBus>()),
+  );
+  sl.registerFactory(() => TreatmentDetailCubit(
+        sl<GetTreatmentDetailUseCase>(),
+        sl<ToggleStepUseCase>(),
+        sl<AppEventBus>(),
+      ));
 
   // Recovery
   sl.registerLazySingleton(() => RecoveryDataSource(sl<Dio>()));
@@ -130,16 +143,20 @@ void setupServiceLocator() {
   sl.registerFactory(() => RecoveryCubit(
         sl<GetRescansUseCase>(),
         sl<CreateRescanUseCase>(),
+        sl<AppEventBus>(),
       ));
 
   // Notifications
-  sl.registerLazySingleton(() => NotificationsDataSource(sl<Dio>()));
+  sl.registerLazySingleton(
+    () => NotificationsDataSource(sl<Dio>(), sl<SocketService>()),
+  );
   sl.registerLazySingleton<NotificationsRepository>(
     () => NotificationsRepositoryImpl(sl<NotificationsDataSource>()),
   );
   sl.registerLazySingleton(() => GetNotificationsUseCase(sl<NotificationsRepository>()));
   sl.registerLazySingleton(() => GetUnreadCountUseCase(sl<NotificationsRepository>()));
   sl.registerLazySingleton(() => MarkNotificationReadUseCase(sl<NotificationsRepository>()));
+  sl.registerLazySingleton(() => WatchNewNotificationsUseCase(sl<NotificationsRepository>()));
   // Intentionally a lazySingleton (not a factory like other cubits): the home
   // app-bar badge and the notifications screen share this one instance so that
   // marking a notification read updates the badge. Reset it on logout when a
@@ -148,5 +165,6 @@ void setupServiceLocator() {
         sl<GetNotificationsUseCase>(),
         sl<GetUnreadCountUseCase>(),
         sl<MarkNotificationReadUseCase>(),
+        sl<WatchNewNotificationsUseCase>(),
       ));
 }

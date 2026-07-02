@@ -38,4 +38,7 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
       return Error(ApiErrorHandler.handle(e));
     }
   }
+
+  @override
+  Stream<NotificationEntity> watchNewNotifications() => _dataSource.watchNew();
 }
