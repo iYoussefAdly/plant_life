@@ -9,10 +9,12 @@ import '../storage/token_storage.dart';
 import '../../features/auth/data/datasources/auth_data_source.dart';
 import '../../features/auth/data/repos/auth_repository_impl.dart';
 import '../../features/auth/domain/repos/auth_repository.dart';
+import '../../features/auth/domain/usecases/get_me_usecase.dart';
 import '../../features/auth/domain/usecases/login_usecase.dart';
 import '../../features/auth/domain/usecases/logout_usecase.dart';
 import '../../features/auth/domain/usecases/register_usecase.dart';
 import '../../features/auth/presentation/bloc/auth_cubit.dart';
+import '../../features/profile/presentation/bloc/profile_cubit.dart';
 import '../../features/home/data/repos/home_repository_impl.dart';
 import '../../features/home/domain/repos/home_repository.dart';
 import '../../features/home/domain/usecases/get_home_data_usecase.dart';
@@ -83,11 +85,19 @@ void setupServiceLocator() {
   sl.registerLazySingleton(() => LoginUseCase(sl<AuthRepository>()));
   sl.registerLazySingleton(() => RegisterUseCase(sl<AuthRepository>()));
   sl.registerLazySingleton(() => LogoutUseCase(sl<AuthRepository>()));
+  sl.registerLazySingleton(() => GetMeUseCase(sl<AuthRepository>()));
   sl.registerFactory(() => AuthCubit(
         sl<LoginUseCase>(),
         sl<RegisterUseCase>(),
         sl<LogoutUseCase>(),
       ));
+
+  // Profile — intentionally a lazySingleton: the Home app-bar greeting/avatar
+  // and the Profile screen share this instance (same pattern as
+  // NotificationsCubit below).
+  sl.registerLazySingleton(
+    () => ProfileCubit(sl<GetMeUseCase>(), sl<LogoutUseCase>()),
+  );
 
   // Home (Today's Tasks compose from the active heal plan; sensors stay mock)
   sl.registerLazySingleton<HomeRepository>(
@@ -159,8 +169,8 @@ void setupServiceLocator() {
   sl.registerLazySingleton(() => WatchNewNotificationsUseCase(sl<NotificationsRepository>()));
   // Intentionally a lazySingleton (not a factory like other cubits): the home
   // app-bar badge and the notifications screen share this one instance so that
-  // marking a notification read updates the badge. Reset it on logout when a
-  // logout/session-switch flow is added.
+  // marking a notification read updates the badge. The profile logout flow
+  // calls reset() on it so a new session starts clean.
   sl.registerLazySingleton(() => NotificationsCubit(
         sl<GetNotificationsUseCase>(),
         sl<GetUnreadCountUseCase>(),

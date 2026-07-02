@@ -9,4 +9,5 @@ abstract final class AppRoutes {
   static const treatmentDetail = '/treatment-detail';
   static const recoveryProgress = '/recovery-progress';
   static const notifications = '/notifications';
+  static const profile = '/profile';
 }

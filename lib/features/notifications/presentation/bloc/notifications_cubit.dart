@@ -48,6 +48,10 @@ class NotificationsCubit extends Cubit<NotificationsState> {
     loadNotifications();
   }
 
+  /// Clears loaded notifications (called on logout so the next session never
+  /// sees the previous user's data or badge).
+  void reset() => emit(const NotificationsInitial());
+
   @override
   Future<void> close() {
     _liveSub?.cancel();
@@ -59,13 +63,16 @@ class NotificationsCubit extends Cubit<NotificationsState> {
     final result = await _getNotificationsUseCase();
     switch (result) {
       case Success(:final data):
-        // Prefer the dedicated unread-count endpoint for the badge; the list
-        // is paginated so counting it locally would be inaccurate. Fall back
-        // to the loaded page's count if the endpoint call fails.
+        // The dedicated unread-count endpoint is authoritative (the list is
+        // paginated), but the loaded page gives a guaranteed lower bound —
+        // taking the larger of the two keeps the badge correct even if the
+        // endpoint misreports (e.g. returns 0 while unread items are visible).
+        final localUnread = data.where((n) => !n.isRead).length;
         final countResult = await _getUnreadCountUseCase();
         final unread = switch (countResult) {
-          Success(data: final count) => count,
-          Error() => data.where((n) => !n.isRead).length,
+          Success(data: final count) =>
+            count > localUnread ? count : localUnread,
+          Error() => localUnread,
         };
         emit(NotificationsLoaded(notifications: data, unreadCount: unread));
       case Error(:final failure):

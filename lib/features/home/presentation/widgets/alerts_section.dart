@@ -2,19 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/utils/date_formatter.dart';
+import '../../../../core/widgets/section_header.dart';
 import '../../domain/entities/plant_alert_entity.dart';
 
 class AlertsSection extends StatelessWidget {
   final List<PlantAlertEntity> alerts;
 
   const AlertsSection({super.key, required this.alerts});
-
-  static String _formatTimeAgo(DateTime timestamp) {
-    final diff = DateTime.now().difference(timestamp);
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
-    return '${diff.inDays}d ago';
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,18 +18,30 @@ class AlertsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            const Icon(Icons.notifications_outlined,
-                size: 20, color: AppColors.textPrimary),
-            const SizedBox(width: 8),
-            Text('Alerts', style: AppTextStyles.headlineSmall),
-          ],
+        SectionHeader(
+          icon: Icons.notifications_active_outlined,
+          title: 'Alerts',
+          color: AppColors.warning,
+          trailing: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              color: AppColors.warning.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              '${alerts.length}',
+              style: AppTextStyles.labelMedium.copyWith(
+                color: AppColors.warning,
+                fontWeight: FontWeight.w700,
+                fontSize: 11,
+              ),
+            ),
+          ),
         ),
         const SizedBox(height: 12),
         ...alerts.map((alert) => _AlertTile(
               alert: alert,
-              timeAgo: _formatTimeAgo(alert.timestamp),
+              timeAgo: formatTimeAgo(alert.timestamp),
             )),
       ],
     );
@@ -53,16 +60,28 @@ class _AlertTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: _severityColor.withValues(alpha: 0.08),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border(
-          left: BorderSide(color: _severityColor, width: 3),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
-          Icon(_severityIcon, size: 20, color: _severityColor),
-          const SizedBox(width: 10),
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: _severityColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(_severityIcon, size: 19, color: _severityColor),
+          ),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -78,6 +97,7 @@ class _AlertTile extends StatelessWidget {
                   timeAgo,
                   style: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.textHint,
+                    fontSize: 11,
                   ),
                 ),
               ],

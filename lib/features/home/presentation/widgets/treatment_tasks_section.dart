@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/section_header.dart';
 import '../../../treatments/presentation/screens/treatment_detail_screen.dart';
 import '../../domain/entities/treatment_task_entity.dart';
 
@@ -14,32 +15,85 @@ class TreatmentTasksSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (tasks.isEmpty) return const SizedBox.shrink();
-
     final completedCount = tasks.where((t) => t.isCompleted).length;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            const Icon(Icons.checklist_outlined,
-                size: 20, color: AppColors.textPrimary),
-            const SizedBox(width: 8),
-            Text("Today's Tasks", style: AppTextStyles.headlineSmall),
-            const Spacer(),
-            Text(
-              '$completedCount/${tasks.length}',
-              style: AppTextStyles.labelMedium.copyWith(
-                color: AppColors.primary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
+        SectionHeader(
+          icon: Icons.checklist_outlined,
+          title: "Today's Tasks",
+          trailing: tasks.isEmpty
+              ? null
+              : Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '$completedCount/${tasks.length} done',
+                    style: AppTextStyles.labelMedium.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 11,
+                    ),
+                  ),
+                ),
         ),
         const SizedBox(height: 12),
-        ...tasks.map((task) => _TaskTile(task: task)),
+        if (tasks.isEmpty)
+          const _EmptyTasksCard()
+        else
+          ...tasks.map((task) => _TaskTile(task: task)),
       ],
+    );
+  }
+}
+
+/// Welcoming empty state shown when no treatment tasks are due today.
+class _EmptyTasksCard extends StatelessWidget {
+  const _EmptyTasksCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.15)),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child:
+                const Icon(Icons.eco_outlined, size: 26, color: AppColors.primary),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'All caught up!',
+            style: AppTextStyles.headlineSmall.copyWith(fontSize: 15),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'No treatment tasks scheduled for today.\nYour plants are in good hands 🌱',
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+              height: 1.4,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 }

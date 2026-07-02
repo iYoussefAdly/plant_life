@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/error_view.dart';
+import '../../../scan/presentation/widgets/scan_source_sheet.dart';
 import '../../domain/entities/recovery_entity.dart';
 import '../bloc/recovery_cubit.dart';
 import '../bloc/recovery_state.dart';
@@ -22,8 +22,6 @@ class RecoveryArgs {
 
 class RecoveryProgressScreen extends StatelessWidget {
   const RecoveryProgressScreen({super.key});
-
-  static final _picker = ImagePicker();
 
   @override
   Widget build(BuildContext context) {
@@ -46,14 +44,14 @@ class RecoveryProgressScreen extends StatelessWidget {
     );
   }
 
+  /// Same source options as the Scan feature: camera, gallery, or ESP32-CAM.
   static Future<void> startRescan(BuildContext context) async {
     final cubit = context.read<RecoveryCubit>();
-    final picked = await _picker.pickImage(
-      source: ImageSource.camera,
-      imageQuality: 85,
-    );
-    if (picked == null) return;
-    await cubit.createRescan(picked.path);
+    final source = await showScanSourceSheet(context);
+    if (source == null || !context.mounted) return;
+    final path = await pickScanImagePath(context, source);
+    if (path == null) return;
+    await cubit.createRescan(path);
   }
 }
 

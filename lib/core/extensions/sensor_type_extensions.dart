@@ -29,10 +29,18 @@ extension SensorTypeUI on SensorType {
 }
 
 extension SensorStatusUI on SensorStatus {
+  /// Amber for warning and red only for critical, so the three states are
+  /// visually distinct at a glance.
   Color get color => switch (this) {
         SensorStatus.normal => AppColors.success,
-        SensorStatus.warning => AppColors.error,
+        SensorStatus.warning => AppColors.warning,
         SensorStatus.critical => AppColors.error,
+      };
+
+  IconData get icon => switch (this) {
+        SensorStatus.normal => Icons.check_circle_rounded,
+        SensorStatus.warning => Icons.warning_rounded,
+        SensorStatus.critical => Icons.error_rounded,
       };
 
   String get label => switch (this) {

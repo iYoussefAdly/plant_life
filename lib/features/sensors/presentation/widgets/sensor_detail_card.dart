@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/extensions/sensor_type_extensions.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/widgets/sensor_card_decoration.dart';
 import '../../domain/entities/sensor_detail_entity.dart';
 
@@ -25,6 +26,22 @@ class SensorDetailCard extends StatelessWidget {
           _MiniChart(sensor: sensor, color: _sensorColor),
           const SizedBox(height: 12),
           _RangeBar(sensor: sensor, color: _sensorColor),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              const Icon(Icons.schedule_outlined,
+                  size: 12, color: AppColors.textHint),
+              const SizedBox(width: 4),
+              Text(
+                'Updated ${formatTimeAgo(sensor.lastUpdated)}',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.textHint,
+                  fontSize: 11,
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -41,54 +58,53 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final badge = SensorCardDecoration.statusBadgeIcon(sensor.status);
-
     return Row(
       children: [
-        Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(_icon, size: 22, color: color),
-            ),
-            if (badge != null)
-              Positioned(right: -5, top: -5, child: badge),
-          ],
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(sensor.type.icon, size: 22, color: color),
         ),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(_label, style: AppTextStyles.labelLarge),
               Text(
-                _statusText,
-                style: AppTextStyles.bodySmall.copyWith(color: _statusColor),
+                sensor.type.label,
+                style: AppTextStyles.labelLarge.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
+              const SizedBox(height: 4),
+              SensorCardDecoration.statusPill(sensor.status),
             ],
           ),
         ),
-        Text(
-          '${sensor.currentValue.toStringAsFixed(1)}${sensor.unit}',
-          style: AppTextStyles.headlineMedium.copyWith(
-            color: color,
-            fontWeight: FontWeight.w700,
+        RichText(
+          text: TextSpan(
+            text: sensor.currentValue.toStringAsFixed(1),
+            style: AppTextStyles.headlineMedium.copyWith(
+              color: color,
+              fontWeight: FontWeight.w700,
+            ),
+            children: [
+              TextSpan(
+                text: ' ${sensor.unit}',
+                style: AppTextStyles.labelMedium.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
           ),
         ),
       ],
     );
   }
-
-  IconData get _icon => sensor.type.icon;
-  String get _label => sensor.type.label;
-  String get _statusText => sensor.status.label;
-  Color get _statusColor => sensor.status.color;
 }
 
 class _MiniChart extends StatelessWidget {

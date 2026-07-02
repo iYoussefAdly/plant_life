@@ -13,6 +13,8 @@ class SensorSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final abnormal = reading.status != SensorStatus.normal;
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: SensorCardDecoration.forStatus(reading.status),
@@ -21,19 +23,40 @@ class SensorSummaryCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              _SensorIcon(reading: reading),
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: reading.type.color.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child:
+                    Icon(reading.type.icon, size: 19, color: reading.type.color),
+              ),
               const Spacer(),
-              _StatusBadge(status: reading.status),
+              SensorCardDecoration.statusPill(reading.status),
             ],
           ),
-          const SizedBox(height: 12),
-          Text(
-            '${reading.value.toStringAsFixed(1)}${reading.unit}',
-            style: AppTextStyles.headlineSmall.copyWith(
-              fontWeight: FontWeight.w700,
-              color: reading.status == SensorStatus.normal
-                  ? AppColors.textPrimary
-                  : reading.status.color,
+          const Spacer(),
+          RichText(
+            maxLines: 1,
+            text: TextSpan(
+              text: reading.value.toStringAsFixed(1),
+              style: AppTextStyles.headlineMedium.copyWith(
+                fontSize: 21,
+                fontWeight: FontWeight.w700,
+                color:
+                    abnormal ? reading.status.color : AppColors.textPrimary,
+              ),
+              children: [
+                TextSpan(
+                  text: ' ${reading.unit}',
+                  style: AppTextStyles.labelMedium.copyWith(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 2),
@@ -42,60 +65,10 @@ class SensorSummaryCard extends StatelessWidget {
             style: AppTextStyles.bodySmall.copyWith(
               color: AppColors.textSecondary,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _SensorIcon extends StatelessWidget {
-  final SensorReadingEntity reading;
-
-  const _SensorIcon({required this.reading});
-
-  @override
-  Widget build(BuildContext context) {
-    final badge = SensorCardDecoration.statusBadgeIcon(reading.status);
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            color: reading.type.color.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(reading.type.icon, size: 20, color: reading.type.color),
-        ),
-        if (badge != null)
-          Positioned(right: -5, top: -5, child: badge),
-      ],
-    );
-  }
-}
-
-class _StatusBadge extends StatelessWidget {
-  final SensorStatus status;
-
-  const _StatusBadge({required this.status});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: status.color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        status.label,
-        style: AppTextStyles.labelMedium.copyWith(
-          color: status.color,
-          fontSize: 10,
-          fontWeight: FontWeight.w600,
-        ),
       ),
     );
   }

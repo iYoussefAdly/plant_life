@@ -12,7 +12,28 @@ class MainShell extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: navigationShell,
-      bottomNavigationBar: NavigationBar(
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius:
+              const BorderRadius.vertical(top: Radius.circular(20)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 16,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: _buildNavigationBar(),
+      ),
+    );
+  }
+
+  Widget _buildNavigationBar() {
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      child: NavigationBar(
         selectedIndex: navigationShell.currentIndex,
         onDestinationSelected: (index) {
           navigationShell.goBranch(
