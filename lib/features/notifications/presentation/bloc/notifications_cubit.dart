@@ -6,6 +6,7 @@ import '../../../../core/errors/api_result.dart';
 import '../../domain/entities/notification_entity.dart';
 import '../../domain/usecases/get_notifications_usecase.dart';
 import '../../domain/usecases/get_unread_count_usecase.dart';
+import '../../domain/usecases/mark_all_notifications_read_usecase.dart';
 import '../../domain/usecases/mark_notification_read_usecase.dart';
 import '../../domain/usecases/watch_new_notifications_usecase.dart';
 import 'notifications_state.dart';
@@ -14,6 +15,7 @@ class NotificationsCubit extends Cubit<NotificationsState> {
   final GetNotificationsUseCase _getNotificationsUseCase;
   final GetUnreadCountUseCase _getUnreadCountUseCase;
   final MarkNotificationReadUseCase _markNotificationReadUseCase;
+  final MarkAllNotificationsReadUseCase _markAllNotificationsReadUseCase;
   final WatchNewNotificationsUseCase _watchNewNotificationsUseCase;
 
   StreamSubscription<NotificationEntity>? _liveSub;
@@ -22,6 +24,7 @@ class NotificationsCubit extends Cubit<NotificationsState> {
     this._getNotificationsUseCase,
     this._getUnreadCountUseCase,
     this._markNotificationReadUseCase,
+    this._markAllNotificationsReadUseCase,
     this._watchNewNotificationsUseCase,
   ) : super(const NotificationsInitial()) {
     // Listen for live notifications pushed over the socket. onError keeps the
@@ -46,6 +49,25 @@ class NotificationsCubit extends Cubit<NotificationsState> {
     // Avoid a reload storm if events arrive while a load is already running.
     if (currentState is NotificationsLoading) return;
     loadNotifications();
+  }
+
+  /// Marks every notification as read — optimistic (badge clears instantly),
+  /// reverted if the server rejects the request.
+  Future<void> markAllAsRead() async {
+    final currentState = state;
+    if (currentState is! NotificationsLoaded || currentState.unreadCount == 0) {
+      return;
+    }
+
+    emit(NotificationsLoaded(
+      notifications: currentState.notifications
+          .map((n) => n.copyWith(isRead: true))
+          .toList(),
+      unreadCount: 0,
+    ));
+
+    final result = await _markAllNotificationsReadUseCase();
+    if (result is Error && !isClosed) emit(currentState);
   }
 
   /// Clears loaded notifications (called on logout so the next session never

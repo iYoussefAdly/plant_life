@@ -5,6 +5,7 @@ abstract class NotificationsRepository {
   Future<ApiResult<List<NotificationEntity>>> getNotifications();
   Future<ApiResult<int>> getUnreadCount();
   Future<ApiResult<void>> markAsRead(String notificationId);
+  Future<ApiResult<void>> markAllAsRead();
 
   /// Live stream of newly received notifications (via the socket).
   Stream<NotificationEntity> watchNewNotifications();

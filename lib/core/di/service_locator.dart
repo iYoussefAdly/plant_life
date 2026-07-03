@@ -49,6 +49,7 @@ import '../../features/notifications/data/repos/notifications_repository_impl.da
 import '../../features/notifications/domain/repos/notifications_repository.dart';
 import '../../features/notifications/domain/usecases/get_notifications_usecase.dart';
 import '../../features/notifications/domain/usecases/get_unread_count_usecase.dart';
+import '../../features/notifications/domain/usecases/mark_all_notifications_read_usecase.dart';
 import '../../features/notifications/domain/usecases/mark_notification_read_usecase.dart';
 import '../../features/notifications/domain/usecases/watch_new_notifications_usecase.dart';
 import '../../features/notifications/presentation/bloc/notifications_cubit.dart';
@@ -166,6 +167,7 @@ void setupServiceLocator() {
   sl.registerLazySingleton(() => GetNotificationsUseCase(sl<NotificationsRepository>()));
   sl.registerLazySingleton(() => GetUnreadCountUseCase(sl<NotificationsRepository>()));
   sl.registerLazySingleton(() => MarkNotificationReadUseCase(sl<NotificationsRepository>()));
+  sl.registerLazySingleton(() => MarkAllNotificationsReadUseCase(sl<NotificationsRepository>()));
   sl.registerLazySingleton(() => WatchNewNotificationsUseCase(sl<NotificationsRepository>()));
   // Intentionally a lazySingleton (not a factory like other cubits): the home
   // app-bar badge and the notifications screen share this one instance so that
@@ -175,6 +177,7 @@ void setupServiceLocator() {
         sl<GetNotificationsUseCase>(),
         sl<GetUnreadCountUseCase>(),
         sl<MarkNotificationReadUseCase>(),
+        sl<MarkAllNotificationsReadUseCase>(),
         sl<WatchNewNotificationsUseCase>(),
       ));
 }

@@ -21,10 +21,11 @@ class NotificationModel extends NotificationEntity {
           DateTime.tryParse(json['createdAt'] as String? ?? '')?.toLocal() ??
               DateTime.now(),
       isRead: json['read'] as bool? ?? false,
-      // Backend does not currently return a related entity id — see the
-      // "Open Points for Backend Discussion" in the integration plan. Kept
-      // null-safe so the tile tap degrades gracefully (no navigation/crash).
-      relatedId: (json['relatedId'] ?? json['healPlanId'])?.toString(),
+      // The backend returns the related heal-plan id under `healPlan`
+      // (verified against the live API) — used to open the plan on tap.
+      relatedId:
+          (json['relatedId'] ?? json['healPlanId'] ?? json['healPlan'])
+              ?.toString(),
     );
   }
 
