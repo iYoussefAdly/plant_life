@@ -57,4 +57,8 @@ class NotificationsDataSource {
   Future<void> markAsRead(String id) async {
     await _dio.patch<dynamic>(ApiEndpoints.markNotificationRead(id));
   }
+
+  Future<void> markAllAsRead() async {
+    await _dio.patch<dynamic>(ApiEndpoints.notificationsReadAll);
+  }
 }

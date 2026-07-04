@@ -29,7 +29,42 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Notifications', style: AppTextStyles.headlineMedium),
+        title: BlocBuilder<NotificationsCubit, NotificationsState>(
+          builder: (context, state) {
+            final unread =
+                state is NotificationsLoaded ? state.unreadCount : 0;
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Notifications', style: AppTextStyles.headlineMedium),
+                if (unread > 0)
+                  Text(
+                    '$unread unread',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 11,
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+        actions: [
+          BlocBuilder<NotificationsCubit, NotificationsState>(
+            builder: (context, state) {
+              final unread =
+                  state is NotificationsLoaded ? state.unreadCount : 0;
+              if (unread == 0) return const SizedBox.shrink();
+              return TextButton.icon(
+                onPressed: () =>
+                    context.read<NotificationsCubit>().markAllAsRead(),
+                icon: const Icon(Icons.done_all, size: 18),
+                label: const Text('Mark all read'),
+              );
+            },
+          ),
+        ],
       ),
       body: BlocBuilder<NotificationsCubit, NotificationsState>(
         builder: (context, state) => switch (state) {

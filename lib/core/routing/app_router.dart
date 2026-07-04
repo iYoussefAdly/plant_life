@@ -8,6 +8,18 @@ import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/profile/presentation/bloc/profile_cubit.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../../features/store/domain/usecases/get_product_usecase.dart';
+import '../../features/store/presentation/bloc/cart_cubit.dart';
+import '../../features/store/presentation/bloc/checkout_cubit.dart';
+import '../../features/store/presentation/bloc/order_details_cubit.dart';
+import '../../features/store/presentation/bloc/orders_cubit.dart';
+import '../../features/store/presentation/bloc/products_cubit.dart';
+import '../../features/store/presentation/screens/cart_screen.dart';
+import '../../features/store/presentation/screens/checkout_screen.dart';
+import '../../features/store/presentation/screens/order_details_screen.dart';
+import '../../features/store/presentation/screens/orders_screen.dart';
+import '../../features/store/presentation/screens/product_details_screen.dart';
+import '../../features/store/presentation/screens/store_screen.dart';
 import '../../features/home/presentation/bloc/home_cubit.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/main_shell/presentation/main_shell.dart';
@@ -88,6 +100,59 @@ abstract final class AppRouter {
         builder: (context, state) => BlocProvider.value(
           value: sl<ProfileCubit>()..loadProfile(),
           child: const ProfileScreen(),
+        ),
+      ),
+      // ---- Store ----
+      GoRoute(
+        path: AppRoutes.store,
+        builder: (context, state) => MultiBlocProvider(
+          providers: [
+            BlocProvider(create: (_) => sl<ProductsCubit>()..load()),
+            BlocProvider.value(value: sl<CartCubit>()..load(silent: true)),
+          ],
+          child: const StoreScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '${AppRoutes.productDetails}/:id',
+        builder: (context, state) => BlocProvider.value(
+          value: sl<CartCubit>(),
+          child: ProductDetailsScreen(
+            productId: state.pathParameters['id'] ?? '',
+            getProduct: sl<GetProductUseCase>(),
+          ),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.cart,
+        builder: (context, state) => BlocProvider.value(
+          value: sl<CartCubit>()..load(silent: true),
+          child: const CartScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.checkout,
+        builder: (context, state) => MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: sl<CartCubit>()),
+            BlocProvider(create: (_) => sl<CheckoutCubit>()),
+          ],
+          child: const CheckoutScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.orders,
+        builder: (context, state) => BlocProvider(
+          create: (_) => sl<OrdersCubit>()..load(),
+          child: const OrdersScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '${AppRoutes.orderDetails}/:id',
+        builder: (context, state) => BlocProvider(
+          create: (_) =>
+              sl<OrderDetailsCubit>()..load(state.pathParameters['id'] ?? ''),
+          child: const OrderDetailsScreen(),
         ),
       ),
       StatefulShellRoute.indexedStack(

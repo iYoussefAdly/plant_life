@@ -40,5 +40,15 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
   }
 
   @override
+  Future<ApiResult<void>> markAllAsRead() async {
+    try {
+      await _dataSource.markAllAsRead();
+      return const Success(null);
+    } catch (e) {
+      return Error(ApiErrorHandler.handle(e));
+    }
+  }
+
+  @override
   Stream<NotificationEntity> watchNewNotifications() => _dataSource.watchNew();
 }
