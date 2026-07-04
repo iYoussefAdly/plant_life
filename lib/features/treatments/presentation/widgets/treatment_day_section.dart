@@ -10,6 +10,9 @@ class TreatmentDaySection extends StatelessWidget {
   final TreatmentDayEntity day;
   final void Function(String stepId, bool isCompleted) onToggleTask;
 
+  /// Opens the full task-detail view for a task (by its step id).
+  final void Function(String stepId) onOpenTask;
+
   /// Step id to emphasize (e.g. opened from Home's Today's Tasks).
   final String? highlightStepId;
 
@@ -17,6 +20,7 @@ class TreatmentDaySection extends StatelessWidget {
     super.key,
     required this.day,
     required this.onToggleTask,
+    required this.onOpenTask,
     this.highlightStepId,
   });
 
@@ -96,6 +100,7 @@ class TreatmentDaySection extends StatelessWidget {
               step: task,
               highlight: task.id == highlightStepId,
               onToggle: (isCompleted) => onToggleTask(task.id, isCompleted),
+              onOpenDetails: () => onOpenTask(task.id),
             )),
       ],
     );

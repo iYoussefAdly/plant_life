@@ -10,6 +10,7 @@ import '../../../recovery/presentation/screens/recovery_progress_screen.dart';
 import '../../domain/entities/treatment_plan_entity.dart';
 import '../bloc/treatment_detail_cubit.dart';
 import '../bloc/treatment_detail_state.dart';
+import '../widgets/task_detail_sheet.dart';
 import '../widgets/treatment_day_section.dart';
 import '../widgets/treatment_progress_color.dart';
 
@@ -32,6 +33,34 @@ class TreatmentDetailScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Treatment Plan', style: AppTextStyles.headlineMedium),
+        actions: [
+          BlocBuilder<TreatmentDetailCubit, TreatmentDetailState>(
+            builder: (context, state) {
+              if (state is TreatmentDetailSuccess &&
+                  state.plan.status == TreatmentPlanStatus.active) {
+                return PopupMenuButton<String>(
+                  onSelected: (value) {
+                    if (value == 'cancel') _confirmCancel(context);
+                  },
+                  itemBuilder: (_) => const [
+                    PopupMenuItem(
+                      value: 'cancel',
+                      child: Row(
+                        children: [
+                          Icon(Icons.cancel_outlined,
+                              size: 20, color: AppColors.error),
+                          SizedBox(width: 10),
+                          Text('Cancel plan'),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
+        ],
       ),
       body: BlocBuilder<TreatmentDetailCubit, TreatmentDetailState>(
         builder: (context, state) => switch (state) {
@@ -62,6 +91,36 @@ class TreatmentDetailScreen extends StatelessWidget {
         },
       ),
     );
+  }
+
+  Future<void> _confirmCancel(BuildContext context) async {
+    final cubit = context.read<TreatmentDetailCubit>();
+    final messenger = ScaffoldMessenger.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Cancel plan'),
+        content: const Text(
+          'Are you sure you want to cancel this treatment plan? '
+          'This cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Keep plan'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Cancel plan'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    final error = await cubit.cancelPlan();
+    if (error != null) {
+      messenger.showSnackBar(SnackBar(content: Text(error)));
+    }
   }
 }
 
@@ -138,6 +197,15 @@ class _DetailContent extends StatelessWidget {
                         isCompleted: isCompleted,
                       );
                 },
+                onOpenTask: (stepId) {
+                  final taskIndex = int.tryParse(stepId);
+                  if (taskIndex == null) return;
+                  showTaskDetailSheet(
+                    context,
+                    planId: plan.id,
+                    taskIndex: taskIndex,
+                  );
+                },
               ),
             )),
         const SizedBox(height: 4),
@@ -170,7 +238,17 @@ class _PlanHeader extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(plan.title, style: AppTextStyles.headlineMedium),
+        Row(
+          children: [
+            Expanded(
+              child: Text(plan.title, style: AppTextStyles.headlineMedium),
+            ),
+            if (plan.status != TreatmentPlanStatus.active) ...[
+              const SizedBox(width: 8),
+              _StatusChip(status: plan.status),
+            ],
+          ],
+        ),
         if (plan.description.isNotEmpty) ...[
           const SizedBox(height: 6),
           Text(
@@ -182,6 +260,35 @@ class _PlanHeader extends StatelessWidget {
           ),
         ],
       ],
+    );
+  }
+}
+
+class _StatusChip extends StatelessWidget {
+  final TreatmentPlanStatus status;
+
+  const _StatusChip({required this.status});
+
+  @override
+  Widget build(BuildContext context) {
+    final (label, color) = switch (status) {
+      TreatmentPlanStatus.completed => ('Completed', AppColors.success),
+      TreatmentPlanStatus.cancelled => ('Cancelled', AppColors.error),
+      TreatmentPlanStatus.active => ('Active', AppColors.primary),
+    };
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
+        style: AppTextStyles.labelMedium.copyWith(
+          color: color,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
     );
   }
 }

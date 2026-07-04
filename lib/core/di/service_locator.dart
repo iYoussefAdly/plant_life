@@ -57,10 +57,13 @@ import '../../features/scan/presentation/bloc/scan_cubit.dart';
 import '../../features/treatments/data/datasources/treatments_data_source.dart';
 import '../../features/treatments/data/repos/treatments_repository_impl.dart';
 import '../../features/treatments/domain/repos/treatments_repository.dart';
+import '../../features/treatments/domain/usecases/cancel_plan_usecase.dart';
 import '../../features/treatments/domain/usecases/create_heal_plan_usecase.dart';
+import '../../features/treatments/domain/usecases/get_task_detail_usecase.dart';
 import '../../features/treatments/domain/usecases/get_treatment_plans_usecase.dart';
 import '../../features/treatments/domain/usecases/get_treatment_detail_usecase.dart';
 import '../../features/treatments/domain/usecases/toggle_step_usecase.dart';
+import '../../features/treatments/presentation/bloc/task_detail_cubit.dart';
 import '../../features/treatments/presentation/bloc/treatments_cubit.dart';
 import '../../features/treatments/presentation/bloc/treatment_detail_cubit.dart';
 import '../../features/recovery/data/datasources/recovery_data_source.dart';
@@ -169,14 +172,18 @@ void setupServiceLocator() {
   sl.registerLazySingleton(() => GetTreatmentDetailUseCase(sl<TreatmentsRepository>()));
   sl.registerLazySingleton(() => ToggleStepUseCase(sl<TreatmentsRepository>()));
   sl.registerLazySingleton(() => CreateHealPlanUseCase(sl<TreatmentsRepository>()));
+  sl.registerLazySingleton(() => GetTaskDetailUseCase(sl<TreatmentsRepository>()));
+  sl.registerLazySingleton(() => CancelPlanUseCase(sl<TreatmentsRepository>()));
   sl.registerFactory(
     () => TreatmentsCubit(sl<GetTreatmentPlansUseCase>(), sl<AppEventBus>()),
   );
   sl.registerFactory(() => TreatmentDetailCubit(
         sl<GetTreatmentDetailUseCase>(),
         sl<ToggleStepUseCase>(),
+        sl<CancelPlanUseCase>(),
         sl<AppEventBus>(),
       ));
+  sl.registerFactory(() => TaskDetailCubit(sl<GetTaskDetailUseCase>()));
 
   // Recovery
   sl.registerLazySingleton(() => RecoveryDataSource(sl<Dio>()));

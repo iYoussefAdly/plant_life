@@ -27,8 +27,11 @@ abstract final class ApiEndpoints {
   static const healPlans = '/heal-plans';
   static const healPlanTemplates = '/heal-plans/templates';
   static String healPlan(String id) => '/heal-plans/$id';
-  static String toggleHealPlanTask(String planId, int taskIndex) =>
+  static String healPlanTask(String planId, int taskIndex) =>
       '/heal-plans/$planId/tasks/$taskIndex';
+  // Toggle and fetch share the same path (differ by HTTP verb: PATCH vs GET).
+  static String toggleHealPlanTask(String planId, int taskIndex) =>
+      healPlanTask(planId, taskIndex);
   static String cancelHealPlan(String id) => '/heal-plans/$id/cancel';
 
   // Notifications

@@ -4,6 +4,7 @@ import '../../../../core/networking/api_endpoints.dart';
 import '../../../../core/networking/api_response_parser.dart';
 import '../models/heal_plan_model.dart';
 import '../models/responses/heal_plans_response.dart';
+import '../models/task_detail_model.dart';
 
 /// Remote heal-plans API. Throws [DioException] on failure; the repository
 /// maps those to typed failures at the boundary.
@@ -41,6 +42,24 @@ class TreatmentsDataSource {
   Future<HealPlanModel> toggleTask(String planId, int taskIndex) async {
     final response = await _dio.patch<dynamic>(
       ApiEndpoints.toggleHealPlanTask(planId, taskIndex),
+    );
+    return _planFromResponse(response);
+  }
+
+  /// Fetches the full details of a single task
+  /// (`GET /heal-plans/:id/tasks/:taskIndex`).
+  Future<TaskDetailModel> getTaskDetail(String planId, int taskIndex) async {
+    final response = await _dio.get<dynamic>(
+      ApiEndpoints.healPlanTask(planId, taskIndex),
+    );
+    return TaskDetailModel.fromData(ApiResponseParser.dataMap(response));
+  }
+
+  /// Cancels an active plan (`PATCH /heal-plans/:id/cancel`) and returns the
+  /// updated plan.
+  Future<HealPlanModel> cancelPlan(String planId) async {
+    final response = await _dio.patch<dynamic>(
+      ApiEndpoints.cancelHealPlan(planId),
     );
     return _planFromResponse(response);
   }
