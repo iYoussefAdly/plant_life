@@ -9,6 +9,11 @@ class NotificationEntity {
   final bool isRead;
   final String? relatedId;
 
+  /// True for reminders derived on the device from active treatment tasks
+  /// (not persisted on the backend). Read-state for these is tracked locally,
+  /// so `markAsRead`/`markAllAsRead` must not call the server for them.
+  final bool isLocal;
+
   const NotificationEntity({
     required this.id,
     required this.type,
@@ -17,6 +22,7 @@ class NotificationEntity {
     required this.timestamp,
     this.isRead = false,
     this.relatedId,
+    this.isLocal = false,
   });
 
   NotificationEntity copyWith({bool? isRead}) => NotificationEntity(
@@ -27,5 +33,6 @@ class NotificationEntity {
         timestamp: timestamp,
         isRead: isRead ?? this.isRead,
         relatedId: relatedId,
+        isLocal: isLocal,
       );
 }
