@@ -76,6 +76,7 @@ import '../../features/notifications/data/datasources/notifications_data_source.
 import '../../features/notifications/data/repos/notifications_repository_impl.dart';
 import '../../features/notifications/domain/repos/notifications_repository.dart';
 import '../../features/notifications/domain/usecases/get_notifications_usecase.dart';
+import '../../features/notifications/domain/usecases/get_treatment_reminders_usecase.dart';
 import '../../features/notifications/domain/usecases/get_unread_count_usecase.dart';
 import '../../features/notifications/domain/usecases/mark_all_notifications_read_usecase.dart';
 import '../../features/notifications/domain/usecases/mark_notification_read_usecase.dart';
@@ -210,6 +211,9 @@ void setupServiceLocator() {
   sl.registerLazySingleton(() => MarkNotificationReadUseCase(sl<NotificationsRepository>()));
   sl.registerLazySingleton(() => MarkAllNotificationsReadUseCase(sl<NotificationsRepository>()));
   sl.registerLazySingleton(() => WatchNewNotificationsUseCase(sl<NotificationsRepository>()));
+  sl.registerLazySingleton(
+    () => GetTreatmentRemindersUseCase(sl<TreatmentsRepository>()),
+  );
   // Intentionally a lazySingleton (not a factory like other cubits): the home
   // app-bar badge and the notifications screen share this one instance so that
   // marking a notification read updates the badge. The profile logout flow
@@ -220,6 +224,8 @@ void setupServiceLocator() {
         sl<MarkNotificationReadUseCase>(),
         sl<MarkAllNotificationsReadUseCase>(),
         sl<WatchNewNotificationsUseCase>(),
+        sl<GetTreatmentRemindersUseCase>(),
+        sl<AppEventBus>(),
       ));
 
   // ---- Store (separate backend) ----
