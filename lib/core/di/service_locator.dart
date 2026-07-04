@@ -5,7 +5,32 @@ import 'package:get_it/get_it.dart';
 import '../events/app_event_bus.dart';
 import '../networking/dio_factory.dart';
 import '../networking/socket_service.dart';
+import '../storage/store_token_storage.dart';
 import '../storage/token_storage.dart';
+import '../../features/store/data/store_api_client.dart';
+import '../../features/store/data/datasources/products_data_source.dart';
+import '../../features/store/data/datasources/store_auth_data_source.dart';
+import '../../features/store/data/datasources/cart_data_source.dart';
+import '../../features/store/data/datasources/orders_data_source.dart';
+import '../../features/store/data/repos/products_repository_impl.dart';
+import '../../features/store/data/repos/store_session_repository_impl.dart';
+import '../../features/store/data/repos/cart_repository_impl.dart';
+import '../../features/store/data/repos/orders_repository_impl.dart';
+import '../../features/store/domain/repos/products_repository.dart';
+import '../../features/store/domain/repos/store_session_repository.dart';
+import '../../features/store/domain/repos/cart_repository.dart';
+import '../../features/store/domain/repos/orders_repository.dart';
+import '../../features/store/domain/usecases/get_products_usecase.dart';
+import '../../features/store/domain/usecases/get_product_usecase.dart';
+import '../../features/store/domain/usecases/provision_store_session_usecase.dart';
+import '../../features/store/domain/usecases/clear_store_session_usecase.dart';
+import '../../features/store/domain/usecases/cart_usecases.dart';
+import '../../features/store/domain/usecases/order_usecases.dart';
+import '../../features/store/presentation/bloc/products_cubit.dart';
+import '../../features/store/presentation/bloc/cart_cubit.dart';
+import '../../features/store/presentation/bloc/orders_cubit.dart';
+import '../../features/store/presentation/bloc/order_details_cubit.dart';
+import '../../features/store/presentation/bloc/checkout_cubit.dart';
 import '../../features/auth/data/datasources/auth_data_source.dart';
 import '../../features/auth/data/repos/auth_repository_impl.dart';
 import '../../features/auth/domain/repos/auth_repository.dart';
@@ -69,6 +94,14 @@ void setupServiceLocator() {
   sl.registerLazySingleton(() => SocketService(sl<TokenStorage>()));
   // App-wide bus for automatic cross-feature UI sync after data changes.
   sl.registerLazySingleton(() => AppEventBus());
+
+  // Store backend (separate host + token + Dio).
+  sl.registerLazySingleton(
+    () => StoreTokenStorage(sl<FlutterSecureStorage>()),
+  );
+  sl.registerLazySingleton(
+    () => StoreDioFactory.create(sl<StoreTokenStorage>()),
+  );
   sl.registerLazySingleton<Dio>(
     () => DioFactory.create(
       tokenStorage: sl<TokenStorage>(),
@@ -91,6 +124,7 @@ void setupServiceLocator() {
         sl<LoginUseCase>(),
         sl<RegisterUseCase>(),
         sl<LogoutUseCase>(),
+        sl<ProvisionStoreSessionUseCase>(),
       ));
 
   // Profile — intentionally a lazySingleton: the Home app-bar greeting/avatar
@@ -180,4 +214,67 @@ void setupServiceLocator() {
         sl<MarkAllNotificationsReadUseCase>(),
         sl<WatchNewNotificationsUseCase>(),
       ));
+
+  // ---- Store (separate backend) ----
+  // Store auth / session bridge
+  sl.registerLazySingleton(() => StoreAuthDataSource(sl<StoreApiClient>()));
+  sl.registerLazySingleton<StoreSessionRepository>(
+    () => StoreSessionRepositoryImpl(
+      sl<StoreAuthDataSource>(),
+      sl<StoreTokenStorage>(),
+    ),
+  );
+  sl.registerLazySingleton(
+    () => ProvisionStoreSessionUseCase(sl<StoreSessionRepository>()),
+  );
+  sl.registerLazySingleton(
+    () => ClearStoreSessionUseCase(sl<StoreSessionRepository>()),
+  );
+
+  // Products
+  sl.registerLazySingleton(() => ProductsDataSource(sl<StoreApiClient>()));
+  sl.registerLazySingleton<ProductsRepository>(
+    () => ProductsRepositoryImpl(sl<ProductsDataSource>()),
+  );
+  sl.registerLazySingleton(() => GetProductsUseCase(sl<ProductsRepository>()));
+  sl.registerLazySingleton(() => GetProductUseCase(sl<ProductsRepository>()));
+  sl.registerFactory(() => ProductsCubit(sl<GetProductsUseCase>()));
+
+  // Cart — shared singleton so the badge + cart screen stay in sync everywhere.
+  sl.registerLazySingleton(() => CartDataSource(sl<StoreApiClient>()));
+  sl.registerLazySingleton<CartRepository>(
+    () => CartRepositoryImpl(sl<CartDataSource>()),
+  );
+  sl.registerLazySingleton(() => GetCartUseCase(sl<CartRepository>()));
+  sl.registerLazySingleton(() => AddToCartUseCase(sl<CartRepository>()));
+  sl.registerLazySingleton(() => UpdateCartItemUseCase(sl<CartRepository>()));
+  sl.registerLazySingleton(() => RemoveCartItemUseCase(sl<CartRepository>()));
+  sl.registerLazySingleton(() => ClearCartUseCase(sl<CartRepository>()));
+  sl.registerLazySingleton(() => CartCubit(
+        sl<GetCartUseCase>(),
+        sl<AddToCartUseCase>(),
+        sl<UpdateCartItemUseCase>(),
+        sl<RemoveCartItemUseCase>(),
+        sl<ClearCartUseCase>(),
+      ));
+
+  // Orders + checkout
+  sl.registerLazySingleton(() => OrdersDataSource(sl<StoreApiClient>()));
+  sl.registerLazySingleton<OrdersRepository>(
+    () => OrdersRepositoryImpl(sl<OrdersDataSource>()),
+  );
+  sl.registerLazySingleton(() => CreateOrderUseCase(sl<OrdersRepository>()));
+  sl.registerLazySingleton(() => GetMyOrdersUseCase(sl<OrdersRepository>()));
+  sl.registerLazySingleton(() => GetOrderUseCase(sl<OrdersRepository>()));
+  sl.registerLazySingleton(
+    () => CreateCheckoutSessionUseCase(sl<OrdersRepository>()),
+  );
+  sl.registerFactory(() => OrdersCubit(sl<GetMyOrdersUseCase>()));
+  sl.registerFactory(() => OrderDetailsCubit(sl<GetOrderUseCase>()));
+  sl.registerFactory(
+    () => CheckoutCubit(
+      sl<CreateOrderUseCase>(),
+      sl<CreateCheckoutSessionUseCase>(),
+    ),
+  );
 }

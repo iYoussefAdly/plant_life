@@ -10,4 +10,12 @@ abstract final class AppRoutes {
   static const recoveryProgress = '/recovery-progress';
   static const notifications = '/notifications';
   static const profile = '/profile';
+
+  // Store
+  static const store = '/store';
+  static const productDetails = '/store/product';
+  static const cart = '/store/cart';
+  static const checkout = '/store/checkout';
+  static const orders = '/store/orders';
+  static const orderDetails = '/store/order';
 }

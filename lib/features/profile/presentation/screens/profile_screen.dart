@@ -11,6 +11,8 @@ import '../../../../core/widgets/error_view.dart';
 import '../../../../core/widgets/fade_slide_in.dart';
 import '../../../auth/domain/entities/user_entity.dart';
 import '../../../notifications/presentation/bloc/notifications_cubit.dart';
+import '../../../store/domain/usecases/clear_store_session_usecase.dart';
+import '../../../store/presentation/bloc/cart_cubit.dart';
 import '../bloc/profile_cubit.dart';
 import '../bloc/profile_state.dart';
 
@@ -30,6 +32,9 @@ class ProfileScreen extends StatelessWidget {
             // Clear the previous user's notifications so the next session
             // starts with a clean badge/list.
             sl<NotificationsCubit>().reset();
+            // Drop the store session + cart so the next user starts clean.
+            sl<ClearStoreSessionUseCase>()();
+            sl<CartCubit>().reset();
             context.go(AppRoutes.login);
           }
         },
@@ -80,7 +85,25 @@ class _ProfileContent extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 24),
-        FadeSlideIn(index: 3, child: _LogoutTile(onTap: () => _confirmLogout(context))),
+        FadeSlideIn(
+          index: 3,
+          child: _NavTile(
+            icon: Icons.storefront_outlined,
+            label: 'Plant Store',
+            onTap: () => context.push(AppRoutes.store),
+          ),
+        ),
+        const SizedBox(height: 10),
+        FadeSlideIn(
+          index: 4,
+          child: _NavTile(
+            icon: Icons.receipt_long_outlined,
+            label: 'My Orders',
+            onTap: () => context.push(AppRoutes.orders),
+          ),
+        ),
+        const SizedBox(height: 24),
+        FadeSlideIn(index: 5, child: _LogoutTile(onTap: () => _confirmLogout(context))),
         const SizedBox(height: 16),
       ],
     );
@@ -253,6 +276,63 @@ class _InfoTile extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _NavTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _NavTile({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(11),
+              ),
+              child: Icon(icon, size: 20, color: AppColors.primary),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              label,
+              style: AppTextStyles.bodyMedium.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            const Icon(Icons.chevron_right,
+                color: AppColors.textHint, size: 20),
+          ],
+        ),
       ),
     );
   }
