@@ -13,11 +13,26 @@ class HealPlanModel extends TreatmentPlanEntity {
   });
 
   factory HealPlanModel.fromJson(Map<String, dynamic> json) {
+    // Treatment starts immediately: the first day (day 1) is Today. The backend
+    // schedules `scheduledDate = startDate + dayNumber`, which pushes day 1 to
+    // tomorrow — so we ignore that field and re-derive each task's date from the
+    // plan start day plus its (dayNumber - 1) offset. This anchors day 1 to the
+    // start day and keeps the timeline consistent (day 2 = +1, day 3 = +2, …).
+    // It is also idempotent if the backend later fixes its own scheduling.
+    final planStart = DateTime.tryParse(
+          (json['startDate'] ?? json['createdAt'] ?? '').toString(),
+        )?.toLocal() ??
+        DateTime.now();
+    final planStartDay =
+        DateTime(planStart.year, planStart.month, planStart.day);
+
     final rawTasks = (json['tasks'] as List?) ?? const [];
     final steps = <TreatmentStepEntity>[];
     for (var i = 0; i < rawTasks.length; i++) {
       final task = rawTasks[i];
       if (task is! Map<String, dynamic>) continue;
+      final dayNumber = (task['day'] as num?)?.toInt() ?? 1;
+      final dayOffset = dayNumber > 1 ? dayNumber - 1 : 0;
       steps.add(
         TreatmentStepEntity(
           // The id is the task's index in the backend `tasks` array — the
@@ -26,11 +41,15 @@ class HealPlanModel extends TreatmentPlanEntity {
           title: task['title'] as String? ?? '',
           description: task['description'] as String? ?? '',
           isCompleted: task['completed'] as bool? ?? false,
-          scheduledAt:
-              DateTime.tryParse(task['scheduledDate'] as String? ?? '')
-                      ?.toLocal() ??
-                  DateTime.now(),
-          dayNumber: (task['day'] as num?)?.toInt() ?? 1,
+          // Use the DateTime constructor (not `add(Duration(days:))`) so day
+          // overflow normalizes correctly and DST transitions can't shift the
+          // result onto the wrong calendar day.
+          scheduledAt: DateTime(
+            planStartDay.year,
+            planStartDay.month,
+            planStartDay.day + dayOffset,
+          ),
+          dayNumber: dayNumber,
         ),
       );
     }

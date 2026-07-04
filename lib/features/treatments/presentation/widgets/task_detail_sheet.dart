@@ -10,10 +10,15 @@ import '../bloc/task_detail_cubit.dart';
 import '../bloc/task_detail_state.dart';
 
 /// Opens the task-detail bottom sheet for [taskIndex] within [planId].
+///
+/// [scheduledDate] is the timeline-corrected date from the calling task tile;
+/// it overrides the raw (off-by-one) date the task endpoint returns so the
+/// sheet stays consistent with the rest of the treatment timeline.
 Future<void> showTaskDetailSheet(
   BuildContext context, {
   required String planId,
   required int taskIndex,
+  DateTime? scheduledDate,
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -21,13 +26,15 @@ Future<void> showTaskDetailSheet(
     backgroundColor: Colors.transparent,
     builder: (_) => BlocProvider(
       create: (_) => sl<TaskDetailCubit>()..load(planId, taskIndex),
-      child: const _TaskDetailSheet(),
+      child: _TaskDetailSheet(scheduledDateOverride: scheduledDate),
     ),
   );
 }
 
 class _TaskDetailSheet extends StatelessWidget {
-  const _TaskDetailSheet();
+  final DateTime? scheduledDateOverride;
+
+  const _TaskDetailSheet({this.scheduledDateOverride});
 
   @override
   Widget build(BuildContext context) {
@@ -58,6 +65,7 @@ class _TaskDetailSheet extends StatelessWidget {
                     TaskDetailLoaded(:final task) => _Content(
                         task: task,
                         scrollController: scrollController,
+                        scheduledDateOverride: scheduledDateOverride,
                       ),
                     TaskDetailError(:final message) => _ErrorBody(
                         message: message,
@@ -95,8 +103,13 @@ class _Handle extends StatelessWidget {
 class _Content extends StatelessWidget {
   final TaskDetailEntity task;
   final ScrollController scrollController;
+  final DateTime? scheduledDateOverride;
 
-  const _Content({required this.task, required this.scrollController});
+  const _Content({
+    required this.task,
+    required this.scrollController,
+    this.scheduledDateOverride,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -122,7 +135,10 @@ class _Content extends StatelessWidget {
           ),
         ],
         const SizedBox(height: 12),
-        _MetaRow(task: task),
+        _MetaRow(
+          task: task,
+          scheduledDate: scheduledDateOverride ?? task.scheduledDate,
+        ),
         if (task.hasDescription) ...[
           const SizedBox(height: 20),
           _Section(
@@ -180,15 +196,16 @@ class _Content extends StatelessWidget {
 
 class _MetaRow extends StatelessWidget {
   final TaskDetailEntity task;
-  const _MetaRow({required this.task});
+  final DateTime? scheduledDate;
+  const _MetaRow({required this.task, this.scheduledDate});
 
   @override
   Widget build(BuildContext context) {
     final chips = <Widget>[
-      if (task.scheduledDate != null)
+      if (scheduledDate != null)
         _MetaChip(
           icon: Icons.event_outlined,
-          label: formatShortDate(task.scheduledDate!),
+          label: formatShortDate(scheduledDate!),
         ),
       if (task.hasEstimatedTime)
         _MetaChip(

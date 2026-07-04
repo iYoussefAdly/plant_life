@@ -200,10 +200,22 @@ class _DetailContent extends StatelessWidget {
                 onOpenTask: (stepId) {
                   final taskIndex = int.tryParse(stepId);
                   if (taskIndex == null) return;
+                  // Pass the timeline-corrected date so the sheet matches the
+                  // tile (the task endpoint returns the raw off-by-one date).
+                  // Look up by step id rather than list position, in case the
+                  // step list is shorter than the raw backend task array.
+                  DateTime? scheduledAt;
+                  for (final step in plan.steps) {
+                    if (step.id == stepId) {
+                      scheduledAt = step.scheduledAt;
+                      break;
+                    }
+                  }
                   showTaskDetailSheet(
                     context,
                     planId: plan.id,
                     taskIndex: taskIndex,
+                    scheduledDate: scheduledAt,
                   );
                 },
               ),
