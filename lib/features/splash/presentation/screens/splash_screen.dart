@@ -5,11 +5,14 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/service_locator.dart';
 import '../../../../core/localization/l10n.dart';
+import '../../../../core/notifications/local_notifications_service.dart';
+import '../../../../core/routing/app_router.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/storage/app_preferences.dart';
 import '../../../../core/storage/token_storage.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../treatments/presentation/reminder_navigation.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -50,7 +53,20 @@ class _SplashScreenState extends State<SplashScreen>
     }
     final hasTokens = await sl<TokenStorage>().hasTokens();
     if (!mounted) return;
-    context.go(hasTokens ? AppRoutes.home : AppRoutes.login);
+    if (!hasTokens) {
+      context.go(AppRoutes.login);
+      return;
+    }
+    // If a reminder cold-launched the app, land on Home then open the tapped
+    // plan (so Back returns to Home).
+    final launchPayload = sl<LocalNotificationsService>().takeLaunchPayload();
+    final reminderArgs = launchPayload == null
+        ? null
+        : treatmentArgsFromReminderPayload(launchPayload);
+    context.go(AppRoutes.home);
+    if (reminderArgs != null) {
+      AppRouter.router.push(AppRoutes.treatmentDetail, extra: reminderArgs);
+    }
   }
 
   @override

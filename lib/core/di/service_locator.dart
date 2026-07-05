@@ -7,6 +7,7 @@ import '../events/app_event_bus.dart';
 import '../localization/locale_cubit.dart';
 import '../networking/dio_factory.dart';
 import '../networking/socket_service.dart';
+import '../notifications/local_notifications_service.dart';
 import '../storage/app_preferences.dart';
 import '../storage/store_token_storage.dart';
 import '../storage/token_storage.dart';
@@ -63,9 +64,12 @@ import '../../features/treatments/domain/repos/treatments_repository.dart';
 import '../../features/treatments/domain/usecases/cancel_plan_usecase.dart';
 import '../../features/treatments/domain/usecases/create_heal_plan_usecase.dart';
 import '../../features/treatments/domain/usecases/get_task_detail_usecase.dart';
+import '../../features/treatments/domain/services/treatment_reminder_scheduler.dart';
 import '../../features/treatments/domain/usecases/get_treatment_plans_usecase.dart';
 import '../../features/treatments/domain/usecases/get_treatment_detail_usecase.dart';
+import '../../features/treatments/domain/usecases/sync_treatment_reminders_usecase.dart';
 import '../../features/treatments/domain/usecases/toggle_step_usecase.dart';
+import '../../features/treatments/data/services/treatment_reminder_scheduler_impl.dart';
 import '../../features/treatments/presentation/bloc/task_detail_cubit.dart';
 import '../../features/treatments/presentation/bloc/treatments_cubit.dart';
 import '../../features/treatments/presentation/bloc/treatment_detail_cubit.dart';
@@ -106,6 +110,11 @@ Future<void> setupServiceLocator() async {
   final prefs = await SharedPreferences.getInstance();
   sl.registerLazySingleton(() => AppPreferences(prefs));
   sl.registerLazySingleton(() => LocaleCubit(sl<AppPreferences>()));
+
+  // On-device notifications (scheduled treatment reminders). Registered here
+  // but initialized from main() — DI setup stays free of async platform I/O
+  // (so widget tests that only build the DI graph don't touch plugin channels).
+  sl.registerLazySingleton(() => LocalNotificationsService());
 
   // Store backend (separate host + token + Dio).
   sl.registerLazySingleton(
@@ -183,14 +192,29 @@ Future<void> setupServiceLocator() async {
   sl.registerLazySingleton(() => CreateHealPlanUseCase(sl<TreatmentsRepository>()));
   sl.registerLazySingleton(() => GetTaskDetailUseCase(sl<TreatmentsRepository>()));
   sl.registerLazySingleton(() => CancelPlanUseCase(sl<TreatmentsRepository>()));
+  // On-device task reminders (scheduled locally; work with the app closed).
+  sl.registerLazySingleton<TreatmentReminderScheduler>(
+    () => TreatmentReminderSchedulerImpl(
+      sl<LocalNotificationsService>(),
+      sl<AppPreferences>(),
+    ),
+  );
+  sl.registerLazySingleton(
+    () => SyncTreatmentRemindersUseCase(sl<TreatmentReminderScheduler>()),
+  );
   sl.registerFactory(
-    () => TreatmentsCubit(sl<GetTreatmentPlansUseCase>(), sl<AppEventBus>()),
+    () => TreatmentsCubit(
+      sl<GetTreatmentPlansUseCase>(),
+      sl<AppEventBus>(),
+      sl<SyncTreatmentRemindersUseCase>(),
+    ),
   );
   sl.registerFactory(() => TreatmentDetailCubit(
         sl<GetTreatmentDetailUseCase>(),
         sl<ToggleStepUseCase>(),
         sl<CancelPlanUseCase>(),
         sl<AppEventBus>(),
+        sl<SyncTreatmentRemindersUseCase>(),
       ));
   sl.registerFactory(() => TaskDetailCubit(sl<GetTaskDetailUseCase>()));
 

@@ -526,6 +526,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get treatmentTaskDueToday => 'Treatment task due today';
 
   @override
+  String get notifTreatmentReminderTitle => 'Treatment reminder';
+
+  @override
+  String get notifTreatmentReminderBody =>
+      'You have a treatment task due today.';
+
+  @override
   String unreadCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

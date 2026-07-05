@@ -5,6 +5,7 @@ import '../../../../core/events/app_event.dart';
 import '../../../../core/events/app_event_bus.dart';
 import '../../domain/usecases/cancel_plan_usecase.dart';
 import '../../domain/usecases/get_treatment_detail_usecase.dart';
+import '../../domain/usecases/sync_treatment_reminders_usecase.dart';
 import '../../domain/usecases/toggle_step_usecase.dart';
 import 'treatment_detail_state.dart';
 
@@ -13,6 +14,7 @@ class TreatmentDetailCubit extends Cubit<TreatmentDetailState> {
   final ToggleStepUseCase _toggleStepUseCase;
   final CancelPlanUseCase _cancelPlanUseCase;
   final AppEventBus _eventBus;
+  final SyncTreatmentRemindersUseCase _syncReminders;
 
   String _currentPlanId = '';
 
@@ -21,6 +23,7 @@ class TreatmentDetailCubit extends Cubit<TreatmentDetailState> {
     this._toggleStepUseCase,
     this._cancelPlanUseCase,
     this._eventBus,
+    this._syncReminders,
   ) : super(const TreatmentDetailInitial());
 
   Future<void> loadDetail(String planId) async {
@@ -31,6 +34,10 @@ class TreatmentDetailCubit extends Cubit<TreatmentDetailState> {
     switch (result) {
       case Success(:final data):
         emit(TreatmentDetailSuccess(data));
+        // Schedule reminders for this plan's tasks (covers plan creation, which
+        // navigates straight here). Fire-and-forget — a scheduling hiccup must
+        // not break the screen.
+        _syncReminders(data);
       case Error(:final failure):
         emit(TreatmentDetailError(failure.message));
     }
@@ -52,6 +59,9 @@ class TreatmentDetailCubit extends Cubit<TreatmentDetailState> {
         // A cancelled plan drops out of active lists (Home's Today's Tasks,
         // the plans list) — let them refresh.
         _eventBus.emit(const TreatmentsChanged());
+        // Cancel all of this plan's scheduled reminders (syncPlan clears them
+        // for any non-active plan).
+        _syncReminders(data);
         return null;
       case Error(:final failure):
         return failure.message;
@@ -89,6 +99,9 @@ class TreatmentDetailCubit extends Cubit<TreatmentDetailState> {
         // Notify other screens (Home's Today's Tasks, the plans list) so they
         // refresh without a manual pull-to-refresh.
         _eventBus.emit(const TreatmentsChanged());
+        // Keep reminders in step with completion: a completed task drops its
+        // reminders; re-opening one reschedules them.
+        _syncReminders(data);
       case Error():
         emit(current);
     }

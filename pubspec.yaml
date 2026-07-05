@@ -50,6 +50,12 @@ dependencies:
   # Plain local preferences (onboarding flag + language). Secure storage is
   # reserved for tokens; prefs don't need encryption.
   shared_preferences: ^2.3.4
+  # On-device scheduled reminders for treatment tasks (works while the app is
+  # backgrounded or closed; no Firebase/FCM). timezone + flutter_timezone are
+  # required for DST-correct zonedSchedule.
+  flutter_local_notifications: ^18.0.1
+  timezone: ^0.9.4
+  flutter_timezone: ^3.0.1
 
 dev_dependencies:
   flutter_test:

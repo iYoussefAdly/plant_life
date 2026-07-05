@@ -11,6 +11,7 @@ import '../../../../core/widgets/error_view.dart';
 import '../../../../core/widgets/fade_slide_in.dart';
 import '../../../../core/localization/l10n.dart';
 import '../../../../core/localization/locale_cubit.dart';
+import '../../../../core/notifications/local_notifications_service.dart';
 import '../../../auth/domain/entities/user_entity.dart';
 import '../../../notifications/presentation/bloc/notifications_cubit.dart';
 import '../../../store/domain/usecases/clear_store_session_usecase.dart';
@@ -40,6 +41,8 @@ class ProfileScreen extends StatelessWidget {
             sl<ClearStoreSessionUseCase>()();
             sl<CartCubit>().reset();
             sl<ProductsCubit>().reset();
+            // Cancel this user's scheduled treatment reminders.
+            sl<LocalNotificationsService>().cancelAll();
             context.go(AppRoutes.login);
           }
         },

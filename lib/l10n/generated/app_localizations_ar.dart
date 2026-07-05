@@ -532,6 +532,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get treatmentTaskDueToday => 'مهمة علاج مستحقة اليوم';
 
   @override
+  String get notifTreatmentReminderTitle => 'تذكير بالعلاج';
+
+  @override
+  String get notifTreatmentReminderBody => 'لديك مهمة علاج مستحقة اليوم.';
+
+  @override
   String unreadCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
