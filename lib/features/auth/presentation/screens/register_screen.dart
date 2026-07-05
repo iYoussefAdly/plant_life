@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/service_locator.dart';
+import '../../../../core/localization/l10n.dart';
 import '../../../../core/networking/socket_service.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -28,7 +29,7 @@ class RegisterScreen extends StatelessWidget {
             } else if (state is AuthError) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(state.message),
+                  content: Text(localizeMessage(context, state.message)),
                   backgroundColor: AppColors.error,
                 ),
               );
@@ -41,17 +42,17 @@ class RegisterScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: 40),
-                  const AuthHeader(
+                  AuthHeader(
                     icon: Icons.person_add_outlined,
-                    title: 'Create Account',
-                    subtitle: 'Start monitoring your plants today',
+                    title: context.l10n.createAccount,
+                    subtitle: context.l10n.registerSubtitle,
                   ),
                   const SizedBox(height: 36),
                   const RegisterForm(),
                   const SizedBox(height: 24),
                   AuthFooter(
-                    promptText: 'Already have an account? ',
-                    actionText: 'Sign In',
+                    promptText: context.l10n.alreadyHaveAccount,
+                    actionText: context.l10n.signIn,
                     onAction: () => context.go(AppRoutes.login),
                   ),
                   const SizedBox(height: 24),

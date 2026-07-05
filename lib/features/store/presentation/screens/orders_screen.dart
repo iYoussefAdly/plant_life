@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/widgets/error_view.dart';
+import '../../../../core/localization/l10n.dart';
 import '../../domain/entities/order_entity.dart';
 import '../bloc/orders_cubit.dart';
 import '../bloc/orders_state.dart';
@@ -19,7 +20,7 @@ class OrdersScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('My Orders', style: AppTextStyles.headlineMedium),
+        title: Text(context.l10n.myOrders, style: AppTextStyles.headlineMedium),
       ),
       body: BlocBuilder<OrdersCubit, OrdersState>(
         builder: (context, state) => switch (state) {
@@ -75,7 +76,7 @@ class _OrderCard extends StatelessWidget {
             Row(
               children: [
                 Text(
-                  'Order #${_shortId(order.id)}',
+                  context.l10n.orderNumber(_shortId(order.id)),
                   style: AppTextStyles.bodyMedium
                       .copyWith(fontWeight: FontWeight.w700),
                 ),
@@ -85,7 +86,7 @@ class _OrderCard extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              '${order.totalQuantity} item${order.totalQuantity == 1 ? '' : 's'} • ${formatShortDate(order.createdAt)}',
+              '${context.l10n.itemsCount(order.totalQuantity)} • ${formatShortDate(order.createdAt)}',
               style: AppTextStyles.bodySmall
                   .copyWith(color: AppColors.textSecondary),
             ),
@@ -101,7 +102,9 @@ class _OrderCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  order.isCashOnDelivery ? 'Cash on delivery' : 'Card',
+                  order.isCashOnDelivery
+                      ? context.l10n.cashOnDeliveryShort
+                      : context.l10n.card,
                   style: AppTextStyles.bodySmall
                       .copyWith(color: AppColors.textHint),
                 ),
@@ -137,17 +140,17 @@ class _EmptyOrders extends StatelessWidget {
           Icon(Icons.receipt_long_outlined,
               size: 64, color: AppColors.textHint.withValues(alpha: 0.6)),
           const SizedBox(height: 14),
-          Text('No orders yet', style: AppTextStyles.headlineSmall),
+          Text(context.l10n.noOrdersYet, style: AppTextStyles.headlineSmall),
           const SizedBox(height: 6),
           Text(
-            'Your orders will appear here',
+            context.l10n.ordersAppearHere,
             style: AppTextStyles.bodySmall
                 .copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 16),
           FilledButton(
             onPressed: () => context.go(AppRoutes.store),
-            child: const Text('Start Shopping'),
+            child: Text(context.l10n.startShopping),
           ),
         ],
       ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/localization/l10n.dart';
 import '../../domain/entities/disease_entity.dart';
 import '../../domain/entities/scan_result_entity.dart';
 
@@ -39,7 +40,7 @@ class ScanResultCard extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         Text(
-          isHealthy ? 'Plant is Healthy!' : 'Disease Detected',
+          isHealthy ? context.l10n.plantIsHealthy : context.l10n.diseaseDetected,
           style: AppTextStyles.headlineMedium.copyWith(
             color: isHealthy ? AppColors.success : AppColors.error,
           ),
@@ -47,8 +48,8 @@ class ScanResultCard extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           isHealthy
-              ? 'No signs of disease were found in your plant.'
-              : '${result.diseases.length} disease${result.diseases.length > 1 ? 's' : ''} found',
+              ? context.l10n.noSignsOfDisease
+              : context.l10n.diseasesFound(result.diseases.length),
           style: AppTextStyles.bodyMedium.copyWith(
             color: AppColors.textSecondary,
           ),
@@ -66,7 +67,7 @@ class ScanResultCard extends StatelessWidget {
               child: FilledButton.icon(
                 onPressed: onStartTreatment,
                 icon: const Icon(Icons.play_arrow_rounded),
-                label: const Text('Start Treatment'),
+                label: Text(context.l10n.startTreatment),
               ),
             ),
           ],
@@ -77,7 +78,7 @@ class ScanResultCard extends StatelessWidget {
           child: TextButton.icon(
             onPressed: onScanAgain,
             icon: const Icon(Icons.refresh),
-            label: const Text('Scan Again'),
+            label: Text(context.l10n.scanAgain),
           ),
         ),
       ],
@@ -123,7 +124,7 @@ class _DiseaseTile extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  '$confidencePct% conf.',
+                  context.l10n.confidencePct(confidencePct),
                   style: AppTextStyles.labelLarge.copyWith(
                     color: AppColors.primary,
                     fontWeight: FontWeight.w700,
@@ -136,7 +137,7 @@ class _DiseaseTile extends StatelessWidget {
           Row(
             children: [
               Text(
-                'Severity',
+                context.l10n.severity,
                 style: AppTextStyles.bodySmall.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -195,8 +196,7 @@ class _TreatmentPrompt extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'A treatment plan is available for this diagnosis. '
-              'Start it to track your daily tasks.',
+              context.l10n.treatmentAvailableHint,
               style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.textSecondary,
                 height: 1.4,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../localization/l10n.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 
@@ -24,7 +25,9 @@ class ErrorView extends StatelessWidget {
             const Icon(Icons.error_outline, size: 48, color: AppColors.error),
             const SizedBox(height: 16),
             Text(
-              message,
+              // Known data-layer error constants get localized here; backend
+              // text passes through unchanged.
+              localizeMessage(context, message),
               style: AppTextStyles.bodyLarge,
               textAlign: TextAlign.center,
             ),
@@ -32,7 +35,7 @@ class ErrorView extends StatelessWidget {
             TextButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              label: Text(context.l10n.retry),
             ),
           ],
         ),

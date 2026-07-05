@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/intl.dart';
 
 import 'core/di/service_locator.dart';
+import 'core/localization/l10n.dart';
+import 'core/localization/locale_cubit.dart';
 import 'core/networking/socket_service.dart';
 import 'core/routing/app_router.dart';
 import 'core/routing/app_routes.dart';
@@ -11,9 +16,9 @@ import 'features/store/domain/usecases/clear_store_session_usecase.dart';
 import 'features/store/presentation/bloc/cart_cubit.dart';
 import 'features/store/presentation/bloc/products_cubit.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  setupServiceLocator();
+  await setupServiceLocator();
   // Redirect to login when a session expires (refresh failed), unless already
   // there — keeps the router dependency out of the DI layer.
   onSessionExpired = () {
@@ -42,11 +47,35 @@ class PlantLife extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'PlantLife',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
-      routerConfig: AppRouter.router,
+    return BlocProvider.value(
+      value: sl<LocaleCubit>(),
+      child: BlocBuilder<LocaleCubit, Locale?>(
+        builder: (context, locale) => MaterialApp.router(
+          title: 'PlantLife',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.light,
+          // null = follow the system locale until the user picks a language.
+          locale: locale,
+          supportedLocales: LocaleCubit.supported,
+          localeResolutionCallback: (device, supported) {
+            final resolved = supported.firstWhere(
+              (l) => l.languageCode == (locale ?? device)?.languageCode,
+              orElse: () => supported.first,
+            );
+            // Keep context-free intl formatting (dates/prices) in the same
+            // locale as the UI, including the follow-system case.
+            Intl.defaultLocale = resolved.languageCode;
+            return resolved;
+          },
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          routerConfig: AppRouter.router,
+        ),
+      ),
     );
   }
 }

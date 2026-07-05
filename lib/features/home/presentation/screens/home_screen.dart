@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/localization/l10n.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -71,11 +72,11 @@ class HomeScreen extends StatelessWidget {
 class _GreetingHeader extends StatelessWidget {
   const _GreetingHeader();
 
-  String get _greeting {
+  String _greeting(BuildContext context) {
     final hour = DateTime.now().hour;
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
-    return 'Good evening';
+    if (hour < 12) return context.l10n.goodMorning;
+    if (hour < 17) return context.l10n.goodAfternoon;
+    return context.l10n.goodEvening;
   }
 
   @override
@@ -114,14 +115,16 @@ class _GreetingHeader extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '$_greeting 👋',
+                    '${_greeting(context)} 👋',
                     style: AppTextStyles.bodySmall.copyWith(
                       color: AppColors.textSecondary,
                       fontSize: 11,
                     ),
                   ),
                   Text(
-                    user?.name.isNotEmpty == true ? user!.name : 'PlantLife',
+                    user?.name.isNotEmpty == true
+                        ? user!.name
+                        : context.l10n.appName,
                     style: AppTextStyles.headlineSmall.copyWith(fontSize: 16),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -153,9 +156,9 @@ class _HomeContent extends StatelessWidget {
             index: 1,
             child: SectionHeader(
               icon: Icons.monitor_heart_outlined,
-              title: 'Sensor Overview',
+              title: context.l10n.sensorOverview,
               trailing: Text(
-                '${data.sensorReadings.length} sensors',
+                context.l10n.sensorsCount(data.sensorReadings.length),
                 style: AppTextStyles.labelMedium.copyWith(
                   color: AppColors.textHint,
                 ),

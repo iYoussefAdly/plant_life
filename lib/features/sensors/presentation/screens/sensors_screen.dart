@@ -8,6 +8,7 @@ import '../../../../core/widgets/fade_slide_in.dart';
 import '../../../../core/widgets/pulsing_dot.dart';
 import '../../../../core/widgets/section_header.dart';
 import '../../../../core/widgets/skeleton.dart';
+import '../../../../core/localization/l10n.dart';
 import '../../domain/entities/sensors_data_entity.dart';
 import '../bloc/sensors_cubit.dart';
 import '../bloc/sensors_state.dart';
@@ -21,7 +22,7 @@ class SensorsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Sensors', style: AppTextStyles.headlineMedium),
+        title: Text(context.l10n.navSensors, style: AppTextStyles.headlineMedium),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_outlined),
@@ -61,7 +62,7 @@ class _SensorsContent extends StatelessWidget {
           FadeSlideIn(
             child: SectionHeader(
               icon: Icons.sensors,
-              title: 'Live Readings',
+              title: context.l10n.liveReadings,
               trailing: const _LiveChip(),
             ),
           ),
@@ -103,7 +104,7 @@ class _LiveChip extends StatelessWidget {
           const PulsingDot(color: AppColors.success, size: 7),
           const SizedBox(width: 6),
           Text(
-            'LIVE',
+            context.l10n.liveLabel,
             style: AppTextStyles.labelMedium.copyWith(
               color: AppColors.success,
               fontWeight: FontWeight.w700,

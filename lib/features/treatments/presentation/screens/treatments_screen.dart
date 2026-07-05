@@ -6,6 +6,7 @@ import '../../../../core/routing/app_routes.dart';
 import '../../../../core/widgets/error_view.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/localization/l10n.dart';
 import '../../domain/entities/treatment_plan_entity.dart';
 import '../bloc/treatments_cubit.dart';
 import '../bloc/treatments_state.dart';
@@ -18,7 +19,7 @@ class TreatmentsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Treatments', style: AppTextStyles.headlineMedium),
+        title: Text(context.l10n.navTreatments, style: AppTextStyles.headlineMedium),
       ),
       body: BlocBuilder<TreatmentsCubit, TreatmentsState>(
         builder: (context, state) => switch (state) {
@@ -46,7 +47,7 @@ class _PlansList extends StatelessWidget {
     if (plans.isEmpty) {
       return Center(
         child: Text(
-          'No treatment plans yet',
+          context.l10n.noTreatmentPlansYet,
           style: AppTextStyles.bodyMedium.copyWith(
             color: AppColors.textSecondary,
           ),

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/localization/l10n.dart';
+import '../../../../core/utils/date_formatter.dart';
 import '../../domain/entities/scan_result_entity.dart';
 
 class ScanHistoryList extends StatelessWidget {
@@ -16,7 +18,7 @@ class ScanHistoryList extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Text(
-            'No scans yet',
+            context.l10n.noScansYet,
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -33,24 +35,18 @@ class ScanHistoryList extends StatelessWidget {
             const Icon(Icons.history_outlined,
                 size: 20, color: AppColors.textPrimary),
             const SizedBox(width: 8),
-            Text('Scan History', style: AppTextStyles.headlineSmall),
+            Text(context.l10n.scanHistory, style: AppTextStyles.headlineSmall),
           ],
         ),
         const SizedBox(height: 12),
         ...history.map((scan) => _ScanHistoryTile(
               scan: scan,
-              timeAgo: _formatTimeAgo(scan.scannedAt),
+              timeAgo: formatTimeAgo(context, scan.scannedAt),
             )),
       ],
     );
   }
 
-  static String _formatTimeAgo(DateTime timestamp) {
-    final diff = DateTime.now().difference(timestamp);
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
-    return '${diff.inDays}d ago';
-  }
 }
 
 class _ScanHistoryTile extends StatelessWidget {
@@ -115,7 +111,7 @@ class _ScanHistoryTile extends StatelessWidget {
               children: [
                 Text(
                   isHealthy
-                      ? 'Healthy'
+                      ? context.l10n.healthy
                       : scan.diseases.map((d) => d.name).join(', '),
                   style: AppTextStyles.bodyMedium.copyWith(
                     fontWeight: FontWeight.w500,

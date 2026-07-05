@@ -5,6 +5,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/widgets/section_header.dart';
+import '../../../../core/localization/l10n.dart';
 import '../../domain/entities/sensor_alert_entity.dart';
 
 class AlertHistoryList extends StatelessWidget {
@@ -19,7 +20,7 @@ class AlertHistoryList extends StatelessWidget {
       children: [
         SectionHeader(
           icon: Icons.history_outlined,
-          title: 'Alert History',
+          title: context.l10n.alertHistory,
           trailing: alerts.isEmpty
               ? null
               : Container(
@@ -45,7 +46,7 @@ class AlertHistoryList extends StatelessWidget {
         else
           ...alerts.map((alert) => _AlertHistoryTile(
                 alert: alert,
-                timeAgo: formatTimeAgo(alert.timestamp),
+                timeAgo: formatTimeAgo(context, alert.timestamp),
               )),
       ],
     );
@@ -73,7 +74,7 @@ class _EmptyAlerts extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            'No alerts recorded',
+            context.l10n.noAlertsRecorded,
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.textSecondary,
               fontWeight: FontWeight.w500,
@@ -181,7 +182,7 @@ class _AlertHistoryTile extends StatelessWidget {
                       size: 11, color: AppColors.success),
                   const SizedBox(width: 3),
                   Text(
-                    'Resolved',
+                    context.l10n.resolved,
                     style: AppTextStyles.labelMedium.copyWith(
                       color: AppColors.success,
                       fontSize: 10,

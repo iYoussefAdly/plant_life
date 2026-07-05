@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/localization/l10n.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../bloc/auth_cubit.dart';
@@ -30,41 +31,42 @@ class _RegisterFormState extends State<RegisterForm> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Form(
       key: _formKey,
       child: Column(
         children: [
           AppTextField(
-            label: 'Full Name',
-            hint: 'Enter your full name',
+            label: l10n.fullName,
+            hint: l10n.enterYourFullName,
             controller: _nameController,
             keyboardType: TextInputType.name,
             prefixIcon: const Icon(Icons.person_outlined, size: 20),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
-                return 'Please enter your name';
+                return l10n.pleaseEnterName;
               }
               return null;
             },
           ),
           const SizedBox(height: 16),
           AppTextField(
-            label: 'Email',
-            hint: 'Enter your email',
+            label: l10n.email,
+            hint: l10n.enterYourEmail,
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
             prefixIcon: const Icon(Icons.email_outlined, size: 20),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
-                return 'Please enter your email';
+                return l10n.pleaseEnterEmail;
               }
               return null;
             },
           ),
           const SizedBox(height: 16),
           AppTextField(
-            label: 'Password',
-            hint: 'Create a password',
+            label: l10n.password,
+            hint: l10n.createAPassword,
             controller: _passwordController,
             obscureText: _obscurePassword,
             prefixIcon: const Icon(Icons.lock_outlined, size: 20),
@@ -81,7 +83,7 @@ class _RegisterFormState extends State<RegisterForm> {
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Please enter a password';
+                return l10n.pleaseEnterAPassword;
               }
               return null;
             },
@@ -91,7 +93,7 @@ class _RegisterFormState extends State<RegisterForm> {
             builder: (context, state) {
               final isLoading = state is AuthLoading;
               return AppButton(
-                text: 'Create Account',
+                text: l10n.createAccount,
                 isLoading: isLoading,
                 width: double.infinity,
                 onPressed: () {

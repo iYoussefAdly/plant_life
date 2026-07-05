@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/localization/l10n.dart';
 import '../../domain/entities/scan_result_entity.dart';
 
 final _picker = ImagePicker();
@@ -17,7 +18,7 @@ Future<String?> pickScanImagePath(
 ) async {
   if (source == ScanImageSource.esp32Cam) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('ESP32 camera support is coming soon')),
+      SnackBar(content: Text(context.l10n.esp32ComingSoon)),
     );
     return null;
   }
@@ -54,26 +55,26 @@ Future<ScanImageSource?> showScanSourceSheet(BuildContext context) {
               ),
             ),
             const SizedBox(height: 14),
-            Text('Choose image source', style: AppTextStyles.headlineSmall),
+            Text(context.l10n.chooseImageSource, style: AppTextStyles.headlineSmall),
             const SizedBox(height: 12),
             _SourceTile(
               icon: Icons.camera_alt_outlined,
-              title: 'Camera',
-              subtitle: 'Take a new photo',
+              title: context.l10n.camera,
+              subtitle: context.l10n.takeANewPhoto,
               onTap: () =>
                   Navigator.of(sheetContext).pop(ScanImageSource.camera),
             ),
             _SourceTile(
               icon: Icons.photo_library_outlined,
-              title: 'Gallery',
-              subtitle: 'Upload an existing image',
+              title: context.l10n.gallery,
+              subtitle: context.l10n.uploadExistingImage,
               onTap: () =>
                   Navigator.of(sheetContext).pop(ScanImageSource.gallery),
             ),
             _SourceTile(
               icon: Icons.linked_camera_outlined,
-              title: 'ESP32-CAM',
-              subtitle: 'Capture from your plant camera',
+              title: context.l10n.esp32Cam,
+              subtitle: context.l10n.captureFromPlantCamera,
               onTap: () =>
                   Navigator.of(sheetContext).pop(ScanImageSource.esp32Cam),
             ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/localization/l10n.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/app_button.dart';
@@ -30,27 +31,28 @@ class _LoginFormState extends State<LoginForm> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Form(
       key: _formKey,
       child: Column(
         children: [
           AppTextField(
-            label: 'Email',
-            hint: 'Enter your email',
+            label: l10n.email,
+            hint: l10n.enterYourEmail,
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
             prefixIcon: const Icon(Icons.email_outlined, size: 20),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
-                return 'Please enter your email';
+                return l10n.pleaseEnterEmail;
               }
               return null;
             },
           ),
           const SizedBox(height: 16),
           AppTextField(
-            label: 'Password',
-            hint: 'Enter your password',
+            label: l10n.password,
+            hint: l10n.enterYourPassword,
             controller: _passwordController,
             obscureText: _obscurePassword,
             prefixIcon: const Icon(Icons.lock_outlined, size: 20),
@@ -67,22 +69,22 @@ class _LoginFormState extends State<LoginForm> {
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Please enter your password';
+                return l10n.pleaseEnterPassword;
               }
               return null;
             },
           ),
           const SizedBox(height: 8),
           Align(
-            alignment: Alignment.centerRight,
+            alignment: AlignmentDirectional.centerEnd,
             child: TextButton(
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Coming soon')),
+                  SnackBar(content: Text(l10n.comingSoon)),
                 );
               },
               child: Text(
-                'Forgot Password?',
+                l10n.forgotPassword,
                 style: AppTextStyles.bodySmall.copyWith(
                   color: AppColors.primary,
                   fontWeight: FontWeight.w500,
@@ -95,7 +97,7 @@ class _LoginFormState extends State<LoginForm> {
             builder: (context, state) {
               final isLoading = state is AuthLoading;
               return AppButton(
-                text: 'Sign In',
+                text: l10n.signIn,
                 isLoading: isLoading,
                 width: double.infinity,
                 onPressed: () {

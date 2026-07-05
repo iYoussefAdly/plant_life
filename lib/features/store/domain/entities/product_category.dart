@@ -1,27 +1,27 @@
-/// The fixed set of store categories (from the API contract).
+/// The fixed set of store categories (from the API contract). Display names
+/// live in the presentation layer (`product_labels.dart`) so they can be
+/// localized.
 enum ProductCategory {
-  plantDiseaseTreatment('plant-disease-treatment', 'Treatments'),
-  plantTools('plant-tools', 'Tools'),
-  seeds('seeds', 'Seeds'),
-  fertilizers('fertilizers', 'Fertilizers');
+  plantDiseaseTreatment('plant-disease-treatment'),
+  plantTools('plant-tools'),
+  seeds('seeds'),
+  fertilizers('fertilizers');
 
   final String apiValue;
-  final String label;
 
-  const ProductCategory(this.apiValue, this.label);
+  const ProductCategory(this.apiValue);
 }
 
 /// How the product list is sorted (maps to the API `sort` param).
 enum ProductSort {
-  newest('-createdAt', 'Newest'),
-  priceLowToHigh('price', 'Price: Low to High'),
-  priceHighToLow('-price', 'Price: High to Low'),
-  bestSelling('-soldCount', 'Best Selling');
+  newest('-createdAt'),
+  priceLowToHigh('price'),
+  priceHighToLow('-price'),
+  bestSelling('-soldCount');
 
   final String apiValue;
-  final String label;
 
-  const ProductSort(this.apiValue, this.label);
+  const ProductSort(this.apiValue);
 }
 
 /// Immutable product-list query (search + filter + sort + page).

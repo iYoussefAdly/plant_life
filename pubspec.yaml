@@ -30,6 +30,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  # Official localization: ARB + gen-l10n (English + Arabic, RTL).
+  flutter_localizations:
+    sdk: flutter
+  intl: any
 
   cupertino_icons: ^1.0.8
   flutter_bloc: ^9.1.1
@@ -43,6 +47,9 @@ dependencies:
   flutter_secure_storage: ^9.2.2
   socket_io_client: ^3.0.2
   url_launcher: ^6.3.1
+  # Plain local preferences (onboarding flag + language). Secure storage is
+  # reserved for tokens; prefs don't need encryption.
+  shared_preferences: ^2.3.4
 
 dev_dependencies:
   flutter_test:
@@ -67,6 +74,10 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  # Run `flutter gen-l10n` (also runs on build) to generate AppLocalizations
+  # from the ARB files in lib/l10n/.
+  generate: true
 
   assets:
     - assets/images/

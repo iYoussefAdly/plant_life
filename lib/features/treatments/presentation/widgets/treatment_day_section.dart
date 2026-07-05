@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/date_formatter.dart';
+import '../../../../core/localization/l10n.dart';
 import '../../domain/entities/treatment_day_entity.dart';
 import 'treatment_step_tile.dart';
 
@@ -53,7 +54,7 @@ class TreatmentDaySection extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                'Day ${day.dayNumber}',
+                context.l10n.dayN(day.dayNumber),
                 style: AppTextStyles.labelLarge.copyWith(
                   fontWeight: FontWeight.w700,
                   color: completed ? AppColors.success : AppColors.textPrimary,
@@ -77,7 +78,7 @@ class TreatmentDaySection extends StatelessWidget {
               const Spacer(),
               if (completed)
                 Text(
-                  'Completed',
+                  context.l10n.completed,
                   style: AppTextStyles.labelMedium.copyWith(
                     color: AppColors.success,
                     fontWeight: FontWeight.w600,

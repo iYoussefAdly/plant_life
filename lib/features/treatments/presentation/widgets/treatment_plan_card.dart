@@ -3,6 +3,7 @@ import 'package:percent_indicator/circular_percent_indicator.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/localization/l10n.dart';
 import 'treatment_progress_color.dart';
 import '../../domain/entities/treatment_plan_entity.dart';
 
@@ -68,7 +69,7 @@ class TreatmentPlanCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '$completedCount of ${plan.steps.length} steps completed',
+                    context.l10n.stepsCompleted(completedCount, plan.steps.length),
                     style: AppTextStyles.bodySmall.copyWith(
                       color: AppColors.textSecondary,
                     ),

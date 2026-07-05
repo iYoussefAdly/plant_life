@@ -9,6 +9,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/error_view.dart';
 import '../../../../core/widgets/skeleton.dart';
+import '../../../../core/localization/l10n.dart';
+import '../product_labels.dart';
 import '../../domain/entities/product_category.dart';
 import '../bloc/cart_cubit.dart';
 import '../bloc/products_cubit.dart';
@@ -63,7 +65,7 @@ class _StoreScreenState extends State<StoreScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Plant Store', style: AppTextStyles.headlineMedium),
+        title: Text(context.l10n.plantStore, style: AppTextStyles.headlineMedium),
         actions: const [CartIconButton(), SizedBox(width: 4)],
       ),
       body: BlocListener<ProductsCubit, ProductsState>(
@@ -138,7 +140,7 @@ class _SearchBar extends StatelessWidget {
         onChanged: onChanged,
         textInputAction: TextInputAction.search,
         decoration: InputDecoration(
-          hintText: 'Search products…',
+          hintText: context.l10n.searchProducts,
           prefixIcon: const Icon(Icons.search, size: 20),
           suffixIcon: ValueListenableBuilder(
             valueListenable: controller,
@@ -170,12 +172,12 @@ class _CategoryChips extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         children: [
           _Chip(
-            label: 'All',
+            label: context.l10n.all,
             selected: selected == null,
             onTap: () => context.read<ProductsCubit>().setCategory(null),
           ),
           ...ProductCategory.values.map((c) => _Chip(
-                label: c.label,
+                label: c.label(context),
                 selected: selected == c,
                 onTap: () => context.read<ProductsCubit>().setCategory(c),
               )),
@@ -199,7 +201,7 @@ class _Chip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(right: 8),
+      padding: const EdgeInsetsDirectional.only(end: 8),
       child: GestureDetector(
         onTap: onTap,
         child: AnimatedContainer(
@@ -239,7 +241,9 @@ class _SortBar extends StatelessWidget {
       child: Row(
         children: [
           Text(
-            cubit.query.hasActiveFilters ? 'Filtered' : 'All products',
+            cubit.query.hasActiveFilters
+                ? context.l10n.filtered
+                : context.l10n.allProducts,
             style: AppTextStyles.bodySmall.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -255,7 +259,7 @@ class _SortBar extends StatelessWidget {
                   const Icon(Icons.swap_vert, size: 18, color: AppColors.primary),
                   const SizedBox(width: 4),
                   Text(
-                    cubit.query.sort.label,
+                    cubit.query.sort.label(context),
                     style: AppTextStyles.labelMedium.copyWith(
                       color: AppColors.primary,
                       fontWeight: FontWeight.w600,
@@ -283,10 +287,10 @@ class _SortBar extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             const SizedBox(height: 12),
-            Text('Sort by', style: AppTextStyles.headlineSmall),
+            Text(sheetContext.l10n.sortBy, style: AppTextStyles.headlineSmall),
             const SizedBox(height: 8),
             ...ProductSort.values.map((s) => ListTile(
-                  title: Text(s.label),
+                  title: Text(s.label(sheetContext)),
                   trailing: cubit.query.sort == s
                       ? const Icon(Icons.check, color: AppColors.primary)
                       : null,
@@ -340,7 +344,9 @@ class _ProductGrid extends StatelessWidget {
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(error ?? 'Added to cart'),
+                    content: Text(error != null
+                        ? localizeMessage(context, error)
+                        : context.l10n.addedToCart),
                     behavior: SnackBarBehavior.floating,
                     duration: const Duration(seconds: 1),
                   ),
@@ -367,7 +373,7 @@ class _EmptyProducts extends StatelessWidget {
         const SizedBox(height: 12),
         Center(
           child: Text(
-            'No products found',
+            context.l10n.noProductsFound,
             style: AppTextStyles.bodyLarge.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -377,7 +383,7 @@ class _EmptyProducts extends StatelessWidget {
         Center(
           child: TextButton(
             onPressed: () => context.read<ProductsCubit>().clearFilters(),
-            child: const Text('Clear filters'),
+            child: Text(context.l10n.clearFilters),
           ),
         ),
       ],

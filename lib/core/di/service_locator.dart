@@ -1,10 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../events/app_event_bus.dart';
+import '../localization/locale_cubit.dart';
 import '../networking/dio_factory.dart';
 import '../networking/socket_service.dart';
+import '../storage/app_preferences.dart';
 import '../storage/store_token_storage.dart';
 import '../storage/token_storage.dart';
 import '../../features/store/data/store_api_client.dart';
@@ -91,13 +94,18 @@ final sl = GetIt.instance;
 /// import cycle and keeps it swappable in tests).
 void Function()? onSessionExpired;
 
-void setupServiceLocator() {
+Future<void> setupServiceLocator() async {
   // Core infrastructure (networking + secure storage)
   sl.registerLazySingleton(() => const FlutterSecureStorage());
   sl.registerLazySingleton(() => TokenStorage(sl<FlutterSecureStorage>()));
   sl.registerLazySingleton(() => SocketService(sl<TokenStorage>()));
   // App-wide bus for automatic cross-feature UI sync after data changes.
   sl.registerLazySingleton(() => AppEventBus());
+
+  // Local preferences (onboarding flag + language) and the app locale.
+  final prefs = await SharedPreferences.getInstance();
+  sl.registerLazySingleton(() => AppPreferences(prefs));
+  sl.registerLazySingleton(() => LocaleCubit(sl<AppPreferences>()));
 
   // Store backend (separate host + token + Dio).
   sl.registerLazySingleton(

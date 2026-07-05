@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/localization/l10n.dart';
 import '../../../core/theme/app_colors.dart';
 
 class MainShell extends StatelessWidget {
@@ -25,12 +26,13 @@ class MainShell extends StatelessWidget {
             ),
           ],
         ),
-        child: _buildNavigationBar(),
+        child: _buildNavigationBar(context),
       ),
     );
   }
 
-  Widget _buildNavigationBar() {
+  Widget _buildNavigationBar(BuildContext context) {
+    final l10n = context.l10n;
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       child: NavigationBar(
@@ -43,31 +45,34 @@ class MainShell extends StatelessWidget {
         },
         backgroundColor: AppColors.surface,
         indicatorColor: AppColors.primary.withValues(alpha: 0.15),
-        destinations: const [
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home, color: AppColors.primary),
-            label: 'Home',
+            icon: const Icon(Icons.home_outlined),
+            selectedIcon: const Icon(Icons.home, color: AppColors.primary),
+            label: l10n.navHome,
           ),
           NavigationDestination(
-            icon: Icon(Icons.sensors_outlined),
-            selectedIcon: Icon(Icons.sensors, color: AppColors.primary),
-            label: 'Sensors',
+            icon: const Icon(Icons.sensors_outlined),
+            selectedIcon: const Icon(Icons.sensors, color: AppColors.primary),
+            label: l10n.navSensors,
           ),
           NavigationDestination(
-            icon: Icon(Icons.document_scanner_outlined),
-            selectedIcon: Icon(Icons.document_scanner, color: AppColors.primary),
-            label: 'Scan',
+            icon: const Icon(Icons.document_scanner_outlined),
+            selectedIcon:
+                const Icon(Icons.document_scanner, color: AppColors.primary),
+            label: l10n.navScan,
           ),
           NavigationDestination(
-            icon: Icon(Icons.medical_services_outlined),
-            selectedIcon: Icon(Icons.medical_services, color: AppColors.primary),
-            label: 'Treatments',
+            icon: const Icon(Icons.medical_services_outlined),
+            selectedIcon:
+                const Icon(Icons.medical_services, color: AppColors.primary),
+            label: l10n.navTreatments,
           ),
           NavigationDestination(
-            icon: Icon(Icons.storefront_outlined),
-            selectedIcon: Icon(Icons.storefront, color: AppColors.primary),
-            label: 'Store',
+            icon: const Icon(Icons.storefront_outlined),
+            selectedIcon:
+                const Icon(Icons.storefront, color: AppColors.primary),
+            label: l10n.navStore,
           ),
         ],
       ),

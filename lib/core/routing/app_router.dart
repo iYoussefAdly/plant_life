@@ -36,6 +36,7 @@ import '../../features/recovery/presentation/bloc/recovery_cubit.dart';
 import '../../features/recovery/presentation/screens/recovery_progress_screen.dart';
 import '../../features/notifications/presentation/bloc/notifications_cubit.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
+import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../di/service_locator.dart';
 
 abstract final class AppRouter {
@@ -48,6 +49,10 @@ abstract final class AppRouter {
       GoRoute(
         path: AppRoutes.splash,
         builder: (context, state) => const SplashScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.onboarding,
+        builder: (context, state) => const OnboardingScreen(),
       ),
       GoRoute(
         path: AppRoutes.login,

@@ -37,7 +37,7 @@ abstract final class SensorCardDecoration {
   }
 
   /// Compact status chip: colored dot + label (e.g. `• Warning`).
-  static Widget statusPill(SensorStatus status) {
+  static Widget statusPill(BuildContext context, SensorStatus status) {
     final color = status.color;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -55,7 +55,7 @@ abstract final class SensorCardDecoration {
           ),
           const SizedBox(width: 4),
           Text(
-            status.label,
+            status.label(context),
             style: AppTextStyles.labelMedium.copyWith(
               color: color,
               fontSize: 10,
