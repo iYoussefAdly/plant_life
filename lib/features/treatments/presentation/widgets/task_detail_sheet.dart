@@ -127,24 +127,37 @@ class _Content extends StatelessWidget {
     this.recommendedProducts = const [],
   });
 
-  /// Products this task mentions in its text — offered as store shortcuts.
-  List<String> get _mentionedProducts {
-    if (recommendedProducts.isEmpty) return const [];
-    final haystack = [
-      task.title,
-      task.description,
-      task.why,
-      ...task.tips,
-      ...task.warnings,
-    ].join(' ').toLowerCase();
-    return recommendedProducts
-        .where((p) => p.trim().isNotEmpty && haystack.contains(p.toLowerCase()))
-        .toList();
+  /// All of the task's text, for matching product mentions.
+  String get _taskText => [
+        task.title,
+        task.description,
+        task.why,
+        ...task.tips,
+        ...task.warnings,
+      ].join(' ');
+
+  /// Product names to offer as store shortcuts. Prefers the plan's
+  /// [recommendedProducts] that are actually mentioned in the task; if none are
+  /// mentioned it falls back to all recommended products for the plan.
+  List<String> get _productTerms {
+    final valid =
+        recommendedProducts.where((p) => p.trim().isNotEmpty).toList();
+    if (valid.isEmpty) return const [];
+    final haystack = _taskText.toLowerCase();
+    final mentioned =
+        valid.where((p) => haystack.contains(p.toLowerCase())).toList();
+    return mentioned.isNotEmpty ? mentioned : valid;
   }
+
+  /// When there are no recommended products, fall back to what the task itself
+  /// instructs the user to use so the "Search in Store" action still works.
+  String get _fallbackQuery => task.title.trim();
 
   @override
   Widget build(BuildContext context) {
-    final products = _mentionedProducts;
+    final productTerms = _productTerms;
+    final showFallbackSearch =
+        productTerms.isEmpty && _fallbackQuery.isNotEmpty;
     return ListView(
       controller: scrollController,
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
@@ -211,22 +224,32 @@ class _Content extends StatelessWidget {
             ),
           ),
         ],
-        if (products.isNotEmpty) ...[
+        if (productTerms.isNotEmpty) ...[
           const SizedBox(height: 20),
           _Section(
             icon: Icons.storefront_outlined,
-            title: 'Products',
+            title: 'Find products in Store',
             iconColor: AppColors.primary,
             child: Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: products
+              children: productTerms
                   .map((p) => _ProductSearchChip(product: p))
                   .toList(),
             ),
           ),
+        ] else if (showFallbackSearch) ...[
+          const SizedBox(height: 20),
+          _Section(
+            icon: Icons.storefront_outlined,
+            title: 'Find products in Store',
+            iconColor: AppColors.primary,
+            child: _SearchInStoreButton(query: _fallbackQuery),
+          ),
         ],
-        if (!task.hasExtraDetails && products.isEmpty) ...[
+        if (!task.hasExtraDetails &&
+            productTerms.isEmpty &&
+            !showFallbackSearch) ...[
           const SizedBox(height: 24),
           Center(
             child: Text(
@@ -237,6 +260,30 @@ class _Content extends StatelessWidget {
           ),
         ],
       ],
+    );
+  }
+}
+
+/// Full-width "Search in Store" action used as a fallback when the plan has no
+/// recommended products: it searches the Store with the task's own instruction
+/// text so the user can still find related products (and refine the search).
+class _SearchInStoreButton extends StatelessWidget {
+  final String query;
+  const _SearchInStoreButton({required this.query});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: () {
+          final router = GoRouter.of(context);
+          Navigator.of(context).pop();
+          openStoreSearch(router, query);
+        },
+        icon: const Icon(Icons.search, size: 18),
+        label: const Text('Search in Store'),
+      ),
     );
   }
 }
