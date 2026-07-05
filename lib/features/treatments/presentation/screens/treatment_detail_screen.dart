@@ -216,6 +216,7 @@ class _DetailContent extends StatelessWidget {
                     planId: plan.id,
                     taskIndex: taskIndex,
                     scheduledDate: scheduledAt,
+                    recommendedProducts: plan.recommendedProducts,
                   );
                 },
               ),

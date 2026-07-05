@@ -59,63 +59,59 @@ class ProductCard extends StatelessWidget {
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(10, 10, 10, 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    product.name,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              formatPrice(product.effectivePrice),
-                              style: AppTextStyles.labelLarge.copyWith(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            if (product.hasDiscount)
-                              Text(
-                                formatPrice(product.price),
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  color: AppColors.textHint,
-                                  decoration: TextDecoration.lineThrough,
-                                  fontSize: 11,
-                                ),
-                              ),
-                          ],
-                        ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      product.name,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        fontWeight: FontWeight.w600,
+                        height: 1.25,
                       ),
-                      if (onAddToCart != null && product.inStock)
-                        GestureDetector(
-                          onTap: onAddToCart,
-                          child: Container(
-                            width: 34,
-                            height: 34,
-                            decoration: BoxDecoration(
-                              color: AppColors.primary,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Icon(Icons.add,
-                                size: 20, color: Colors.white),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const Spacer(),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (product.hasDiscount)
+                                Text(
+                                  formatPrice(product.price),
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                    color: AppColors.textHint,
+                                    decoration: TextDecoration.lineThrough,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              Text(
+                                formatPrice(product.effectivePrice),
+                                style: AppTextStyles.labelLarge.copyWith(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
                           ),
                         ),
-                    ],
-                  ),
-                ],
+                        if (onAddToCart != null && product.inStock) ...[
+                          const SizedBox(width: 8),
+                          _AddButton(onTap: onAddToCart!),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -137,6 +133,29 @@ class ProductCard extends StatelessWidget {
           color: Colors.white,
           fontSize: 10,
           fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+class _AddButton extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _AddButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.primary,
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: const SizedBox(
+          width: 38,
+          height: 38,
+          child: Icon(Icons.add_rounded, size: 22, color: Colors.white),
         ),
       ),
     );

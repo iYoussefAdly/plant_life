@@ -64,6 +64,11 @@ class MainShell extends StatelessWidget {
             selectedIcon: Icon(Icons.medical_services, color: AppColors.primary),
             label: 'Treatments',
           ),
+          NavigationDestination(
+            icon: Icon(Icons.storefront_outlined),
+            selectedIcon: Icon(Icons.storefront, color: AppColors.primary),
+            label: 'Store',
+          ),
         ],
       ),
     );

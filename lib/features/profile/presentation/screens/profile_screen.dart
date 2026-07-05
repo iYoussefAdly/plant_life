@@ -13,6 +13,7 @@ import '../../../auth/domain/entities/user_entity.dart';
 import '../../../notifications/presentation/bloc/notifications_cubit.dart';
 import '../../../store/domain/usecases/clear_store_session_usecase.dart';
 import '../../../store/presentation/bloc/cart_cubit.dart';
+import '../../../store/presentation/bloc/products_cubit.dart';
 import '../bloc/profile_cubit.dart';
 import '../bloc/profile_state.dart';
 
@@ -32,9 +33,11 @@ class ProfileScreen extends StatelessWidget {
             // Clear the previous user's notifications so the next session
             // starts with a clean badge/list.
             sl<NotificationsCubit>().reset();
-            // Drop the store session + cart so the next user starts clean.
+            // Drop the store session + cart + catalogue so the next user
+            // starts clean.
             sl<ClearStoreSessionUseCase>()();
             sl<CartCubit>().reset();
+            sl<ProductsCubit>().reset();
             context.go(AppRoutes.login);
           }
         },
@@ -90,7 +93,9 @@ class _ProfileContent extends StatelessWidget {
           child: _NavTile(
             icon: Icons.storefront_outlined,
             label: 'Plant Store',
-            onTap: () => context.push(AppRoutes.store),
+            // Store is a bottom-nav tab, so switch to it rather than pushing a
+            // duplicate over the shell.
+            onTap: () => context.go(AppRoutes.store),
           ),
         ),
         const SizedBox(height: 10),

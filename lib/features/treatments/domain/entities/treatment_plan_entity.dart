@@ -14,6 +14,10 @@ class TreatmentPlanEntity {
   final List<TreatmentStepEntity> steps;
   final DateTime createdAt;
 
+  /// Product names the backend recommends for this treatment. Used to offer a
+  /// "Search in Store" shortcut where a product is mentioned.
+  final List<String> recommendedProducts;
+
   const TreatmentPlanEntity({
     required this.id,
     required this.title,
@@ -22,6 +26,7 @@ class TreatmentPlanEntity {
     required this.scanId,
     required this.steps,
     required this.createdAt,
+    this.recommendedProducts = const [],
   });
 
   double get progress {
@@ -55,6 +60,7 @@ class TreatmentPlanEntity {
               s.id == stepId ? s.copyWith(isCompleted: isCompleted) : s)
           .toList(),
       createdAt: createdAt,
+      recommendedProducts: recommendedProducts,
     );
   }
 }

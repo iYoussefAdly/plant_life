@@ -102,17 +102,8 @@ abstract final class AppRouter {
           child: const ProfileScreen(),
         ),
       ),
-      // ---- Store ----
-      GoRoute(
-        path: AppRoutes.store,
-        builder: (context, state) => MultiBlocProvider(
-          providers: [
-            BlocProvider(create: (_) => sl<ProductsCubit>()..load()),
-            BlocProvider.value(value: sl<CartCubit>()..load(silent: true)),
-          ],
-          child: const StoreScreen(),
-        ),
-      ),
+      // ---- Store (product details / cart / checkout / orders are pushed over
+      // the shell; the Store catalogue itself is a bottom-nav tab below) ----
       GoRoute(
         path: '${AppRoutes.productDetails}/:id',
         builder: (context, state) => BlocProvider.value(
@@ -210,6 +201,26 @@ abstract final class AppRouter {
                 builder: (context, state) => BlocProvider(
                   create: (_) => sl<TreatmentsCubit>()..loadPlans(),
                   child: const TreatmentsScreen(),
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.store,
+                builder: (context, state) => MultiBlocProvider(
+                  providers: [
+                    // Shared singletons: the Store tab preserves its
+                    // search/filter state and cart badge across navigation.
+                    BlocProvider.value(
+                      value: sl<ProductsCubit>()..ensureLoaded(),
+                    ),
+                    BlocProvider.value(
+                      value: sl<CartCubit>()..load(silent: true),
+                    ),
+                  ],
+                  child: const StoreScreen(),
                 ),
               ),
             ],

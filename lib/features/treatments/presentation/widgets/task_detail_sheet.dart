@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/service_locator.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/date_formatter.dart';
+import '../../../store/presentation/store_search_launcher.dart';
 import '../../domain/entities/task_detail_entity.dart';
 import '../bloc/task_detail_cubit.dart';
 import '../bloc/task_detail_state.dart';
@@ -14,11 +16,15 @@ import '../bloc/task_detail_state.dart';
 /// [scheduledDate] is the timeline-corrected date from the calling task tile;
 /// it overrides the raw (off-by-one) date the task endpoint returns so the
 /// sheet stays consistent with the rest of the treatment timeline.
+///
+/// [recommendedProducts] are the plan's product names; where one is mentioned
+/// in the task, a "Search in Store" shortcut is offered.
 Future<void> showTaskDetailSheet(
   BuildContext context, {
   required String planId,
   required int taskIndex,
   DateTime? scheduledDate,
+  List<String> recommendedProducts = const [],
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -26,15 +32,22 @@ Future<void> showTaskDetailSheet(
     backgroundColor: Colors.transparent,
     builder: (_) => BlocProvider(
       create: (_) => sl<TaskDetailCubit>()..load(planId, taskIndex),
-      child: _TaskDetailSheet(scheduledDateOverride: scheduledDate),
+      child: _TaskDetailSheet(
+        scheduledDateOverride: scheduledDate,
+        recommendedProducts: recommendedProducts,
+      ),
     ),
   );
 }
 
 class _TaskDetailSheet extends StatelessWidget {
   final DateTime? scheduledDateOverride;
+  final List<String> recommendedProducts;
 
-  const _TaskDetailSheet({this.scheduledDateOverride});
+  const _TaskDetailSheet({
+    this.scheduledDateOverride,
+    this.recommendedProducts = const [],
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -66,6 +79,7 @@ class _TaskDetailSheet extends StatelessWidget {
                         task: task,
                         scrollController: scrollController,
                         scheduledDateOverride: scheduledDateOverride,
+                        recommendedProducts: recommendedProducts,
                       ),
                     TaskDetailError(:final message) => _ErrorBody(
                         message: message,
@@ -104,15 +118,33 @@ class _Content extends StatelessWidget {
   final TaskDetailEntity task;
   final ScrollController scrollController;
   final DateTime? scheduledDateOverride;
+  final List<String> recommendedProducts;
 
   const _Content({
     required this.task,
     required this.scrollController,
     this.scheduledDateOverride,
+    this.recommendedProducts = const [],
   });
+
+  /// Products this task mentions in its text — offered as store shortcuts.
+  List<String> get _mentionedProducts {
+    if (recommendedProducts.isEmpty) return const [];
+    final haystack = [
+      task.title,
+      task.description,
+      task.why,
+      ...task.tips,
+      ...task.warnings,
+    ].join(' ').toLowerCase();
+    return recommendedProducts
+        .where((p) => p.trim().isNotEmpty && haystack.contains(p.toLowerCase()))
+        .toList();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final products = _mentionedProducts;
     return ListView(
       controller: scrollController,
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
@@ -179,7 +211,22 @@ class _Content extends StatelessWidget {
             ),
           ),
         ],
-        if (!task.hasExtraDetails) ...[
+        if (products.isNotEmpty) ...[
+          const SizedBox(height: 20),
+          _Section(
+            icon: Icons.storefront_outlined,
+            title: 'Products',
+            iconColor: AppColors.primary,
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: products
+                  .map((p) => _ProductSearchChip(product: p))
+                  .toList(),
+            ),
+          ),
+        ],
+        if (!task.hasExtraDetails && products.isEmpty) ...[
           const SizedBox(height: 24),
           Center(
             child: Text(
@@ -190,6 +237,52 @@ class _Content extends StatelessWidget {
           ),
         ],
       ],
+    );
+  }
+}
+
+/// A tappable product chip that opens the Store, pre-filled with a search for
+/// the product — reusing the existing store search flow.
+class _ProductSearchChip extends StatelessWidget {
+  final String product;
+  const _ProductSearchChip({required this.product});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.primary.withValues(alpha: 0.08),
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () {
+          // Capture the router before dismissing the sheet, then hand off to
+          // the shared store search flow.
+          final router = GoRouter.of(context);
+          Navigator.of(context).pop();
+          openStoreSearch(router, product);
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: Text(
+                  product,
+                  style: AppTextStyles.labelMedium.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 6),
+              const Icon(Icons.search, size: 16, color: AppColors.primary),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

@@ -9,6 +9,7 @@ import 'core/theme/app_theme.dart';
 import 'features/notifications/presentation/bloc/notifications_cubit.dart';
 import 'features/store/domain/usecases/clear_store_session_usecase.dart';
 import 'features/store/presentation/bloc/cart_cubit.dart';
+import 'features/store/presentation/bloc/products_cubit.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +23,7 @@ void main() {
     sl<NotificationsCubit>().reset();
     sl<ClearStoreSessionUseCase>()();
     sl<CartCubit>().reset();
+    sl<ProductsCubit>().reset();
     final path =
         AppRouter.router.routerDelegate.currentConfiguration.uri.path;
     if (path != AppRoutes.login) {

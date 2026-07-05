@@ -21,6 +21,21 @@ class ProductsCubit extends Cubit<ProductsState> {
 
   ProductQuery get query => _query;
 
+  /// Loads the catalogue only if it hasn't been loaded yet. Used when entering
+  /// the Store tab so that existing search/filter state (this cubit is a shared
+  /// singleton) is preserved across tab switches instead of being reset.
+  Future<void> ensureLoaded() =>
+      state is ProductsInitial ? load() : Future.value();
+
+  /// Clears all state back to a fresh catalogue — called on logout so the next
+  /// user never sees the previous session's products or search.
+  void reset() {
+    _query = const ProductQuery();
+    _items.clear();
+    _generation++;
+    emit(const ProductsInitial());
+  }
+
   Future<void> load() async {
     final gen = ++_generation;
     emit(const ProductsLoading());

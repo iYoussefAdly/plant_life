@@ -13,7 +13,6 @@ import '../../../notifications/presentation/bloc/notifications_cubit.dart';
 import '../../../notifications/presentation/bloc/notifications_state.dart';
 import '../../../profile/presentation/bloc/profile_cubit.dart';
 import '../../../profile/presentation/bloc/profile_state.dart';
-import '../../../store/presentation/widgets/store_entry_card.dart';
 import '../../domain/entities/home_data_entity.dart';
 import '../bloc/home_cubit.dart';
 import '../bloc/home_state.dart';
@@ -150,8 +149,6 @@ class _HomeContent extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
         children: [
-          const FadeSlideIn(child: StoreEntryCard()),
-          const SizedBox(height: 24),
           FadeSlideIn(
             index: 1,
             child: SectionHeader(

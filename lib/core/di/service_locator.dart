@@ -251,7 +251,9 @@ void setupServiceLocator() {
   );
   sl.registerLazySingleton(() => GetProductsUseCase(sl<ProductsRepository>()));
   sl.registerLazySingleton(() => GetProductUseCase(sl<ProductsRepository>()));
-  sl.registerFactory(() => ProductsCubit(sl<GetProductsUseCase>()));
+  // Shared singleton (like CartCubit): the Store tab keeps its search/filter
+  // state across navigation, and a "Search in Store" deep-link can drive it.
+  sl.registerLazySingleton(() => ProductsCubit(sl<GetProductsUseCase>()));
 
   // Cart — shared singleton so the badge + cart screen stay in sync everywhere.
   sl.registerLazySingleton(() => CartDataSource(sl<StoreApiClient>()));
