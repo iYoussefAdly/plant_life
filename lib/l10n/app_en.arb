@@ -181,6 +181,8 @@
   "earlier": "Earlier",
   "noNotifications": "No notifications",
   "treatmentTaskDueToday": "Treatment task due today",
+  "notifTreatmentReminderTitle": "Treatment reminder",
+  "notifTreatmentReminderBody": "You have a treatment task due today.",
   "unreadCount": "{count, plural, =1{1 unread} other{{count} unread}}",
   "@unreadCount": { "placeholders": { "count": { "type": "int" } } },
 

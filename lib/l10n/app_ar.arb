@@ -165,6 +165,8 @@
   "earlier": "سابقًا",
   "noNotifications": "لا توجد إشعارات",
   "treatmentTaskDueToday": "مهمة علاج مستحقة اليوم",
+  "notifTreatmentReminderTitle": "تذكير بالعلاج",
+  "notifTreatmentReminderBody": "لديك مهمة علاج مستحقة اليوم.",
   "unreadCount": "{count, plural, =1{إشعار واحد غير مقروء} =2{إشعاران غير مقروءين} few{{count} إشعارات غير مقروءة} other{{count} غير مقروء}}",
 
   "profile": "الملف الشخصي",

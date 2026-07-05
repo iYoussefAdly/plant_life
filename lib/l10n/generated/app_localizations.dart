@@ -1016,6 +1016,18 @@ abstract class AppLocalizations {
   /// **'Treatment task due today'**
   String get treatmentTaskDueToday;
 
+  /// No description provided for @notifTreatmentReminderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Treatment reminder'**
+  String get notifTreatmentReminderTitle;
+
+  /// No description provided for @notifTreatmentReminderBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You have a treatment task due today.'**
+  String get notifTreatmentReminderBody;
+
   /// No description provided for @unreadCount.
   ///
   /// In en, this message translates to:

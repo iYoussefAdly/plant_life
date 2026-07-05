@@ -7,6 +7,7 @@ import 'core/di/service_locator.dart';
 import 'core/localization/l10n.dart';
 import 'core/localization/locale_cubit.dart';
 import 'core/networking/socket_service.dart';
+import 'core/notifications/local_notifications_service.dart';
 import 'core/routing/app_router.dart';
 import 'core/routing/app_routes.dart';
 import 'core/storage/token_storage.dart';
@@ -15,10 +16,14 @@ import 'features/notifications/presentation/bloc/notifications_cubit.dart';
 import 'features/store/domain/usecases/clear_store_session_usecase.dart';
 import 'features/store/presentation/bloc/cart_cubit.dart';
 import 'features/store/presentation/bloc/products_cubit.dart';
+import 'features/treatments/presentation/reminder_navigation.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await setupServiceLocator();
+  // Initialize on-device notifications (timezone, channel, permissions, and
+  // capture of any reminder that cold-launched the app) before the UI starts.
+  await sl<LocalNotificationsService>().init();
   // Redirect to login when a session expires (refresh failed), unless already
   // there — keeps the router dependency out of the DI layer.
   onSessionExpired = () {
@@ -29,17 +34,31 @@ Future<void> main() async {
     sl<ClearStoreSessionUseCase>()();
     sl<CartCubit>().reset();
     sl<ProductsCubit>().reset();
+    // Drop the previous user's scheduled reminders so they never fire for the
+    // next account on this device.
+    sl<LocalNotificationsService>().cancelAll();
     final path =
         AppRouter.router.routerDelegate.currentConfiguration.uri.path;
     if (path != AppRoutes.login) {
       AppRouter.router.go(AppRoutes.login);
     }
   };
+  // Open a tapped reminder while the app is running (foreground/background).
+  sl<LocalNotificationsService>().onTap.listen(_openReminder);
   // Open the realtime connection if the user is already signed in.
   sl<TokenStorage>().hasTokens().then((hasTokens) {
     if (hasTokens) sl<SocketService>().connect();
   });
   runApp(const PlantLife());
+}
+
+/// Routes a tapped reminder to its treatment plan/task, but only for a
+/// signed-in user (otherwise the tap is ignored and normal launch flow runs).
+Future<void> _openReminder(String payload) async {
+  final args = treatmentArgsFromReminderPayload(payload);
+  if (args == null) return;
+  if (!await sl<TokenStorage>().hasTokens()) return;
+  AppRouter.router.push(AppRoutes.treatmentDetail, extra: args);
 }
 
 class PlantLife extends StatelessWidget {
