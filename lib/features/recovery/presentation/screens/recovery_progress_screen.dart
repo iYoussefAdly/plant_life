@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/error_view.dart';
+import '../../../../core/localization/l10n.dart';
 import '../../../scan/presentation/widgets/scan_source_sheet.dart';
 import '../../domain/entities/recovery_entity.dart';
 import '../bloc/recovery_cubit.dart';
@@ -27,7 +28,7 @@ class RecoveryProgressScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Recovery Progress', style: AppTextStyles.headlineMedium),
+        title: Text(context.l10n.recoveryProgress, style: AppTextStyles.headlineMedium),
       ),
       body: BlocBuilder<RecoveryCubit, RecoveryState>(
         builder: (context, state) => switch (state) {
@@ -72,7 +73,7 @@ class _RecoveryContent extends StatelessWidget {
           child: FilledButton.icon(
             onPressed: () => RecoveryProgressScreen.startRescan(context),
             icon: const Icon(Icons.add_a_photo_outlined),
-            label: const Text('Rescan now'),
+            label: Text(context.l10n.rescanNow),
           ),
         ),
         const SizedBox(height: 24),
@@ -84,7 +85,7 @@ class _RecoveryContent extends StatelessWidget {
               const Icon(Icons.timeline_outlined,
                   size: 20, color: AppColors.textPrimary),
               const SizedBox(width: 8),
-              Text('Rescan History', style: AppTextStyles.headlineSmall),
+              Text(context.l10n.rescanHistory, style: AppTextStyles.headlineSmall),
             ],
           ),
           const SizedBox(height: 12),
@@ -124,14 +125,14 @@ class _EmptyTimeline extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            'No follow-up scans yet',
+            context.l10n.noFollowUpScans,
             style: AppTextStyles.bodyLarge.copyWith(
               color: AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: 4),
           Text(
-            'Tap "Rescan now" to track your plant\'s recovery over time',
+            context.l10n.rescanHint,
             style: AppTextStyles.bodySmall.copyWith(
               color: AppColors.textHint,
             ),

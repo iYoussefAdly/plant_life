@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/localization/l10n.dart';
 import '../../domain/entities/scan_result_entity.dart';
 
 class ScanImageSourcePicker extends StatelessWidget {
@@ -27,10 +28,10 @@ class ScanImageSourcePicker extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 24),
-        Text('Scan Your Plant', style: AppTextStyles.headlineMedium),
+        Text(context.l10n.scanYourPlant, style: AppTextStyles.headlineMedium),
         const SizedBox(height: 8),
         Text(
-          'Take a photo or upload an image to detect diseases',
+          context.l10n.scanHint,
           style: AppTextStyles.bodyMedium.copyWith(
             color: AppColors.textSecondary,
           ),
@@ -42,7 +43,7 @@ class ScanImageSourcePicker extends StatelessWidget {
             Expanded(
               child: _SourceButton(
                 icon: Icons.camera_alt_outlined,
-                label: 'Camera',
+                label: context.l10n.camera,
                 onTap: () => onSourceSelected(ScanImageSource.camera),
               ),
             ),
@@ -50,7 +51,7 @@ class ScanImageSourcePicker extends StatelessWidget {
             Expanded(
               child: _SourceButton(
                 icon: Icons.photo_library_outlined,
-                label: 'Gallery',
+                label: context.l10n.gallery,
                 onTap: () => onSourceSelected(ScanImageSource.gallery),
               ),
             ),
@@ -58,7 +59,7 @@ class ScanImageSourcePicker extends StatelessWidget {
             Expanded(
               child: _SourceButton(
                 icon: Icons.linked_camera_outlined,
-                label: 'ESP32',
+                label: context.l10n.esp32,
                 onTap: () => onSourceSelected(ScanImageSource.esp32Cam),
               ),
             ),

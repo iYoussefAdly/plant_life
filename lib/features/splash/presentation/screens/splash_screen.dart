@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/service_locator.dart';
+import '../../../../core/localization/l10n.dart';
 import '../../../../core/routing/app_routes.dart';
+import '../../../../core/storage/app_preferences.dart';
 import '../../../../core/storage/token_storage.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -41,6 +43,11 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _navigateNext() async {
+    // First launch → onboarding; afterwards straight to the session check.
+    if (!sl<AppPreferences>().onboardingCompleted) {
+      if (mounted) context.go(AppRoutes.onboarding);
+      return;
+    }
     final hasTokens = await sl<TokenStorage>().hasTokens();
     if (!mounted) return;
     context.go(hasTokens ? AppRoutes.home : AppRoutes.login);
@@ -91,7 +98,7 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'PlantLife',
+                  context.l10n.appName,
                   style: AppTextStyles.headlineLarge.copyWith(
                     color: Colors.white,
                     fontSize: 36,
@@ -100,7 +107,7 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Smart Plant Monitoring',
+                  context.l10n.appTagline,
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: Colors.white.withValues(alpha: 0.85),
                     fontSize: 16,

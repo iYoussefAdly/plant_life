@@ -6,6 +6,7 @@ import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/error_view.dart';
+import '../../../../core/localization/l10n.dart';
 import '../../domain/entities/scan_result_entity.dart';
 import '../bloc/scan_cubit.dart';
 import '../bloc/scan_state.dart';
@@ -21,7 +22,7 @@ class ScanScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Plant Scanner', style: AppTextStyles.headlineMedium),
+        title: Text(context.l10n.plantScanner, style: AppTextStyles.headlineMedium),
       ),
       body: BlocBuilder<ScanCubit, ScanState>(
         builder: (context, state) => switch (state) {
@@ -78,7 +79,7 @@ class _InitialView extends StatelessWidget {
             child: TextButton(
               onPressed: () => context.read<ScanCubit>().loadHistory(),
               child: Text(
-                'View Scan History',
+                context.l10n.viewScanHistory,
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.primary,
                   fontWeight: FontWeight.w600,
@@ -110,10 +111,10 @@ class _AnalyzingView extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          Text('Analyzing plant...', style: AppTextStyles.headlineSmall),
+          Text(context.l10n.analyzingPlant, style: AppTextStyles.headlineSmall),
           const SizedBox(height: 8),
           Text(
-            'Our AI is detecting potential diseases',
+            context.l10n.aiDetecting,
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -163,14 +164,16 @@ class _ResultView extends StatelessWidget {
 
     final outcome = await cubit.createPlan(result.id);
     rootNavigator.pop(); // dismiss the loader
+    if (!context.mounted) return;
 
     if (outcome.planId != null) {
-      if (!context.mounted) return;
       context.push(AppRoutes.treatmentDetail, extra: outcome.planId);
     } else {
       messenger.showSnackBar(
         SnackBar(
-          content: Text(outcome.error ?? 'Could not start the treatment plan'),
+          content: Text(outcome.error != null
+              ? localizeMessage(context, outcome.error!)
+              : context.l10n.couldNotStartTreatment),
         ),
       );
     }

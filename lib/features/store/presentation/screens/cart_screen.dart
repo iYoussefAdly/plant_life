@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/widgets/error_view.dart';
+import '../../../../core/localization/l10n.dart';
 import '../../domain/entities/cart_entity.dart';
 import '../bloc/cart_cubit.dart';
 import '../bloc/cart_state.dart';
@@ -20,7 +21,7 @@ class CartScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('My Cart', style: AppTextStyles.headlineMedium),
+        title: Text(context.l10n.myCart, style: AppTextStyles.headlineMedium),
         actions: [
           BlocBuilder<CartCubit, CartState>(
             builder: (context, state) {
@@ -28,7 +29,7 @@ class CartScreen extends StatelessWidget {
               if (!canClear) return const SizedBox.shrink();
               return TextButton(
                 onPressed: () => _confirmClear(context),
-                child: const Text('Clear'),
+                child: Text(context.l10n.clear),
               );
             },
           ),
@@ -54,15 +55,15 @@ class CartScreen extends StatelessWidget {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Clear cart'),
-        content: const Text('Remove all items from your cart?'),
+        title: Text(ctx.l10n.clearCart),
+        content: Text(ctx.l10n.removeAllFromCart),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
+              child: Text(ctx.l10n.cancel)),
           TextButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Clear')),
+              child: Text(ctx.l10n.clear)),
         ],
       ),
     );
@@ -202,7 +203,7 @@ class _CheckoutBar extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text('Subtotal (${cart.totalQuantity})',
+              Text(context.l10n.subtotalWithCount(cart.totalQuantity),
                   style: AppTextStyles.bodyMedium),
               const Spacer(),
               Text(
@@ -219,7 +220,7 @@ class _CheckoutBar extends StatelessWidget {
             child: FilledButton.icon(
               onPressed: busy ? null : () => context.push(AppRoutes.checkout),
               icon: const Icon(Icons.shopping_bag_outlined),
-              label: const Text('Proceed to Checkout'),
+              label: Text(context.l10n.proceedToCheckout),
             ),
           ),
         ],
@@ -240,10 +241,10 @@ class _EmptyCart extends StatelessWidget {
           Icon(Icons.shopping_cart_outlined,
               size: 64, color: AppColors.textHint.withValues(alpha: 0.6)),
           const SizedBox(height: 14),
-          Text('Your cart is empty', style: AppTextStyles.headlineSmall),
+          Text(context.l10n.cartEmptyTitle, style: AppTextStyles.headlineSmall),
           const SizedBox(height: 6),
           Text(
-            'Browse the store and add some products',
+            context.l10n.cartEmptyHint,
             style: AppTextStyles.bodySmall.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -251,7 +252,7 @@ class _EmptyCart extends StatelessWidget {
           const SizedBox(height: 16),
           FilledButton(
             onPressed: () => context.go(AppRoutes.store),
-            child: const Text('Go to Store'),
+            child: Text(context.l10n.goToStore),
           ),
         ],
       ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/localization/l10n.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/date_formatter.dart';
@@ -20,7 +21,7 @@ class AlertsSection extends StatelessWidget {
       children: [
         SectionHeader(
           icon: Icons.notifications_active_outlined,
-          title: 'Alerts',
+          title: context.l10n.alerts,
           color: AppColors.warning,
           trailing: Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -41,7 +42,7 @@ class AlertsSection extends StatelessWidget {
         const SizedBox(height: 12),
         ...alerts.map((alert) => _AlertTile(
               alert: alert,
-              timeAgo: formatTimeAgo(alert.timestamp),
+              timeAgo: formatTimeAgo(context, alert.timestamp),
             )),
       ],
     );

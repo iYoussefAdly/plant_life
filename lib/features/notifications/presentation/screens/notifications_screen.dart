@@ -6,6 +6,7 @@ import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/error_view.dart';
+import '../../../../core/localization/l10n.dart';
 import '../../domain/entities/notification_entity.dart';
 import '../bloc/notifications_cubit.dart';
 import '../bloc/notifications_state.dart';
@@ -36,10 +37,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('Notifications', style: AppTextStyles.headlineMedium),
+                Text(context.l10n.notifications, style: AppTextStyles.headlineMedium),
                 if (unread > 0)
                   Text(
-                    '$unread unread',
+                    context.l10n.unreadCount(unread),
                     style: AppTextStyles.bodySmall.copyWith(
                       color: AppColors.primary,
                       fontWeight: FontWeight.w600,
@@ -60,7 +61,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 onPressed: () =>
                     context.read<NotificationsCubit>().markAllAsRead(),
                 icon: const Icon(Icons.done_all, size: 18),
-                label: const Text('Mark all read'),
+                label: Text(context.l10n.markAllRead),
               );
             },
           ),
@@ -101,7 +102,7 @@ class _NotificationsList extends StatelessWidget {
                 size: 56, color: AppColors.textHint),
             const SizedBox(height: 12),
             Text(
-              'No notifications',
+              context.l10n.noNotifications,
               style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.textSecondary,
               ),
@@ -123,7 +124,7 @@ class _NotificationsList extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       children: [
         if (todayNotifications.isNotEmpty) ...[
-          _SectionHeader(title: 'Today'),
+          _SectionHeader(title: context.l10n.today),
           const SizedBox(height: 8),
           ...todayNotifications.map((n) => NotificationTile(
                 notification: n,
@@ -132,7 +133,7 @@ class _NotificationsList extends StatelessWidget {
         ],
         if (earlierNotifications.isNotEmpty) ...[
           const SizedBox(height: 16),
-          _SectionHeader(title: 'Earlier'),
+          _SectionHeader(title: context.l10n.earlier),
           const SizedBox(height: 8),
           ...earlierNotifications.map((n) => NotificationTile(
                 notification: n,

@@ -6,6 +6,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/widgets/error_view.dart';
+import '../../../../core/localization/l10n.dart';
 import '../../domain/entities/product_entity.dart';
 import '../../domain/usecases/get_product_usecase.dart';
 import '../bloc/cart_cubit.dart';
@@ -38,7 +39,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Product', style: AppTextStyles.headlineMedium),
+        title: Text(context.l10n.product, style: AppTextStyles.headlineMedium),
       ),
       body: FutureBuilder<ApiResult<ProductEntity>>(
         future: _future,
@@ -115,7 +116,7 @@ class _Details extends StatelessWidget {
                         const Spacer(),
                         if (product.unit.isNotEmpty)
                           Text(
-                            'per ${product.unit}',
+                            context.l10n.perUnit(product.unit),
                             style: AppTextStyles.bodySmall.copyWith(
                               color: AppColors.textSecondary,
                             ),
@@ -124,7 +125,7 @@ class _Details extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
                     if (product.description.isNotEmpty) ...[
-                      Text('Description', style: AppTextStyles.labelLarge),
+                      Text(context.l10n.description, style: AppTextStyles.labelLarge),
                       const SizedBox(height: 6),
                       Text(
                         product.description,
@@ -138,25 +139,25 @@ class _Details extends StatelessWidget {
                     if (product.activeIngredient != null)
                       _InfoRow(
                         icon: Icons.science_outlined,
-                        label: 'Active ingredient',
+                        label: context.l10n.activeIngredient,
                         value: product.activeIngredient!,
                       ),
                     if (product.usageInstructions != null)
                       _InfoRow(
                         icon: Icons.menu_book_outlined,
-                        label: 'How to use',
+                        label: context.l10n.howToUse,
                         value: product.usageInstructions!,
                       ),
                     if (product.brand != null)
                       _InfoRow(
                         icon: Icons.sell_outlined,
-                        label: 'Brand',
+                        label: context.l10n.brand,
                         value: product.brand!,
                       ),
                     if (product.storeName != null)
                       _InfoRow(
                         icon: Icons.storefront_outlined,
-                        label: 'Sold by',
+                        label: context.l10n.soldBy,
                         value: product.storeName!,
                       ),
                   ],
@@ -220,7 +221,7 @@ class _AddToCartBarState extends State<_AddToCartBar> {
                           strokeWidth: 2, color: Colors.white),
                     )
                   : const Icon(Icons.add_shopping_cart),
-              label: Text(available ? 'Add to Cart' : 'Out of stock'),
+              label: Text(available ? context.l10n.addToCart : context.l10n.outOfStock),
             ),
           ),
         ],
@@ -237,7 +238,9 @@ class _AddToCartBarState extends State<_AddToCartBar> {
     setState(() => _busy = false);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(error ?? 'Added $_qty to cart'),
+        content: Text(error != null
+            ? localizeMessage(context, error)
+            : context.l10n.addedQtyToCart(_qty)),
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -280,7 +283,7 @@ class _StockChip extends StatelessWidget {
         Icon(ok ? Icons.check_circle : Icons.cancel, size: 14, color: color),
         const SizedBox(width: 4),
         Text(
-          ok ? '$stock in stock' : 'Out of stock',
+          ok ? context.l10n.inStockCount(stock) : context.l10n.outOfStock,
           style: AppTextStyles.labelMedium.copyWith(color: color),
         ),
       ],

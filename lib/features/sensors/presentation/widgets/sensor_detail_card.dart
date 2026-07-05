@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/extensions/sensor_type_extensions.dart';
+import '../../../../core/localization/l10n.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/date_formatter.dart';
@@ -34,7 +35,8 @@ class SensorDetailCard extends StatelessWidget {
                   size: 12, color: AppColors.textHint),
               const SizedBox(width: 4),
               Text(
-                'Updated ${formatTimeAgo(sensor.lastUpdated)}',
+                context.l10n
+                    .updatedAgo(formatTimeAgo(context, sensor.lastUpdated)),
                 style: AppTextStyles.bodySmall.copyWith(
                   color: AppColors.textHint,
                   fontSize: 11,
@@ -75,13 +77,13 @@ class _Header extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                sensor.type.label,
+                sensor.type.label(context),
                 style: AppTextStyles.labelLarge.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 4),
-              SensorCardDecoration.statusPill(sensor.status),
+              SensorCardDecoration.statusPill(context, sensor.status),
             ],
           ),
         ),
@@ -186,17 +188,19 @@ class _RangeBar extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Min: ${sensor.minRange.toStringAsFixed(0)}${sensor.unit}',
+              context.l10n.minLabel(
+                  '${sensor.minRange.toStringAsFixed(0)}${sensor.unit}'),
               style: AppTextStyles.bodySmall,
             ),
             Text(
-              'Optimal Range',
+              context.l10n.optimalRange,
               style: AppTextStyles.labelMedium.copyWith(
                 color: AppColors.textSecondary,
               ),
             ),
             Text(
-              'Max: ${sensor.maxRange.toStringAsFixed(0)}${sensor.unit}',
+              context.l10n.maxLabel(
+                  '${sensor.maxRange.toStringAsFixed(0)}${sensor.unit}'),
               style: AppTextStyles.bodySmall,
             ),
           ],

@@ -3,6 +3,7 @@ import 'package:percent_indicator/circular_percent_indicator.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/localization/l10n.dart';
 import '../../domain/entities/recovery_entity.dart';
 
 class RecoveryHeader extends StatelessWidget {
@@ -47,7 +48,7 @@ class RecoveryHeader extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'Recovery',
+                  context.l10n.recovery,
                   style: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.textSecondary,
                   ),
@@ -67,7 +68,7 @@ class RecoveryHeader extends StatelessWidget {
             ),
           const SizedBox(height: 4),
           Text(
-            '$count follow-up scan${count != 1 ? 's' : ''}',
+            context.l10n.followUpScans(count),
             style: AppTextStyles.bodySmall.copyWith(
               color: AppColors.textSecondary,
             ),

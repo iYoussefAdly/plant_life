@@ -7,6 +7,7 @@ import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/date_formatter.dart';
+import '../../../../core/localization/l10n.dart';
 import '../../domain/entities/shipping_address.dart';
 import '../bloc/cart_cubit.dart';
 import '../bloc/cart_state.dart';
@@ -51,7 +52,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     // only reachable with items in the cart).
     if (context.read<CartCubit>().itemCount == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Your cart is empty.')),
+        SnackBar(content: Text(context.l10n.cartEmptyTitle)),
       );
       return;
     }
@@ -67,7 +68,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Checkout', style: AppTextStyles.headlineMedium),
+        title: Text(context.l10n.checkout, style: AppTextStyles.headlineMedium),
       ),
       body: BlocConsumer<CheckoutCubit, CheckoutState>(
         listener: _onState,
@@ -81,31 +82,31 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   child: ListView(
                     padding: const EdgeInsets.all(16),
                     children: [
-                      Text('Shipping Address',
+                      Text(context.l10n.shippingAddress,
                           style: AppTextStyles.headlineSmall),
                       const SizedBox(height: 12),
-                      _field(_city, 'City', Icons.location_city_outlined),
-                      _field(_street, 'Street', Icons.signpost_outlined),
-                      _field(_phone, 'Phone', Icons.phone_outlined,
+                      _field(_city, context.l10n.city, Icons.location_city_outlined),
+                      _field(_street, context.l10n.street, Icons.signpost_outlined),
+                      _field(_phone, context.l10n.phone, Icons.phone_outlined,
                           keyboard: TextInputType.phone),
-                      _field(_details, 'Details (optional)', Icons.home_outlined,
+                      _field(_details, context.l10n.detailsOptional, Icons.home_outlined,
                           required: false),
                       const SizedBox(height: 20),
-                      Text('Payment Method',
+                      Text(context.l10n.paymentMethod,
                           style: AppTextStyles.headlineSmall),
                       const SizedBox(height: 12),
                       _PaymentOption(
                         icon: Icons.payments_outlined,
-                        title: 'Cash on Delivery',
-                        subtitle: 'Pay when your order arrives',
+                        title: context.l10n.cashOnDelivery,
+                        subtitle: context.l10n.payWhenArrives,
                         selected: _method == _PayMethod.cash,
                         onTap: () => setState(() => _method = _PayMethod.cash),
                       ),
                       const SizedBox(height: 10),
                       _PaymentOption(
                         icon: Icons.credit_card,
-                        title: 'Pay with Card (Stripe)',
-                        subtitle: 'Secure online payment',
+                        title: context.l10n.payWithCardStripe,
+                        subtitle: context.l10n.secureOnlinePayment,
                         selected: _method == _PayMethod.card,
                         onTap: () => setState(() => _method = _PayMethod.card),
                       ),
@@ -140,7 +141,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         context.go(AppRoutes.orders);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not open the payment page')),
+          SnackBar(content: Text(context.l10n.couldNotOpenPayment)),
         );
       }
     } else if (state is CheckoutError) {
@@ -167,7 +168,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           prefixIcon: Icon(icon, size: 20),
         ),
         validator: required
-            ? (v) => (v == null || v.trim().isEmpty) ? 'Required' : null
+            ? (v) => (v == null || v.trim().isEmpty)
+                ? context.l10n.requiredField
+                : null
             : null,
       ),
     );
@@ -203,7 +206,7 @@ class _SummaryBar extends StatelessWidget {
               final subtotal = state is CartLoaded ? state.cart.subtotal : 0;
               return Row(
                 children: [
-                  Text('Subtotal', style: AppTextStyles.bodyMedium),
+                  Text(context.l10n.subtotal, style: AppTextStyles.bodyMedium),
                   const Spacer(),
                   Text(formatPrice(subtotal),
                       style: AppTextStyles.bodyLarge.copyWith(
@@ -214,7 +217,7 @@ class _SummaryBar extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'Shipping is calculated at checkout.',
+            context.l10n.shippingCalculated,
             style: AppTextStyles.bodySmall
                 .copyWith(color: AppColors.textHint, fontSize: 11),
           ),
@@ -230,7 +233,7 @@ class _SummaryBar extends StatelessWidget {
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: Colors.white),
                     )
-                  : const Text('Place Order'),
+                  : Text(context.l10n.placeOrder),
             ),
           ),
         ],

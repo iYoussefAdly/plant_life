@@ -5,6 +5,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/widgets/error_view.dart';
+import '../../../../core/localization/l10n.dart';
 import '../../domain/entities/order_entity.dart';
 import '../bloc/order_details_cubit.dart';
 import '../widgets/order_status_chip.dart';
@@ -17,7 +18,7 @@ class OrderDetailsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Order Details', style: AppTextStyles.headlineMedium),
+        title: Text(context.l10n.orderDetails, style: AppTextStyles.headlineMedium),
       ),
       body: BlocBuilder<OrderDetailsCubit, OrderDetailsState>(
         builder: (context, state) => switch (state) {
@@ -49,7 +50,7 @@ class _Content extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Order #${_shortId(order.id)}',
+                  Text(context.l10n.orderNumber(_shortId(order.id)),
                       style: AppTextStyles.bodyLarge
                           .copyWith(fontWeight: FontWeight.w700)),
                   const SizedBox(height: 2),
@@ -64,18 +65,18 @@ class _Content extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        Text('Items', style: AppTextStyles.labelLarge),
+        Text(context.l10n.items, style: AppTextStyles.labelLarge),
         const SizedBox(height: 8),
         ...order.items.map((item) => _ItemRow(item: item)),
         const SizedBox(height: 12),
         _card(
           child: Column(
             children: [
-              _priceRow('Items', order.itemsPrice),
+              _priceRow(context.l10n.items, order.itemsPrice),
               const SizedBox(height: 6),
-              _priceRow('Shipping', order.shippingPrice),
+              _priceRow(context.l10n.shipping, order.shippingPrice),
               const Divider(height: 20),
-              _priceRow('Total', order.totalPrice, emphasize: true),
+              _priceRow(context.l10n.total, order.totalPrice, emphasize: true),
             ],
           ),
         ),
@@ -96,14 +97,14 @@ class _Content extends StatelessWidget {
                   const SizedBox(width: 8),
                   Text(
                     order.isCashOnDelivery
-                        ? 'Cash on Delivery'
-                        : 'Card Payment',
+                        ? context.l10n.cashOnDelivery
+                        : context.l10n.cardPayment,
                     style: AppTextStyles.bodyMedium
                         .copyWith(fontWeight: FontWeight.w600),
                   ),
                   const Spacer(),
                   Text(
-                    order.isPaid ? 'Paid' : 'Not paid',
+                    order.isPaid ? context.l10n.paid : context.l10n.notPaid,
                     style: AppTextStyles.labelMedium.copyWith(
                       color: order.isPaid ? AppColors.success : AppColors.warning,
                       fontWeight: FontWeight.w700,

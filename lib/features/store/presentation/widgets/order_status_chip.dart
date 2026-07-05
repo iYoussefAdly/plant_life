@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/localization/l10n.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../domain/entities/order_entity.dart';
@@ -10,17 +11,20 @@ class OrderStatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final (color, label, icon) = switch (status) {
-      OrderStatus.pending => (AppColors.warning, 'Pending', Icons.schedule),
-      OrderStatus.processing => (AppColors.primary, 'Processing', Icons.autorenew),
+      OrderStatus.pending =>
+        (AppColors.warning, l10n.statusPending, Icons.schedule),
+      OrderStatus.processing =>
+        (AppColors.primary, l10n.statusProcessing, Icons.autorenew),
       OrderStatus.shipped =>
-        (AppColors.humidity, 'Shipped', Icons.local_shipping_outlined),
+        (AppColors.humidity, l10n.statusShipped, Icons.local_shipping_outlined),
       OrderStatus.delivered =>
-        (AppColors.success, 'Delivered', Icons.check_circle_outline),
+        (AppColors.success, l10n.statusDelivered, Icons.check_circle_outline),
       OrderStatus.cancelled =>
-        (AppColors.error, 'Cancelled', Icons.cancel_outlined),
+        (AppColors.error, l10n.statusCancelled, Icons.cancel_outlined),
       OrderStatus.unknown =>
-        (AppColors.textSecondary, 'Processing', Icons.info_outline),
+        (AppColors.textSecondary, l10n.statusProcessing, Icons.info_outline),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),

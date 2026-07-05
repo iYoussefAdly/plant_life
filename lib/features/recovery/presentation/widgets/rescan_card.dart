@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/date_formatter.dart';
+import '../../../../core/localization/l10n.dart';
 import '../../domain/entities/rescan_entity.dart';
 
 class RescanCard extends StatelessWidget {
@@ -64,7 +65,7 @@ class RescanCard extends StatelessWidget {
                     if (isLatest) ...[
                       const SizedBox(width: 8),
                       _Badge(
-                        label: 'Latest',
+                        label: context.l10n.latest,
                         color: AppColors.primary,
                       ),
                     ],
@@ -74,13 +75,13 @@ class RescanCard extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      'Severity ${rescan.severityPercent.toStringAsFixed(0)}%',
+                      context.l10n.severityPercent(rescan.severityPercent.toStringAsFixed(0)),
                       style: AppTextStyles.bodySmall.copyWith(
                         color: AppColors.textSecondary,
                       ),
                     ),
                     const Spacer(),
-                    _deltaBadge(),
+                    _deltaBadge(context),
                   ],
                 ),
               ],
@@ -91,9 +92,9 @@ class RescanCard extends StatelessWidget {
     );
   }
 
-  Widget _deltaBadge() {
+  Widget _deltaBadge(BuildContext context) {
     if (rescan.severityDelta == 0) {
-      return const _Badge(label: 'No change', color: AppColors.textHint);
+      return _Badge(label: context.l10n.noChange, color: AppColors.textHint);
     }
     final amount = rescan.severityDelta.abs().toStringAsFixed(0);
     return _Badge(

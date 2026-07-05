@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/localization/l10n.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -22,7 +23,7 @@ class TreatmentTasksSection extends StatelessWidget {
       children: [
         SectionHeader(
           icon: Icons.checklist_outlined,
-          title: "Today's Tasks",
+          title: context.l10n.todaysTasks,
           trailing: tasks.isEmpty
               ? null
               : Container(
@@ -33,7 +34,7 @@ class TreatmentTasksSection extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    '$completedCount/${tasks.length} done',
+                    context.l10n.tasksDone(completedCount, tasks.length),
                     style: AppTextStyles.labelMedium.copyWith(
                       color: AppColors.primary,
                       fontWeight: FontWeight.w700,
@@ -80,12 +81,12 @@ class _EmptyTasksCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            'All caught up!',
+            context.l10n.allCaughtUp,
             style: AppTextStyles.headlineSmall.copyWith(fontSize: 15),
           ),
           const SizedBox(height: 4),
           Text(
-            'No treatment tasks scheduled for today.\nYour plants are in good hands 🌱',
+            context.l10n.noTasksToday,
             style: AppTextStyles.bodySmall.copyWith(
               color: AppColors.textSecondary,
               height: 1.4,

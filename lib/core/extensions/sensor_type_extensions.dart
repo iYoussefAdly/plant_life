@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../enums/sensor_enums.dart';
+import '../localization/l10n.dart';
 import '../theme/app_colors.dart';
 
 export '../enums/sensor_enums.dart';
@@ -20,11 +21,11 @@ extension SensorTypeUI on SensorType {
         SensorType.light => Icons.light_mode_outlined,
       };
 
-  String get label => switch (this) {
-        SensorType.temperature => 'Temperature',
-        SensorType.humidity => 'Humidity',
-        SensorType.soilMoisture => 'Soil Moisture',
-        SensorType.light => 'Light',
+  String label(BuildContext context) => switch (this) {
+        SensorType.temperature => context.l10n.sensorTemperature,
+        SensorType.humidity => context.l10n.sensorHumidity,
+        SensorType.soilMoisture => context.l10n.sensorSoilMoisture,
+        SensorType.light => context.l10n.sensorLight,
       };
 }
 
@@ -43,9 +44,9 @@ extension SensorStatusUI on SensorStatus {
         SensorStatus.critical => Icons.error_rounded,
       };
 
-  String get label => switch (this) {
-        SensorStatus.normal => 'Normal',
-        SensorStatus.warning => 'Warning',
-        SensorStatus.critical => 'Critical',
+  String label(BuildContext context) => switch (this) {
+        SensorStatus.normal => context.l10n.statusNormal,
+        SensorStatus.warning => context.l10n.statusWarning,
+        SensorStatus.critical => context.l10n.statusCritical,
       };
 }

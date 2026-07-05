@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/date_formatter.dart';
+import '../../../../core/localization/l10n.dart';
 import '../../domain/entities/treatment_step_entity.dart';
 
 class TreatmentStepTile extends StatelessWidget {
@@ -73,7 +74,7 @@ class TreatmentStepTile extends StatelessWidget {
                       ),
                     ),
                     const Padding(
-                      padding: EdgeInsets.only(left: 8),
+                      padding: EdgeInsetsDirectional.only(start: 8),
                       child: Icon(
                         Icons.chevron_right,
                         size: 22,
@@ -84,14 +85,14 @@ class TreatmentStepTile extends StatelessWidget {
                 ),
                 if (locked)
                   Padding(
-                    padding: const EdgeInsets.only(left: 40, top: 6),
+                    padding: const EdgeInsetsDirectional.only(start: 40, top: 6),
                     child: Row(
                       children: [
                         const Icon(Icons.lock_outline,
                             size: 14, color: AppColors.textHint),
                         const SizedBox(width: 4),
                         Text(
-                          'Unlocks ${formatShortDate(step.scheduledAt)}',
+                          context.l10n.unlocksOn(formatShortDate(step.scheduledAt)),
                           style: AppTextStyles.bodySmall.copyWith(
                             color: AppColors.textHint,
                           ),

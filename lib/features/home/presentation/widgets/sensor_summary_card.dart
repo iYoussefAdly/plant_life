@@ -34,7 +34,7 @@ class SensorSummaryCard extends StatelessWidget {
                     Icon(reading.type.icon, size: 19, color: reading.type.color),
               ),
               const Spacer(),
-              SensorCardDecoration.statusPill(reading.status),
+              SensorCardDecoration.statusPill(context, reading.status),
             ],
           ),
           const Spacer(),
@@ -61,7 +61,7 @@ class SensorSummaryCard extends StatelessWidget {
           ),
           const SizedBox(height: 2),
           Text(
-            reading.type.label,
+            reading.type.label(context),
             style: AppTextStyles.bodySmall.copyWith(
               color: AppColors.textSecondary,
             ),

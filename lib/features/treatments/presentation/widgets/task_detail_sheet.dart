@@ -6,6 +6,7 @@ import '../../../../core/di/service_locator.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/date_formatter.dart';
+import '../../../../core/localization/l10n.dart';
 import '../../../store/presentation/store_search_launcher.dart';
 import '../../domain/entities/task_detail_entity.dart';
 import '../bloc/task_detail_cubit.dart';
@@ -188,7 +189,7 @@ class _Content extends StatelessWidget {
           const SizedBox(height: 20),
           _Section(
             icon: Icons.description_outlined,
-            title: 'Instructions',
+            title: context.l10n.instructions,
             child: _Paragraph(task.description),
           ),
         ],
@@ -196,7 +197,7 @@ class _Content extends StatelessWidget {
           const SizedBox(height: 20),
           _Section(
             icon: Icons.info_outline,
-            title: 'Why this matters',
+            title: context.l10n.whyThisMatters,
             child: _Paragraph(task.why),
           ),
         ],
@@ -204,7 +205,7 @@ class _Content extends StatelessWidget {
           const SizedBox(height: 20),
           _Section(
             icon: Icons.lightbulb_outline,
-            title: 'Tips',
+            title: context.l10n.tips,
             iconColor: AppColors.primary,
             child: _BulletList(
               items: task.tips,
@@ -216,7 +217,7 @@ class _Content extends StatelessWidget {
           const SizedBox(height: 20),
           _Section(
             icon: Icons.warning_amber_rounded,
-            title: 'Warnings',
+            title: context.l10n.warnings,
             iconColor: AppColors.warning,
             child: _BulletList(
               items: task.warnings,
@@ -228,7 +229,7 @@ class _Content extends StatelessWidget {
           const SizedBox(height: 20),
           _Section(
             icon: Icons.storefront_outlined,
-            title: 'Find products in Store',
+            title: context.l10n.findProductsInStore,
             iconColor: AppColors.primary,
             child: Wrap(
               spacing: 8,
@@ -242,7 +243,7 @@ class _Content extends StatelessWidget {
           const SizedBox(height: 20),
           _Section(
             icon: Icons.storefront_outlined,
-            title: 'Find products in Store',
+            title: context.l10n.findProductsInStore,
             iconColor: AppColors.primary,
             child: _SearchInStoreButton(query: _fallbackQuery),
           ),
@@ -253,7 +254,7 @@ class _Content extends StatelessWidget {
           const SizedBox(height: 24),
           Center(
             child: Text(
-              'No further details for this task.',
+              context.l10n.noFurtherDetails,
               style: AppTextStyles.bodyMedium
                   .copyWith(color: AppColors.textSecondary),
             ),
@@ -282,7 +283,7 @@ class _SearchInStoreButton extends StatelessWidget {
           openStoreSearch(router, query);
         },
         icon: const Icon(Icons.search, size: 18),
-        label: const Text('Search in Store'),
+        label: Text(context.l10n.searchInStore),
       ),
     );
   }
@@ -401,7 +402,7 @@ class _DayBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
-        'Day $day',
+        context.l10n.dayN(day),
         style: AppTextStyles.labelLarge.copyWith(
           color: AppColors.primary,
           fontWeight: FontWeight.w700,
@@ -428,7 +429,7 @@ class _CompletedChip extends StatelessWidget {
           const Icon(Icons.check_circle, size: 15, color: AppColors.success),
           const SizedBox(width: 6),
           Text(
-            'Completed',
+            context.l10n.completed,
             style: AppTextStyles.labelMedium.copyWith(
               color: AppColors.success,
               fontWeight: FontWeight.w700,
@@ -550,7 +551,7 @@ class _ErrorBody extends StatelessWidget {
             const Icon(Icons.error_outline, size: 44, color: AppColors.error),
             const SizedBox(height: 12),
             Text(
-              message,
+              localizeMessage(context, message),
               textAlign: TextAlign.center,
               style: AppTextStyles.bodyMedium,
             ),
@@ -558,7 +559,7 @@ class _ErrorBody extends StatelessWidget {
             TextButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              label: Text(context.l10n.retry),
             ),
           ],
         ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/date_formatter.dart';
+import '../../../../core/localization/l10n.dart';
 import '../../domain/entities/product_entity.dart';
 import 'store_network_image.dart';
 
@@ -45,16 +46,16 @@ class ProductCard extends StatelessWidget {
                 children: [
                   StoreNetworkImage(url: product.imageUrl),
                   if (product.hasDiscount)
-                    Positioned(
+                    PositionedDirectional(
                       top: 8,
-                      left: 8,
-                      child: _tag('SALE', AppColors.error),
+                      start: 8,
+                      child: _tag(context.l10n.sale, AppColors.error),
                     ),
                   if (!product.inStock)
-                    Positioned(
+                    PositionedDirectional(
                       top: 8,
-                      right: 8,
-                      child: _tag('Out of stock', AppColors.textSecondary),
+                      end: 8,
+                      child: _tag(context.l10n.outOfStock, AppColors.textSecondary),
                     ),
                 ],
               ),

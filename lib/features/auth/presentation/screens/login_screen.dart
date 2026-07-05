@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/service_locator.dart';
+import '../../../../core/localization/l10n.dart';
 import '../../../../core/networking/socket_service.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -28,7 +29,7 @@ class LoginScreen extends StatelessWidget {
             } else if (state is AuthError) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(state.message),
+                  content: Text(localizeMessage(context, state.message)),
                   backgroundColor: AppColors.error,
                 ),
               );
@@ -41,17 +42,17 @@ class LoginScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: 60),
-                  const AuthHeader(
+                  AuthHeader(
                     icon: Icons.eco,
-                    title: 'Welcome Back',
-                    subtitle: 'Sign in to monitor your plants',
+                    title: context.l10n.welcomeBack,
+                    subtitle: context.l10n.signInSubtitle,
                   ),
                   const SizedBox(height: 48),
                   const LoginForm(),
                   const SizedBox(height: 24),
                   AuthFooter(
-                    promptText: "Don't have an account? ",
-                    actionText: 'Sign Up',
+                    promptText: context.l10n.dontHaveAccount,
+                    actionText: context.l10n.signUp,
                     onAction: () => context.go(AppRoutes.register),
                   ),
                 ],

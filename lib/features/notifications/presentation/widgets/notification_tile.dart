@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/localization/l10n.dart';
+import '../../../../core/utils/date_formatter.dart';
 import '../../domain/entities/notification_entity.dart';
 
 class NotificationTile extends StatelessWidget {
@@ -26,8 +28,8 @@ class NotificationTile extends StatelessWidget {
               ? AppColors.surface
               : AppColors.primary.withValues(alpha: 0.04),
           borderRadius: BorderRadius.circular(12),
-          border: Border(
-            left: BorderSide(color: _typeColor, width: 3),
+          border: BorderDirectional(
+            start: BorderSide(color: _typeColor, width: 3),
           ),
         ),
         child: Row(
@@ -51,7 +53,11 @@ class NotificationTile extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          notification.title,
+                          // Device-derived reminders carry a fixed title from
+                          // the domain layer; show it in the app language.
+                          notification.isLocal
+                              ? context.l10n.treatmentTaskDueToday
+                              : notification.title,
                           style: AppTextStyles.labelLarge.copyWith(
                             fontWeight: notification.isRead
                                 ? FontWeight.w500
@@ -84,7 +90,7 @@ class NotificationTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    _formatTimeAgo(notification.timestamp),
+                    formatTimeAgo(context, notification.timestamp),
                     style: AppTextStyles.bodySmall.copyWith(
                       color: AppColors.textHint,
                       fontSize: 11,
@@ -109,10 +115,4 @@ class NotificationTile extends StatelessWidget {
         NotificationType.sensorWarning => Icons.warning_amber_rounded,
       };
 
-  static String _formatTimeAgo(DateTime timestamp) {
-    final diff = DateTime.now().difference(timestamp);
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
-    return '${diff.inDays}d ago';
-  }
 }

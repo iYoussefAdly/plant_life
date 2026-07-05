@@ -6,6 +6,7 @@ import 'package:percent_indicator/linear_percent_indicator.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/localization/l10n.dart';
 import '../../../recovery/presentation/screens/recovery_progress_screen.dart';
 import '../../domain/entities/treatment_plan_entity.dart';
 import '../bloc/treatment_detail_cubit.dart';
@@ -32,7 +33,7 @@ class TreatmentDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Treatment Plan', style: AppTextStyles.headlineMedium),
+        title: Text(context.l10n.treatmentPlan, style: AppTextStyles.headlineMedium),
         actions: [
           BlocBuilder<TreatmentDetailCubit, TreatmentDetailState>(
             builder: (context, state) {
@@ -42,15 +43,15 @@ class TreatmentDetailScreen extends StatelessWidget {
                   onSelected: (value) {
                     if (value == 'cancel') _confirmCancel(context);
                   },
-                  itemBuilder: (_) => const [
+                  itemBuilder: (_) => [
                     PopupMenuItem(
                       value: 'cancel',
                       child: Row(
                         children: [
-                          Icon(Icons.cancel_outlined,
+                          const Icon(Icons.cancel_outlined,
                               size: 20, color: AppColors.error),
-                          SizedBox(width: 10),
-                          Text('Cancel plan'),
+                          const SizedBox(width: 10),
+                          Text(context.l10n.cancelPlan),
                         ],
                       ),
                     ),
@@ -77,12 +78,12 @@ class TreatmentDetailScreen extends StatelessWidget {
                   children: [
                     const Icon(Icons.error_outline, size: 48, color: AppColors.error),
                     const SizedBox(height: 16),
-                    Text(message, style: AppTextStyles.bodyLarge, textAlign: TextAlign.center),
+                    Text(localizeMessage(context, message), style: AppTextStyles.bodyLarge, textAlign: TextAlign.center),
                     const SizedBox(height: 16),
                     TextButton.icon(
                       onPressed: () => context.read<TreatmentDetailCubit>().retry(),
                       icon: const Icon(Icons.refresh),
-                      label: const Text('Retry'),
+                      label: Text(context.l10n.retry),
                     ),
                   ],
                 ),
@@ -99,27 +100,26 @@ class TreatmentDetailScreen extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Cancel plan'),
-        content: const Text(
-          'Are you sure you want to cancel this treatment plan? '
-          'This cannot be undone.',
-        ),
+        title: Text(dialogContext.l10n.cancelPlan),
+        content: Text(dialogContext.l10n.cancelPlanConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Keep plan'),
+            child: Text(dialogContext.l10n.keepPlan),
           ),
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Cancel plan'),
+            child: Text(dialogContext.l10n.cancelPlan),
           ),
         ],
       ),
     );
     if (confirmed != true) return;
     final error = await cubit.cancelPlan();
-    if (error != null) {
-      messenger.showSnackBar(SnackBar(content: Text(error)));
+    if (error != null && context.mounted) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(localizeMessage(context, error))),
+      );
     }
   }
 }
@@ -151,9 +151,9 @@ class _DetailContent extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Progress', style: AppTextStyles.labelLarge),
+                  Text(context.l10n.progress, style: AppTextStyles.labelLarge),
                   Text(
-                    '$completedCount of ${plan.steps.length} tasks',
+                    context.l10n.tasksProgress(completedCount, plan.steps.length),
                     style: AppTextStyles.bodySmall.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -169,7 +169,7 @@ class _DetailContent extends StatelessWidget {
                 progressColor: _progressColor,
                 backgroundColor: AppColors.textHint.withValues(alpha: 0.2),
                 trailing: Padding(
-                  padding: const EdgeInsets.only(left: 10),
+                  padding: const EdgeInsetsDirectional.only(start: 10),
                   child: Text(
                     '$percentage%',
                     style: AppTextStyles.labelLarge.copyWith(
@@ -183,7 +183,7 @@ class _DetailContent extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 20),
-        Text('Daily Tasks', style: AppTextStyles.headlineSmall),
+        Text(context.l10n.dailyTasks, style: AppTextStyles.headlineSmall),
         const SizedBox(height: 12),
         ...plan.days.map((day) => Padding(
               padding: const EdgeInsets.only(bottom: 16),
@@ -230,7 +230,7 @@ class _DetailContent extends StatelessWidget {
               extra: RecoveryArgs(scanId: plan.scanId, title: plan.title),
             ),
             icon: const Icon(Icons.trending_up),
-            label: const Text('View Recovery Progress'),
+            label: Text(context.l10n.viewRecoveryProgress),
           ),
         ),
         const SizedBox(height: 16),
@@ -285,9 +285,11 @@ class _StatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (label, color) = switch (status) {
-      TreatmentPlanStatus.completed => ('Completed', AppColors.success),
-      TreatmentPlanStatus.cancelled => ('Cancelled', AppColors.error),
-      TreatmentPlanStatus.active => ('Active', AppColors.primary),
+      TreatmentPlanStatus.completed =>
+        (context.l10n.completed, AppColors.success),
+      TreatmentPlanStatus.cancelled =>
+        (context.l10n.cancelled, AppColors.error),
+      TreatmentPlanStatus.active => (context.l10n.active, AppColors.primary),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
