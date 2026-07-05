@@ -180,6 +180,31 @@ class LocalNotificationsService {
     }
   }
 
+  /// Whether any pending (not-yet-fired) reminder's decoded payload satisfies
+  /// [test]. Lets callers skip rescheduling a series that's already queued, so
+  /// re-syncs don't reset the cadence or re-fire an immediate reminder.
+  Future<bool> hasPendingWhere(
+    bool Function(Map<String, dynamic> payload) test,
+  ) async {
+    if (!_ready) await init();
+    try {
+      for (final request in await _plugin.pendingNotificationRequests()) {
+        final raw = request.payload;
+        if (raw == null || raw.isEmpty) continue;
+        Map<String, dynamic> data;
+        try {
+          data = jsonDecode(raw) as Map<String, dynamic>;
+        } catch (_) {
+          continue;
+        }
+        if (test(data)) return true;
+      }
+    } catch (_) {
+      // Treat an unreadable pending list as "nothing pending".
+    }
+    return false;
+  }
+
   /// Cancels all scheduled reminders — used on logout so the next user never
   /// receives the previous user's reminders.
   Future<void> cancelAll() async {
