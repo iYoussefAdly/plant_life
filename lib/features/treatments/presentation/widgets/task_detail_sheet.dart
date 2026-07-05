@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/service_locator.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/date_formatter.dart';
+import '../../../store/presentation/store_search_launcher.dart';
 import '../../domain/entities/task_detail_entity.dart';
 import '../bloc/task_detail_cubit.dart';
 import '../bloc/task_detail_state.dart';
@@ -14,11 +16,15 @@ import '../bloc/task_detail_state.dart';
 /// [scheduledDate] is the timeline-corrected date from the calling task tile;
 /// it overrides the raw (off-by-one) date the task endpoint returns so the
 /// sheet stays consistent with the rest of the treatment timeline.
+///
+/// [recommendedProducts] are the plan's product names; where one is mentioned
+/// in the task, a "Search in Store" shortcut is offered.
 Future<void> showTaskDetailSheet(
   BuildContext context, {
   required String planId,
   required int taskIndex,
   DateTime? scheduledDate,
+  List<String> recommendedProducts = const [],
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -26,15 +32,22 @@ Future<void> showTaskDetailSheet(
     backgroundColor: Colors.transparent,
     builder: (_) => BlocProvider(
       create: (_) => sl<TaskDetailCubit>()..load(planId, taskIndex),
-      child: _TaskDetailSheet(scheduledDateOverride: scheduledDate),
+      child: _TaskDetailSheet(
+        scheduledDateOverride: scheduledDate,
+        recommendedProducts: recommendedProducts,
+      ),
     ),
   );
 }
 
 class _TaskDetailSheet extends StatelessWidget {
   final DateTime? scheduledDateOverride;
+  final List<String> recommendedProducts;
 
-  const _TaskDetailSheet({this.scheduledDateOverride});
+  const _TaskDetailSheet({
+    this.scheduledDateOverride,
+    this.recommendedProducts = const [],
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -66,6 +79,7 @@ class _TaskDetailSheet extends StatelessWidget {
                         task: task,
                         scrollController: scrollController,
                         scheduledDateOverride: scheduledDateOverride,
+                        recommendedProducts: recommendedProducts,
                       ),
                     TaskDetailError(:final message) => _ErrorBody(
                         message: message,
@@ -104,15 +118,46 @@ class _Content extends StatelessWidget {
   final TaskDetailEntity task;
   final ScrollController scrollController;
   final DateTime? scheduledDateOverride;
+  final List<String> recommendedProducts;
 
   const _Content({
     required this.task,
     required this.scrollController,
     this.scheduledDateOverride,
+    this.recommendedProducts = const [],
   });
+
+  /// All of the task's text, for matching product mentions.
+  String get _taskText => [
+        task.title,
+        task.description,
+        task.why,
+        ...task.tips,
+        ...task.warnings,
+      ].join(' ');
+
+  /// Product names to offer as store shortcuts. Prefers the plan's
+  /// [recommendedProducts] that are actually mentioned in the task; if none are
+  /// mentioned it falls back to all recommended products for the plan.
+  List<String> get _productTerms {
+    final valid =
+        recommendedProducts.where((p) => p.trim().isNotEmpty).toList();
+    if (valid.isEmpty) return const [];
+    final haystack = _taskText.toLowerCase();
+    final mentioned =
+        valid.where((p) => haystack.contains(p.toLowerCase())).toList();
+    return mentioned.isNotEmpty ? mentioned : valid;
+  }
+
+  /// When there are no recommended products, fall back to what the task itself
+  /// instructs the user to use so the "Search in Store" action still works.
+  String get _fallbackQuery => task.title.trim();
 
   @override
   Widget build(BuildContext context) {
+    final productTerms = _productTerms;
+    final showFallbackSearch =
+        productTerms.isEmpty && _fallbackQuery.isNotEmpty;
     return ListView(
       controller: scrollController,
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
@@ -179,7 +224,32 @@ class _Content extends StatelessWidget {
             ),
           ),
         ],
-        if (!task.hasExtraDetails) ...[
+        if (productTerms.isNotEmpty) ...[
+          const SizedBox(height: 20),
+          _Section(
+            icon: Icons.storefront_outlined,
+            title: 'Find products in Store',
+            iconColor: AppColors.primary,
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: productTerms
+                  .map((p) => _ProductSearchChip(product: p))
+                  .toList(),
+            ),
+          ),
+        ] else if (showFallbackSearch) ...[
+          const SizedBox(height: 20),
+          _Section(
+            icon: Icons.storefront_outlined,
+            title: 'Find products in Store',
+            iconColor: AppColors.primary,
+            child: _SearchInStoreButton(query: _fallbackQuery),
+          ),
+        ],
+        if (!task.hasExtraDetails &&
+            productTerms.isEmpty &&
+            !showFallbackSearch) ...[
           const SizedBox(height: 24),
           Center(
             child: Text(
@@ -190,6 +260,76 @@ class _Content extends StatelessWidget {
           ),
         ],
       ],
+    );
+  }
+}
+
+/// Full-width "Search in Store" action used as a fallback when the plan has no
+/// recommended products: it searches the Store with the task's own instruction
+/// text so the user can still find related products (and refine the search).
+class _SearchInStoreButton extends StatelessWidget {
+  final String query;
+  const _SearchInStoreButton({required this.query});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: () {
+          final router = GoRouter.of(context);
+          Navigator.of(context).pop();
+          openStoreSearch(router, query);
+        },
+        icon: const Icon(Icons.search, size: 18),
+        label: const Text('Search in Store'),
+      ),
+    );
+  }
+}
+
+/// A tappable product chip that opens the Store, pre-filled with a search for
+/// the product — reusing the existing store search flow.
+class _ProductSearchChip extends StatelessWidget {
+  final String product;
+  const _ProductSearchChip({required this.product});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.primary.withValues(alpha: 0.08),
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () {
+          // Capture the router before dismissing the sheet, then hand off to
+          // the shared store search flow.
+          final router = GoRouter.of(context);
+          Navigator.of(context).pop();
+          openStoreSearch(router, product);
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: Text(
+                  product,
+                  style: AppTextStyles.labelMedium.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 6),
+              const Icon(Icons.search, size: 16, color: AppColors.primary),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

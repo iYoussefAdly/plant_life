@@ -32,6 +32,9 @@ class _StoreScreenState extends State<StoreScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    // Reflect any pre-existing search (this cubit is a shared singleton, and a
+    // "Search in Store" deep-link may have set a keyword before this build).
+    _searchController.text = context.read<ProductsCubit>().query.keyword;
   }
 
   @override
@@ -63,38 +66,53 @@ class _StoreScreenState extends State<StoreScreen> {
         title: Text('Plant Store', style: AppTextStyles.headlineMedium),
         actions: const [CartIconButton(), SizedBox(width: 4)],
       ),
-      body: Column(
-        children: [
-          _SearchBar(
-            controller: _searchController,
-            onChanged: _onSearchChanged,
-            onClear: () {
-              _searchController.clear();
-              context.read<ProductsCubit>().search('');
-            },
-          ),
-          const _CategoryChips(),
-          const _SortBar(),
-          Expanded(
-            child: BlocBuilder<ProductsCubit, ProductsState>(
-              builder: (context, state) => switch (state) {
-                ProductsInitial() ||
-                ProductsLoading() =>
-                  const _ProductsSkeleton(),
-                ProductsLoaded() => state.products.isEmpty
-                    ? const _EmptyProducts()
-                    : _ProductGrid(
-                        state: state,
-                        controller: _scrollController,
-                      ),
-                ProductsError(:final message) => ErrorView(
-                    message: message,
-                    onRetry: () => context.read<ProductsCubit>().load(),
-                  ),
+      body: BlocListener<ProductsCubit, ProductsState>(
+        // Keep the search field in sync when the keyword changes from outside
+        // the field (e.g. a "Search in Store" deep-link). User typing already
+        // matches, so this is a no-op in that case.
+        listenWhen: (prev, curr) => curr is ProductsLoaded,
+        listener: (context, state) {
+          if (state is ProductsLoaded &&
+              state.query.keyword != _searchController.text) {
+            _searchController.text = state.query.keyword;
+            _searchController.selection = TextSelection.fromPosition(
+              TextPosition(offset: _searchController.text.length),
+            );
+          }
+        },
+        child: Column(
+          children: [
+            _SearchBar(
+              controller: _searchController,
+              onChanged: _onSearchChanged,
+              onClear: () {
+                _searchController.clear();
+                context.read<ProductsCubit>().search('');
               },
             ),
-          ),
-        ],
+            const _CategoryChips(),
+            const _SortBar(),
+            Expanded(
+              child: BlocBuilder<ProductsCubit, ProductsState>(
+                builder: (context, state) => switch (state) {
+                  ProductsInitial() ||
+                  ProductsLoading() =>
+                    const _ProductsSkeleton(),
+                  ProductsLoaded() => state.products.isEmpty
+                      ? const _EmptyProducts()
+                      : _ProductGrid(
+                          state: state,
+                          controller: _scrollController,
+                        ),
+                  ProductsError(:final message) => ErrorView(
+                      message: message,
+                      onRetry: () => context.read<ProductsCubit>().load(),
+                    ),
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -304,7 +322,7 @@ class _ProductGrid extends StatelessWidget {
           crossAxisCount: 2,
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
-          childAspectRatio: 0.62,
+          childAspectRatio: 0.70,
         ),
         itemCount: products.length + (state.hasMore ? 2 : 0),
         itemBuilder: (context, index) {
@@ -379,7 +397,7 @@ class _ProductsSkeleton extends StatelessWidget {
         crossAxisCount: 2,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
-        childAspectRatio: 0.62,
+        childAspectRatio: 0.70,
         children: List.generate(6, (_) => const _CardSkeleton()),
       ),
     );

@@ -10,6 +10,7 @@ class HealPlanModel extends TreatmentPlanEntity {
     required super.scanId,
     required super.steps,
     required super.createdAt,
+    super.recommendedProducts,
   });
 
   factory HealPlanModel.fromJson(Map<String, dynamic> json) {
@@ -65,7 +66,17 @@ class HealPlanModel extends TreatmentPlanEntity {
       createdAt:
           DateTime.tryParse(json['createdAt'] as String? ?? '')?.toLocal() ??
               DateTime.now(),
+      recommendedProducts: _stringList(json['recommendedProducts']),
     );
+  }
+
+  /// Coerces a backend list into non-empty trimmed strings.
+  static List<String> _stringList(dynamic value) {
+    if (value is! List) return const [];
+    return value
+        .map((e) => e?.toString().trim() ?? '')
+        .where((e) => e.isNotEmpty)
+        .toList();
   }
 
   /// Backend heal plans are keyed by disease. Prefer a localized
