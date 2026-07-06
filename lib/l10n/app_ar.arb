@@ -1,7 +1,7 @@
 {
   "@@locale": "ar",
 
-  "appName": "PlantLife",
+  "appName": "Plant Life",
   "appTagline": "مراقبة ذكية للنباتات",
   "retry": "إعادة المحاولة",
   "cancel": "إلغاء",
@@ -171,7 +171,7 @@
 
   "profile": "الملف الشخصي",
   "name": "الاسم",
-  "plantLifeMember": "عضو PlantLife",
+  "plantLifeMember": "عضو Plant Life",
   "logOut": "تسجيل الخروج",
   "logOutConfirm": "هل أنت متأكد من تسجيل الخروج؟",
 

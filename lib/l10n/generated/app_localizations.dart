@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// No description provided for @appName.
   ///
   /// In en, this message translates to:
-  /// **'PlantLife'**
+  /// **'Plant Life'**
   String get appName;
 
   /// No description provided for @appTagline.
@@ -1049,7 +1049,7 @@ abstract class AppLocalizations {
   /// No description provided for @plantLifeMember.
   ///
   /// In en, this message translates to:
-  /// **'PlantLife member'**
+  /// **'Plant Life member'**
   String get plantLifeMember;
 
   /// No description provided for @logOut.
