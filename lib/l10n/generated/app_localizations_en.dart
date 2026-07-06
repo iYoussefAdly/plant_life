@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appName => 'PlantLife';
+  String get appName => 'Plant Life';
 
   @override
   String get appTagline => 'Smart Plant Monitoring';
@@ -550,7 +550,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get name => 'Name';
 
   @override
-  String get plantLifeMember => 'PlantLife member';
+  String get plantLifeMember => 'Plant Life member';
 
   @override
   String get logOut => 'Log out';

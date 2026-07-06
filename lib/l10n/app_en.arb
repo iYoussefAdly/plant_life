@@ -1,7 +1,7 @@
 {
   "@@locale": "en",
 
-  "appName": "PlantLife",
+  "appName": "Plant Life",
   "appTagline": "Smart Plant Monitoring",
   "retry": "Retry",
   "cancel": "Cancel",
@@ -188,7 +188,7 @@
 
   "profile": "Profile",
   "name": "Name",
-  "plantLifeMember": "PlantLife member",
+  "plantLifeMember": "Plant Life member",
   "logOut": "Log out",
   "logOutConfirm": "Are you sure you want to log out?",
 

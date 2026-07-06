@@ -9,7 +9,7 @@ class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
-  String get appName => 'PlantLife';
+  String get appName => 'Plant Life';
 
   @override
   String get appTagline => 'مراقبة ذكية للنباتات';
@@ -557,7 +557,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get name => 'الاسم';
 
   @override
-  String get plantLifeMember => 'عضو PlantLife';
+  String get plantLifeMember => 'عضو Plant Life';
 
   @override
   String get logOut => 'تسجيل الخروج';

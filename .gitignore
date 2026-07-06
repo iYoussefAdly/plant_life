@@ -1,5 +1,17 @@
-# Local AI instructions (not for version control)
+# Local AI assistant instructions & workspace (not for version control)
 CLAUDE.md
+.claude/
+
+# Secrets & signing — NEVER commit these
+*.jks
+*.keystore
+**/key.properties
+*.env
+.env*
+!.env.example
+# Backend service configs that may embed keys (defensive — add if you adopt them)
+**/google-services.json
+**/GoogleService-Info.plist
 
 # Miscellaneous
 *.class

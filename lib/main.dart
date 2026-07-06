@@ -70,7 +70,7 @@ class PlantLife extends StatelessWidget {
       value: sl<LocaleCubit>(),
       child: BlocBuilder<LocaleCubit, Locale?>(
         builder: (context, locale) => MaterialApp.router(
-          title: 'PlantLife',
+          title: 'Plant Life',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.light,
           // null = follow the system locale until the user picks a language.

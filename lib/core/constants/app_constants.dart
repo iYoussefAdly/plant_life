@@ -1,6 +1,4 @@
 abstract final class AppConstants {
-  static const appName = 'PlantLife';
-
   static const tempMin = 18.0;
   static const tempMax = 30.0;
   static const humidityMin = 40.0;
