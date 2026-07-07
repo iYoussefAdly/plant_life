@@ -8,11 +8,13 @@ import 'core/localization/l10n.dart';
 import 'core/localization/locale_cubit.dart';
 import 'core/networking/socket_service.dart';
 import 'core/notifications/local_notifications_service.dart';
+import 'core/notifications/push_notifications_service.dart';
 import 'core/routing/app_router.dart';
 import 'core/routing/app_routes.dart';
 import 'core/storage/token_storage.dart';
 import 'core/theme/app_theme.dart';
 import 'features/notifications/presentation/bloc/notifications_cubit.dart';
+import 'features/sensors/domain/usecases/register_fcm_token_usecase.dart';
 import 'features/store/domain/usecases/clear_store_session_usecase.dart';
 import 'features/store/presentation/bloc/cart_cubit.dart';
 import 'features/store/presentation/bloc/products_cubit.dart';
@@ -24,6 +26,28 @@ Future<void> main() async {
   // Initialize on-device notifications (timezone, channel, permissions, and
   // capture of any reminder that cold-launched the app) before the UI starts.
   await sl<LocalNotificationsService>().init();
+  // Initialize Firebase Cloud Messaging (Sensor danger push alerts, Android
+  // only). Best-effort — the app runs normally if push is unavailable.
+  await sl<PushNotificationsService>().init();
+  // Re-register the FCM token with the backend whenever it rotates.
+  sl<PushNotificationsService>().onTokenRefresh.listen((token) async {
+    if (token.isEmpty) return;
+    if (await sl<TokenStorage>().hasTokens()) {
+      await sl<RegisterFcmTokenUseCase>()(token);
+    }
+  });
+  // A sensor push is a new sensor alert — refresh the global notifications
+  // center so the badge/list reflect it immediately.
+  Future<void> refreshNotificationsOnPush(_) async {
+    if (await sl<TokenStorage>().hasTokens()) {
+      sl<NotificationsCubit>().loadNotifications(silent: true);
+    }
+  }
+
+  sl<PushNotificationsService>()
+      .onForegroundMessage
+      .listen(refreshNotificationsOnPush);
+  sl<PushNotificationsService>().onOpened.listen(refreshNotificationsOnPush);
   // Redirect to login when a session expires (refresh failed), unless already
   // there — keeps the router dependency out of the DI layer.
   onSessionExpired = () {
@@ -45,11 +69,21 @@ Future<void> main() async {
   };
   // Open a tapped reminder while the app is running (foreground/background).
   sl<LocalNotificationsService>().onTap.listen(_openReminder);
-  // Open the realtime connection if the user is already signed in.
+  // Open the realtime connection + register push for an already-signed-in user.
   sl<TokenStorage>().hasTokens().then((hasTokens) {
-    if (hasTokens) sl<SocketService>().connect();
+    if (!hasTokens) return;
+    sl<SocketService>().connect();
+    _registerFcmTokenOnStartup();
   });
   runApp(const PlantLife());
+}
+
+/// Registers the current FCM token for a user who is already signed in when the
+/// app launches (login-time registration is handled by [AuthCubit]).
+Future<void> _registerFcmTokenOnStartup() async {
+  final token = await sl<PushNotificationsService>().getToken();
+  if (token == null || token.isEmpty) return;
+  await sl<RegisterFcmTokenUseCase>()(token);
 }
 
 /// Routes a tapped reminder to its treatment plan/task, but only for a

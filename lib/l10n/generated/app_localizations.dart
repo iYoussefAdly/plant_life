@@ -590,6 +590,18 @@ abstract class AppLocalizations {
   /// **'No alerts recorded'**
   String get noAlertsRecorded;
 
+  /// No description provided for @noAlertsRecordedSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your sensors are operating within safe ranges'**
+  String get noAlertsRecordedSubtitle;
+
+  /// No description provided for @seeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'See All'**
+  String get seeAll;
+
   /// No description provided for @optimalRange.
   ///
   /// In en, this message translates to:
@@ -619,6 +631,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Resolved'**
   String get resolved;
+
+  /// No description provided for @connectYourDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect your sensor device'**
+  String get connectYourDevice;
+
+  /// No description provided for @connectYourDeviceSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your Device ID to start monitoring your plant\'s environment in real time.'**
+  String get connectYourDeviceSubtitle;
+
+  /// No description provided for @deviceIdLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Device ID'**
+  String get deviceIdLabel;
+
+  /// No description provided for @deviceIdHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. DEVICE_ABC123'**
+  String get deviceIdHint;
+
+  /// No description provided for @connectDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect device'**
+  String get connectDevice;
+
+  /// No description provided for @deviceIdHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ll find the Device ID on your sensor device.'**
+  String get deviceIdHelp;
+
+  /// No description provided for @changeDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Change device'**
+  String get changeDevice;
+
+  /// No description provided for @noReadingsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No readings yet'**
+  String get noReadingsYet;
+
+  /// No description provided for @noReadingsYetSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sensor readings appear here once your device reports a warning or critical status.'**
+  String get noReadingsYetSubtitle;
+
+  /// No description provided for @connectSensorCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect your sensor'**
+  String get connectSensorCardTitle;
+
+  /// No description provided for @connectSensorCardSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your Device ID to monitor your plant and get live alerts.'**
+  String get connectSensorCardSubtitle;
 
   /// No description provided for @plantScanner.
   ///

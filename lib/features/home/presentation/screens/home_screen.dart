@@ -18,6 +18,7 @@ import '../../domain/entities/home_data_entity.dart';
 import '../bloc/home_cubit.dart';
 import '../bloc/home_state.dart';
 import '../widgets/alerts_section.dart';
+import '../widgets/connect_sensor_card.dart';
 import '../widgets/sensor_summary_card.dart';
 import '../widgets/treatment_tasks_section.dart';
 
@@ -152,43 +153,99 @@ class _HomeContent extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
         children: [
-          FadeSlideIn(
-            index: 1,
-            child: SectionHeader(
-              icon: Icons.monitor_heart_outlined,
-              title: context.l10n.sensorOverview,
-              trailing: Text(
-                context.l10n.sensorsCount(data.sensorReadings.length),
-                style: AppTextStyles.labelMedium.copyWith(
-                  color: AppColors.textHint,
+          // Sensor overview + alerts appear only once a sensor Device ID is
+          // configured; otherwise prompt the user to connect their device.
+          if (data.sensorsConfigured) ...[
+            FadeSlideIn(
+              index: 1,
+              child: SectionHeader(
+                icon: Icons.monitor_heart_outlined,
+                title: context.l10n.sensorOverview,
+                trailing: Text(
+                  context.l10n.sensorsCount(data.sensorReadings.length),
+                  style: AppTextStyles.labelMedium.copyWith(
+                    color: AppColors.textHint,
+                  ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 12),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 1.3,
-            ),
-            itemCount: data.sensorReadings.length,
-            itemBuilder: (context, index) => FadeSlideIn(
-              index: index + 1,
-              child: SensorSummaryCard(reading: data.sensorReadings[index]),
-            ),
-          ),
-          const SizedBox(height: 28),
-          FadeSlideIn(index: 2, child: AlertsSection(alerts: data.alerts)),
+            const SizedBox(height: 12),
+            if (data.sensorReadings.isEmpty)
+              // Device connected but nothing recorded yet (the backend stores
+              // warning/danger readings only) — show a calm waiting state.
+              const FadeSlideIn(index: 1, child: _AwaitingReadingsCard())
+            else
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 1.3,
+                ),
+                itemCount: data.sensorReadings.length,
+                itemBuilder: (context, index) => FadeSlideIn(
+                  index: index + 1,
+                  child: SensorSummaryCard(reading: data.sensorReadings[index]),
+                ),
+              ),
+            const SizedBox(height: 28),
+            FadeSlideIn(index: 2, child: AlertsSection(alerts: data.alerts)),
+          ] else
+            const FadeSlideIn(index: 1, child: ConnectSensorCard()),
           const SizedBox(height: 28),
           FadeSlideIn(
             index: 3,
             child: TreatmentTasksSection(tasks: data.todayTasks),
           ),
           const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+}
+
+/// Shown when a device is connected but has no recorded readings yet (the
+/// backend only persists warning/danger readings).
+class _AwaitingReadingsCard extends StatelessWidget {
+  const _AwaitingReadingsCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.spa_outlined,
+              size: 32, color: AppColors.success.withValues(alpha: 0.6)),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  context.l10n.noReadingsYet,
+                  style: AppTextStyles.labelLarge.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  context.l10n.noReadingsYetSubtitle,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

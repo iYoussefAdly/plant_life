@@ -5,9 +5,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../events/app_event_bus.dart';
 import '../localization/locale_cubit.dart';
+import '../networking/api_endpoints.dart';
 import '../networking/dio_factory.dart';
 import '../networking/socket_service.dart';
 import '../notifications/local_notifications_service.dart';
+import '../notifications/push_notifications_service.dart';
 import '../storage/app_preferences.dart';
 import '../storage/store_token_storage.dart';
 import '../storage/token_storage.dart';
@@ -48,9 +50,15 @@ import '../../features/home/data/repos/home_repository_impl.dart';
 import '../../features/home/domain/repos/home_repository.dart';
 import '../../features/home/domain/usecases/get_home_data_usecase.dart';
 import '../../features/home/presentation/bloc/home_cubit.dart';
+import '../../features/sensors/data/sensor_api_client.dart';
+import '../../features/sensors/data/datasources/sensors_data_source.dart';
 import '../../features/sensors/data/repos/sensors_repository_impl.dart';
 import '../../features/sensors/domain/repos/sensors_repository.dart';
+import '../../features/sensors/domain/usecases/get_sensor_notification_feed_usecase.dart';
 import '../../features/sensors/domain/usecases/get_sensors_data_usecase.dart';
+import '../../features/sensors/domain/usecases/mark_all_sensor_notifications_read_usecase.dart';
+import '../../features/sensors/domain/usecases/mark_sensor_notification_read_usecase.dart';
+import '../../features/sensors/domain/usecases/register_fcm_token_usecase.dart';
 import '../../features/sensors/presentation/bloc/sensors_cubit.dart';
 import '../../features/scan/data/datasources/scan_data_source.dart';
 import '../../features/scan/data/repos/scan_repository_impl.dart';
@@ -115,6 +123,9 @@ Future<void> setupServiceLocator() async {
   // but initialized from main() — DI setup stays free of async platform I/O
   // (so widget tests that only build the DI graph don't touch plugin channels).
   sl.registerLazySingleton(() => LocalNotificationsService());
+  // Firebase Cloud Messaging (Sensor danger push alerts). Initialized from
+  // main() like LocalNotificationsService — DI stays free of platform I/O.
+  sl.registerLazySingleton(() => PushNotificationsService());
 
   // Store backend (separate host + token + Dio).
   sl.registerLazySingleton(
@@ -146,6 +157,8 @@ Future<void> setupServiceLocator() async {
         sl<RegisterUseCase>(),
         sl<LogoutUseCase>(),
         sl<ProvisionStoreSessionUseCase>(),
+        sl<RegisterFcmTokenUseCase>(),
+        sl<PushNotificationsService>(),
       ));
 
   // Profile — intentionally a lazySingleton: the Home app-bar greeting/avatar
@@ -155,17 +168,57 @@ Future<void> setupServiceLocator() async {
     () => ProfileCubit(sl<GetMeUseCase>(), sl<LogoutUseCase>()),
   );
 
-  // Home (Today's Tasks compose from the active heal plan; sensors stay mock)
+  // Home (Today's Tasks compose from the active heal plan; the sensor overview
+  // + latest alerts come from the sensor backend once a Device ID is set).
   sl.registerLazySingleton<HomeRepository>(
-    () => HomeRepositoryImpl(sl<TreatmentsRepository>()),
+    () => HomeRepositoryImpl(
+      sl<TreatmentsRepository>(),
+      sl<SensorsRepository>(),
+      sl<AppPreferences>(),
+    ),
   );
   sl.registerLazySingleton(() => GetHomeDataUseCase(sl<HomeRepository>()));
-  sl.registerFactory(() => HomeCubit(sl<GetHomeDataUseCase>(), sl<AppEventBus>()));
+  sl.registerFactory(() => HomeCubit(
+        sl<GetHomeDataUseCase>(),
+        sl<AppEventBus>(),
+        sl<PushNotificationsService>(),
+      ));
 
-  // Sensors
-  sl.registerLazySingleton<SensorsRepository>(() => SensorsRepositoryImpl());
+  // Sensors — separate backend host that reuses the main access token. A
+  // dedicated refresh client points at the main API so 401s on sensor calls
+  // refresh against /auth/refresh-token, then the sensor request is replayed.
+  sl.registerLazySingleton<SensorApiClient>(
+    () => SensorDioFactory.create(
+      tokenStorage: sl<TokenStorage>(),
+      refreshDio: Dio(BaseOptions(baseUrl: ApiEndpoints.baseUrl)),
+      onUnauthorized: () => onSessionExpired?.call(),
+    ),
+  );
+  sl.registerLazySingleton(() => SensorsDataSource(sl<SensorApiClient>()));
+  sl.registerLazySingleton<SensorsRepository>(
+    () => SensorsRepositoryImpl(sl<SensorsDataSource>()),
+  );
   sl.registerLazySingleton(() => GetSensorsDataUseCase(sl<SensorsRepository>()));
-  sl.registerFactory(() => SensorsCubit(sl<GetSensorsDataUseCase>()));
+  sl.registerLazySingleton(
+    () => MarkSensorNotificationReadUseCase(sl<SensorsRepository>()),
+  );
+  sl.registerLazySingleton(
+    () => MarkAllSensorNotificationsReadUseCase(sl<SensorsRepository>()),
+  );
+  sl.registerLazySingleton(
+    () => RegisterFcmTokenUseCase(sl<SensorsRepository>()),
+  );
+  sl.registerLazySingleton(
+    () => GetSensorNotificationFeedUseCase(sl<SensorsRepository>()),
+  );
+  sl.registerFactory(() => SensorsCubit(
+        sl<GetSensorsDataUseCase>(),
+        sl<MarkSensorNotificationReadUseCase>(),
+        sl<MarkAllSensorNotificationsReadUseCase>(),
+        sl<AppPreferences>(),
+        sl<PushNotificationsService>(),
+        sl<AppEventBus>(),
+      ));
 
   // Scan
   sl.registerLazySingleton(() => ScanDataSource(sl<Dio>()));
@@ -257,6 +310,10 @@ Future<void> setupServiceLocator() async {
         sl<MarkAllNotificationsReadUseCase>(),
         sl<WatchNewNotificationsUseCase>(),
         sl<GetTreatmentRemindersUseCase>(),
+        sl<GetSensorNotificationFeedUseCase>(),
+        sl<MarkSensorNotificationReadUseCase>(),
+        sl<MarkAllSensorNotificationsReadUseCase>(),
+        sl<AppPreferences>(),
         sl<AppEventBus>(),
       ));
 

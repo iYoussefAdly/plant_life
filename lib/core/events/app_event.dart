@@ -19,3 +19,9 @@ class TreatmentsChanged extends AppEvent {
 class ScansChanged extends AppEvent {
   const ScansChanged();
 }
+
+/// The sensor Device ID was set or changed (or cleared). Home unlocks/locks its
+/// sensor sections and the notifications center re-pulls sensor alerts.
+class SensorDeviceChanged extends AppEvent {
+  const SensorDeviceChanged();
+}

@@ -278,6 +278,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get noAlertsRecorded => 'لا توجد تنبيهات مسجلة';
 
   @override
+  String get noAlertsRecordedSubtitle => 'مستشعراتك تعمل ضمن النطاقات الآمنة';
+
+  @override
+  String get seeAll => 'عرض الكل';
+
+  @override
   String get optimalRange => 'النطاق الأمثل';
 
   @override
@@ -297,6 +303,42 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get resolved => 'تم الحل';
+
+  @override
+  String get connectYourDevice => 'اربط جهاز المستشعر';
+
+  @override
+  String get connectYourDeviceSubtitle =>
+      'أدخل معرّف الجهاز لبدء مراقبة بيئة نباتك في الوقت الفعلي.';
+
+  @override
+  String get deviceIdLabel => 'معرّف الجهاز';
+
+  @override
+  String get deviceIdHint => 'مثال: DEVICE_ABC123';
+
+  @override
+  String get connectDevice => 'ربط الجهاز';
+
+  @override
+  String get deviceIdHelp => 'ستجد معرّف الجهاز على جهاز المستشعر الخاص بك.';
+
+  @override
+  String get changeDevice => 'تغيير الجهاز';
+
+  @override
+  String get noReadingsYet => 'لا توجد قراءات بعد';
+
+  @override
+  String get noReadingsYetSubtitle =>
+      'تظهر قراءات المستشعرات هنا بمجرد أن يُبلغ جهازك عن حالة تحذير أو حرجة.';
+
+  @override
+  String get connectSensorCardTitle => 'اربط مستشعرك';
+
+  @override
+  String get connectSensorCardSubtitle =>
+      'أضف معرّف جهازك لمراقبة نباتك وتلقّي التنبيهات الفورية.';
 
   @override
   String get plantScanner => 'فحص النبات';

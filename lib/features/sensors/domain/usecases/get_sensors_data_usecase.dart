@@ -7,7 +7,7 @@ class GetSensorsDataUseCase {
 
   GetSensorsDataUseCase(this._repository);
 
-  Future<ApiResult<SensorsDataEntity>> call() {
-    return _repository.getSensorsData();
+  Future<ApiResult<SensorsDataEntity>> call(String deviceId) {
+    return _repository.getSensorsData(deviceId);
   }
 }

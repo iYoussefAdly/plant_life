@@ -1,6 +1,8 @@
 plugins {
     id("com.android.application")
     id("kotlin-android")
+    // Firebase Cloud Messaging — reads android/app/google-services.json.
+    id("com.google.gms.google-services")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
@@ -23,8 +25,10 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.plant_life"
+        // Application ID must match the package_name in google-services.json
+        // (com.plantLife) for Firebase Cloud Messaging to resolve its client
+        // config. The Kotlin/namespace stays com.example.plant_life.
+        applicationId = "com.plantLife"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

@@ -275,6 +275,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noAlertsRecorded => 'No alerts recorded';
 
   @override
+  String get noAlertsRecordedSubtitle =>
+      'Your sensors are operating within safe ranges';
+
+  @override
+  String get seeAll => 'See All';
+
+  @override
   String get optimalRange => 'Optimal Range';
 
   @override
@@ -294,6 +301,43 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get resolved => 'Resolved';
+
+  @override
+  String get connectYourDevice => 'Connect your sensor device';
+
+  @override
+  String get connectYourDeviceSubtitle =>
+      'Enter your Device ID to start monitoring your plant\'s environment in real time.';
+
+  @override
+  String get deviceIdLabel => 'Device ID';
+
+  @override
+  String get deviceIdHint => 'e.g. DEVICE_ABC123';
+
+  @override
+  String get connectDevice => 'Connect device';
+
+  @override
+  String get deviceIdHelp =>
+      'You\'ll find the Device ID on your sensor device.';
+
+  @override
+  String get changeDevice => 'Change device';
+
+  @override
+  String get noReadingsYet => 'No readings yet';
+
+  @override
+  String get noReadingsYetSubtitle =>
+      'Sensor readings appear here once your device reports a warning or critical status.';
+
+  @override
+  String get connectSensorCardTitle => 'Connect your sensor';
+
+  @override
+  String get connectSensorCardSubtitle =>
+      'Add your Device ID to monitor your plant and get live alerts.';
 
   @override
   String get plantScanner => 'Plant Scanner';
