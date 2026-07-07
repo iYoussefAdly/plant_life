@@ -7,9 +7,14 @@ class HomeDataEntity {
   final List<PlantAlertEntity> alerts;
   final List<TreatmentTaskEntity> todayTasks;
 
+  /// Whether a sensor Device ID is configured. When false, the dashboard hides
+  /// the sensor overview + alerts and shows a "connect your sensor" prompt.
+  final bool sensorsConfigured;
+
   const HomeDataEntity({
     required this.sensorReadings,
     required this.alerts,
     required this.todayTasks,
+    required this.sensorsConfigured,
   });
 }

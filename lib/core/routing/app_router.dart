@@ -182,7 +182,7 @@ abstract final class AppRouter {
               GoRoute(
                 path: AppRoutes.sensors,
                 builder: (context, state) => BlocProvider(
-                  create: (_) => sl<SensorsCubit>()..loadSensorsData(),
+                  create: (_) => sl<SensorsCubit>()..init(),
                   child: const SensorsScreen(),
                 ),
               ),

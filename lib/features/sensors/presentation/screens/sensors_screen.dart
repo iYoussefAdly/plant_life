@@ -14,6 +14,7 @@ import '../bloc/sensors_cubit.dart';
 import '../bloc/sensors_state.dart';
 import '../widgets/alert_history_list.dart';
 import '../widgets/sensor_detail_card.dart';
+import '../widgets/sensor_device_id_gate.dart';
 
 class SensorsScreen extends StatelessWidget {
   const SensorsScreen({super.key});
@@ -22,17 +23,38 @@ class SensorsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(context.l10n.navSensors, style: AppTextStyles.headlineMedium),
+        title:
+            Text(context.l10n.navSensors, style: AppTextStyles.headlineMedium),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh_outlined),
-            onPressed: () => context.read<SensorsCubit>().loadSensorsData(),
+          BlocBuilder<SensorsCubit, SensorsState>(
+            builder: (context, state) {
+              // Only offer refresh/change-device once a device is configured.
+              if (state is SensorsNeedsDeviceId || state is SensorsInitial) {
+                return const SizedBox.shrink();
+              }
+              return Row(
+                children: [
+                  IconButton(
+                    tooltip: context.l10n.changeDevice,
+                    icon: const Icon(Icons.settings_outlined),
+                    onPressed: () =>
+                        context.read<SensorsCubit>().changeDeviceId(),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.refresh_outlined),
+                    onPressed: () =>
+                        context.read<SensorsCubit>().loadSensorsData(),
+                  ),
+                ],
+              );
+            },
           ),
         ],
       ),
       body: BlocBuilder<SensorsCubit, SensorsState>(
         builder: (context, state) => switch (state) {
           SensorsInitial() => const SizedBox.shrink(),
+          SensorsNeedsDeviceId() => const SensorDeviceIdGate(),
           SensorsLoading() => const _SensorsSkeleton(),
           SensorsSuccess(:final data) => _SensorsContent(data: data),
           SensorsError(:final message) => ErrorView(
@@ -52,6 +74,7 @@ class _SensorsContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasReadings = data.sensors.isNotEmpty;
     return RefreshIndicator(
       onRefresh: () =>
           context.read<SensorsCubit>().loadSensorsData(silent: true),
@@ -63,23 +86,68 @@ class _SensorsContent extends StatelessWidget {
             child: SectionHeader(
               icon: Icons.sensors,
               title: context.l10n.liveReadings,
-              trailing: const _LiveChip(),
+              trailing: hasReadings ? const _LiveChip() : null,
             ),
           ),
           const SizedBox(height: 12),
-          ...data.sensors.asMap().entries.map((entry) => FadeSlideIn(
-                index: entry.key + 1,
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 14),
-                  child: SensorDetailCard(sensor: entry.value),
-                ),
-              )),
+          if (hasReadings)
+            ...data.sensors.asMap().entries.map((entry) => FadeSlideIn(
+                  index: entry.key + 1,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 14),
+                    child: SensorDetailCard(sensor: entry.value),
+                  ),
+                ))
+          else
+            const _NoReadings(),
           const SizedBox(height: 12),
           FadeSlideIn(
             index: data.sensors.length + 1,
-            child: AlertHistoryList(alerts: data.alertHistory),
+            child: AlertHistoryList(
+              notifications: data.notifications,
+              unreadCount: data.unreadCount,
+            ),
           ),
           const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+}
+
+/// Shown when a device is configured but has no recorded readings yet (the
+/// backend only stores warning/danger readings).
+class _NoReadings extends StatelessWidget {
+  const _NoReadings();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.spa_outlined,
+              size: 40, color: AppColors.success.withValues(alpha: 0.6)),
+          const SizedBox(height: 10),
+          Text(
+            context.l10n.noReadingsYet,
+            textAlign: TextAlign.center,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            context.l10n.noReadingsYetSubtitle,
+            textAlign: TextAlign.center,
+            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textHint),
+          ),
         ],
       ),
     );

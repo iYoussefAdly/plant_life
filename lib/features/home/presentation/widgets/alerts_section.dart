@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/localization/l10n.dart';
+import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/widgets/section_header.dart';
 import '../../domain/entities/plant_alert_entity.dart';
 
+/// Latest sensor events on the dashboard (capped upstream by the repository);
+/// "See All" opens the Sensors screen with the full alert history.
 class AlertsSection extends StatelessWidget {
   final List<PlantAlertEntity> alerts;
 
@@ -23,18 +27,18 @@ class AlertsSection extends StatelessWidget {
           icon: Icons.notifications_active_outlined,
           title: context.l10n.alerts,
           color: AppColors.warning,
-          trailing: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(
-              color: AppColors.warning.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(20),
+          trailing: TextButton(
+            onPressed: () => context.go(AppRoutes.sensors),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
             child: Text(
-              '${alerts.length}',
+              context.l10n.seeAll,
               style: AppTextStyles.labelMedium.copyWith(
-                color: AppColors.warning,
-                fontWeight: FontWeight.w700,
-                fontSize: 11,
+                color: AppColors.primary,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -88,6 +92,7 @@ class _AlertTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
+                  // Real backend event text (produced server-side).
                   alert.message,
                   style: AppTextStyles.bodyMedium.copyWith(
                     fontWeight: FontWeight.w500,

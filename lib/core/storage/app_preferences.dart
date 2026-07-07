@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AppPreferences {
   static const _kOnboardingCompleted = 'onboarding_completed';
   static const _kLanguageCode = 'language_code';
+  static const _kSensorDeviceId = 'sensor_device_id';
 
   final SharedPreferences _prefs;
 
@@ -24,4 +25,16 @@ class AppPreferences {
 
   Future<void> setLanguageCode(String code) =>
       _prefs.setString(_kLanguageCode, code);
+
+  /// The sensor Device ID that unlocks the Sensors feature, or null when the
+  /// user hasn't configured one yet. Trimmed; empty is treated as unset.
+  String? get sensorDeviceId {
+    final id = _prefs.getString(_kSensorDeviceId)?.trim();
+    return (id == null || id.isEmpty) ? null : id;
+  }
+
+  Future<void> setSensorDeviceId(String deviceId) =>
+      _prefs.setString(_kSensorDeviceId, deviceId.trim());
+
+  Future<void> clearSensorDeviceId() => _prefs.remove(_kSensorDeviceId);
 }

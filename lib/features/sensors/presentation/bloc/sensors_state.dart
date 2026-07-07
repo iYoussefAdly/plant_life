@@ -8,6 +8,12 @@ final class SensorsInitial extends SensorsState {
   const SensorsInitial();
 }
 
+/// No sensor Device ID configured yet — the feature is locked behind the
+/// onboarding gate until the user enters one.
+final class SensorsNeedsDeviceId extends SensorsState {
+  const SensorsNeedsDeviceId();
+}
+
 final class SensorsLoading extends SensorsState {
   const SensorsLoading();
 }

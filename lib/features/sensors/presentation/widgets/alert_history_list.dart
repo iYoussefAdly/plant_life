@@ -1,17 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/extensions/sensor_type_extensions.dart';
+import '../../../../core/localization/l10n.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/widgets/section_header.dart';
-import '../../../../core/localization/l10n.dart';
-import '../../domain/entities/sensor_alert_entity.dart';
+import '../../domain/entities/sensor_notification_entity.dart';
+import '../bloc/sensors_cubit.dart';
 
 class AlertHistoryList extends StatelessWidget {
-  final List<SensorAlertEntity> alerts;
+  final List<SensorNotificationEntity> notifications;
+  final int unreadCount;
 
-  const AlertHistoryList({super.key, required this.alerts});
+  const AlertHistoryList({
+    super.key,
+    required this.notifications,
+    required this.unreadCount,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -21,32 +28,32 @@ class AlertHistoryList extends StatelessWidget {
         SectionHeader(
           icon: Icons.history_outlined,
           title: context.l10n.alertHistory,
-          trailing: alerts.isEmpty
+          trailing: unreadCount == 0
               ? null
-              : Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(20),
+              : TextButton(
+                  onPressed: () => context.read<SensorsCubit>().markAllRead(),
+                  style: TextButton.styleFrom(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                   child: Text(
-                    '${alerts.length}',
+                    context.l10n.markAllRead,
                     style: AppTextStyles.labelMedium.copyWith(
                       color: AppColors.primary,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
         ),
         const SizedBox(height: 12),
-        if (alerts.isEmpty)
+        if (notifications.isEmpty)
           const _EmptyAlerts()
         else
-          ...alerts.map((alert) => _AlertHistoryTile(
-                alert: alert,
-                timeAgo: formatTimeAgo(context, alert.timestamp),
+          ...notifications.map((n) => _AlertHistoryTile(
+                notification: n,
+                timeAgo: formatTimeAgo(context, n.timestamp),
               )),
       ],
     );
@@ -82,7 +89,8 @@ class _EmptyAlerts extends StatelessWidget {
           ),
           const SizedBox(height: 2),
           Text(
-            'Your sensors are operating within safe ranges',
+            context.l10n.noAlertsRecordedSubtitle,
+            textAlign: TextAlign.center,
             style: AppTextStyles.bodySmall.copyWith(color: AppColors.textHint),
           ),
         ],
@@ -92,21 +100,24 @@ class _EmptyAlerts extends StatelessWidget {
 }
 
 class _AlertHistoryTile extends StatelessWidget {
-  final SensorAlertEntity alert;
+  final SensorNotificationEntity notification;
   final String timeAgo;
 
-  const _AlertHistoryTile({required this.alert, required this.timeAgo});
+  const _AlertHistoryTile({required this.notification, required this.timeAgo});
 
   @override
   Widget build(BuildContext context) {
-    final color = alert.sensorType.color;
+    final color = notification.status.color;
+    final unread = !notification.isRead;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
+        border: unread
+            ? Border.all(color: color.withValues(alpha: 0.35), width: 1)
+            : null,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
@@ -115,40 +126,110 @@ class _AlertHistoryTile extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: alert.isResolved ? 0.08 : 0.14),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(
-              alert.sensorType.icon,
-              size: 19,
-              color: alert.isResolved ? color.withValues(alpha: 0.55) : color,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: unread
+              ? () => context.read<SensorsCubit>().markRead(notification.id)
+              : null,
+          child: Padding(
+            padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  alert.message,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    fontWeight: FontWeight.w500,
-                    color: alert.isResolved
-                        ? AppColors.textSecondary
-                        : AppColors.textPrimary,
-                  ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: unread ? 0.14 : 0.08),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(
+                        notification.sensorType.icon,
+                        size: 19,
+                        color: unread ? color : color.withValues(alpha: 0.55),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            notification.title,
+                            style: AppTextStyles.labelLarge.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: unread
+                                  ? AppColors.textPrimary
+                                  : AppColors.textSecondary,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            notification.message,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (unread) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        width: 9,
+                        height: 9,
+                        margin: const EdgeInsets.only(top: 4),
+                        decoration: BoxDecoration(
+                          color: color,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
-                const SizedBox(height: 4),
+                if (notification.recommendation.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  ...notification.recommendation.map(
+                    (tip) => Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsetsDirectional.only(
+                                top: 5, end: 8),
+                            child: Container(
+                              width: 4,
+                              height: 4,
+                              decoration: BoxDecoration(
+                                color: color,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: Text(
+                              tip,
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 8),
                 Row(
                   children: [
                     Text(
-                      '${alert.value.toStringAsFixed(1)}${alert.unit}',
+                      notification.currentValue.toStringAsFixed(1),
                       style: AppTextStyles.labelMedium.copyWith(
                         color: color,
                         fontWeight: FontWeight.w600,
@@ -163,36 +244,40 @@ class _AlertHistoryTile extends StatelessWidget {
                         fontSize: 11,
                       ),
                     ),
+                    const Spacer(),
+                    _StatusPill(status: notification.status, color: color),
                   ],
                 ),
               ],
             ),
           ),
-          if (alert.isResolved)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: AppColors.success.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.check_circle,
-                      size: 11, color: AppColors.success),
-                  const SizedBox(width: 3),
-                  Text(
-                    context.l10n.resolved,
-                    style: AppTextStyles.labelMedium.copyWith(
-                      color: AppColors.success,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StatusPill extends StatelessWidget {
+  final SensorStatus status;
+  final Color color;
+
+  const _StatusPill({required this.status, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        status.label(context),
+        style: AppTextStyles.labelMedium.copyWith(
+          color: color,
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }

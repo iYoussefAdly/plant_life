@@ -5,6 +5,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/errors/api_result.dart';
 import '../../../../core/events/app_event.dart';
 import '../../../../core/events/app_event_bus.dart';
+import '../../../../core/storage/app_preferences.dart';
+import '../../../sensors/domain/entities/sensor_notification_entity.dart';
+import '../../../sensors/domain/usecases/get_sensor_notification_feed_usecase.dart';
+import '../../../sensors/domain/usecases/mark_all_sensor_notifications_read_usecase.dart';
+import '../../../sensors/domain/usecases/mark_sensor_notification_read_usecase.dart';
 import '../../domain/entities/notification_entity.dart';
 import '../../domain/usecases/get_notifications_usecase.dart';
 import '../../domain/usecases/get_treatment_reminders_usecase.dart';
@@ -21,10 +26,16 @@ class NotificationsCubit extends Cubit<NotificationsState> {
   final MarkAllNotificationsReadUseCase _markAllNotificationsReadUseCase;
   final WatchNewNotificationsUseCase _watchNewNotificationsUseCase;
   final GetTreatmentRemindersUseCase _getTreatmentRemindersUseCase;
+  // Sensor alerts (merged into this single, global center).
+  final GetSensorNotificationFeedUseCase _getSensorFeedUseCase;
+  final MarkSensorNotificationReadUseCase _markSensorReadUseCase;
+  final MarkAllSensorNotificationsReadUseCase _markAllSensorReadUseCase;
+  final AppPreferences _prefs;
   final AppEventBus _eventBus;
 
   StreamSubscription<NotificationEntity>? _liveSub;
   StreamSubscription<TreatmentsChanged>? _treatmentsSub;
+  StreamSubscription<SensorDeviceChanged>? _sensorDeviceSub;
 
   /// Ids of locally-derived reminders the user has dismissed (marked read).
   /// Session-scoped: a reminder disappears for good once its task is completed,
@@ -38,18 +49,38 @@ class NotificationsCubit extends Cubit<NotificationsState> {
     this._markAllNotificationsReadUseCase,
     this._watchNewNotificationsUseCase,
     this._getTreatmentRemindersUseCase,
+    this._getSensorFeedUseCase,
+    this._markSensorReadUseCase,
+    this._markAllSensorReadUseCase,
+    this._prefs,
     this._eventBus,
   ) : super(const NotificationsInitial()) {
-    // Listen for notifications pushed live by the server. onError keeps the
-    // subscription alive if the stream ever surfaces an error.
+    // Live server-pushed notifications. onError keeps the subscription alive.
     _liveSub =
         _watchNewNotificationsUseCase().listen(_onIncoming, onError: (_) {});
-    // Re-derive today's reminders whenever treatment data changes (a task
-    // completed elsewhere should drop its reminder; a new plan should add them).
+    // Re-derive today's reminders whenever treatment data changes.
     _treatmentsSub = _eventBus.on<TreatmentsChanged>().listen((_) {
       if (!isClosed) loadNotifications(silent: true);
     });
+    // Pull (or drop) sensor alerts when the device is connected/changed.
+    _sensorDeviceSub = _eventBus.on<SensorDeviceChanged>().listen((_) {
+      if (!isClosed) loadNotifications(silent: true);
+    });
   }
+
+  /// Maps a sensor backend alert into a unified [NotificationEntity]. Tapping it
+  /// opens the Sensors screen (handled by the notifications screen), and its
+  /// read-state is routed back to the sensor backend via [isSensor].
+  NotificationEntity _fromSensor(SensorNotificationEntity s) =>
+      NotificationEntity(
+        id: s.id,
+        type: NotificationType.sensorWarning,
+        title: s.title,
+        message: s.message,
+        timestamp: s.timestamp,
+        isRead: s.isRead,
+        isSensor: true,
+      );
 
   /// Handles a notification pushed live by the server: prepend it, drop any
   /// derived reminder it now duplicates (same plan, same day), and bump the
@@ -73,27 +104,28 @@ class NotificationsCubit extends Cubit<NotificationsState> {
       ));
       return;
     }
-    // Avoid a reload storm if events arrive while a load is already running.
     if (currentState is NotificationsLoading) return;
     loadNotifications();
   }
 
-  /// Marks every notification as read — optimistic (badge clears instantly),
-  /// reverted if the server rejects the request. Derived reminders are dismissed
-  /// locally; backend notifications go through the server.
+  /// Marks every notification as read across all sources — optimistic (badge
+  /// clears instantly), resynced from the servers if any backend rejects it.
   Future<void> markAllAsRead() async {
     final currentState = state;
     if (currentState is! NotificationsLoaded || currentState.unreadCount == 0) {
       return;
     }
 
-    // Dismiss local reminders optimistically, tracking which ids we added so we
-    // can undo them if the backend call fails.
     final newlyReadLocal = currentState.notifications
         .where((n) => n.isLocal && !_locallyReadIds.contains(n.id))
         .map((n) => n.id)
         .toList();
     _locallyReadIds.addAll(newlyReadLocal);
+
+    final hasBackendUnread =
+        currentState.notifications.any((n) => !n.isLocal && !n.isSensor && !n.isRead);
+    final hasSensorUnread =
+        currentState.notifications.any((n) => n.isSensor && !n.isRead);
 
     emit(NotificationsLoaded(
       notifications: currentState.notifications
@@ -102,10 +134,15 @@ class NotificationsCubit extends Cubit<NotificationsState> {
       unreadCount: 0,
     ));
 
-    final result = await _markAllNotificationsReadUseCase();
-    if (result is Error && !isClosed) {
+    final backendResult =
+        hasBackendUnread ? await _markAllNotificationsReadUseCase() : null;
+    final sensorResult =
+        hasSensorUnread ? await _markAllSensorReadUseCase() : null;
+    if (isClosed) return;
+    if (backendResult is Error || sensorResult is Error) {
+      // Resync from the servers to reflect whatever actually succeeded.
       _locallyReadIds.removeAll(newlyReadLocal);
-      emit(currentState);
+      await loadNotifications(silent: true);
     }
   }
 
@@ -120,6 +157,7 @@ class NotificationsCubit extends Cubit<NotificationsState> {
   Future<void> close() {
     _liveSub?.cancel();
     _treatmentsSub?.cancel();
+    _sensorDeviceSub?.cancel();
     return super.close();
   }
 
@@ -128,10 +166,16 @@ class NotificationsCubit extends Cubit<NotificationsState> {
     final result = await _getNotificationsUseCase();
     if (isClosed) return;
 
-    // Derive today's reminders regardless of the backend result so they still
-    // appear even if the notifications endpoint is unavailable.
+    // Derive today's reminders + fetch sensor alerts regardless of the backend
+    // result so they still appear even if the notifications endpoint is down.
     final reminders = await _getTreatmentRemindersUseCase();
     if (isClosed) return;
+    final feed = await _getSensorFeedUseCase(_prefs.sensorDeviceId);
+    if (isClosed) return;
+    final sensors = feed.notifications.map(_fromSensor).toList();
+    final sensorUnreadLocal = sensors.where((n) => !n.isRead).length;
+    final sensorUnread =
+        feed.unreadCount > sensorUnreadLocal ? feed.unreadCount : sensorUnreadLocal;
 
     switch (result) {
       case Success(:final data):
@@ -145,24 +189,28 @@ class NotificationsCubit extends Cubit<NotificationsState> {
             count > backendUnreadLocal ? count : backendUnreadLocal,
           Error() => backendUnreadLocal,
         };
-        final merged = _merge(backend: data, reminders: reminders);
+        final merged =
+            _merge(backend: data, reminders: reminders, sensors: sensors);
         final localUnread =
             merged.where((n) => n.isLocal && !n.isRead).length;
         emit(NotificationsLoaded(
           notifications: merged,
-          unreadCount: backendUnread + localUnread,
+          unreadCount: backendUnread + localUnread + sensorUnread,
         ));
       case Error(:final failure):
-        // Backend unavailable — still surface local reminders so the user sees
-        // today's tasks; only error out if there are none to show.
-        if (reminders.isEmpty) {
+        // Main backend unavailable — still surface reminders + sensor alerts;
+        // only error out if there is genuinely nothing to show.
+        final applicable = _applyLocalRead(reminders);
+        final combined = [...applicable, ...sensors]
+          ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
+        if (combined.isEmpty) {
           emit(NotificationsError(failure.message));
         } else {
-          final applied = _applyLocalRead(reminders)
-            ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
+          final localUnread =
+              applicable.where((n) => n.isLocal && !n.isRead).length;
           emit(NotificationsLoaded(
-            notifications: applied,
-            unreadCount: applied.where((n) => !n.isRead).length,
+            notifications: combined,
+            unreadCount: localUnread + sensorUnread,
           ));
         }
     }
@@ -175,9 +223,9 @@ class NotificationsCubit extends Cubit<NotificationsState> {
     final matches =
         currentState.notifications.where((n) => n.id == notificationId);
     if (matches.isEmpty) return;
-    final isLocal = matches.first.isLocal;
+    final match = matches.first;
 
-    final wasUnread = matches.first.isRead == false;
+    final wasUnread = match.isRead == false;
     final updated = currentState.notifications
         .map((n) => n.id == notificationId ? n.copyWith(isRead: true) : n)
         .toList();
@@ -186,28 +234,32 @@ class NotificationsCubit extends Cubit<NotificationsState> {
         : currentState.unreadCount;
     emit(NotificationsLoaded(notifications: updated, unreadCount: unread));
 
-    if (isLocal) {
+    if (match.isLocal) {
       // Derived reminder — dismiss locally, no server round-trip.
       _locallyReadIds.add(notificationId);
       return;
     }
 
-    final result = await _markNotificationReadUseCase(notificationId);
+    // Route the read to the owning backend.
+    final result = match.isSensor
+        ? await _markSensorReadUseCase(notificationId)
+        : await _markNotificationReadUseCase(notificationId);
     // Revert the optimistic update if the server rejected it.
     if (result is Error && !isClosed) emit(currentState);
   }
 
-  /// Merges backend notifications with derived reminders, dropping any reminder
-  /// the backend already covers (same plan, same day) and applying local
-  /// read-state. Sorted newest first.
+  /// Merges backend notifications, derived reminders, and sensor alerts into one
+  /// list. Reminders the backend already covers are dropped; local read-state is
+  /// applied to reminders. Sorted newest first.
   List<NotificationEntity> _merge({
     required List<NotificationEntity> backend,
     required List<NotificationEntity> reminders,
+    required List<NotificationEntity> sensors,
   }) {
     final applicable = _applyLocalRead(
       reminders.where((r) => !backend.any((b) => _isCoveredBy(r, b))).toList(),
     );
-    return [...backend, ...applicable]
+    return [...backend, ...applicable, ...sensors]
       ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
   }
 
@@ -218,12 +270,6 @@ class NotificationsCubit extends Cubit<NotificationsState> {
 
   /// True when real backend notification [backend] already covers derived
   /// [reminder], so the reminder should be suppressed to avoid a duplicate.
-  ///
-  /// Backend notifications carry no task index, only a plan (`relatedId`). We
-  /// therefore match on plan + same calendar day AND on the task text (the
-  /// reminder's message is the task title): this suppresses only the *same*
-  /// task rather than every task in that plan on that day, so a backend reminder
-  /// for one task can't hide the other tasks still due the same day.
   bool _isCoveredBy(NotificationEntity reminder, NotificationEntity backend) {
     if (!reminder.isLocal || backend.isLocal) return false;
     if (backend.relatedId == null ||

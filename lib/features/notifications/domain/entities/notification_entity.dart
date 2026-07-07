@@ -14,6 +14,11 @@ class NotificationEntity {
   /// so `markAsRead`/`markAllAsRead` must not call the server for them.
   final bool isLocal;
 
+  /// True for alerts sourced from the sensor backend (merged into this global
+  /// center). Routing marker: their read-state is marked on the sensor backend,
+  /// not the main notifications backend.
+  final bool isSensor;
+
   const NotificationEntity({
     required this.id,
     required this.type,
@@ -23,6 +28,7 @@ class NotificationEntity {
     this.isRead = false,
     this.relatedId,
     this.isLocal = false,
+    this.isSensor = false,
   });
 
   NotificationEntity copyWith({bool? isRead}) => NotificationEntity(
@@ -34,5 +40,6 @@ class NotificationEntity {
         isRead: isRead ?? this.isRead,
         relatedId: relatedId,
         isLocal: isLocal,
+        isSensor: isSensor,
       );
 }
