@@ -72,6 +72,25 @@ class ScanResultCard extends StatelessWidget {
             ),
           ],
         ],
+        // Only camera scans (the /analyze service) report a leaf count.
+        if (result.leavesCount != null) ...[
+          const SizedBox(height: 14),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.eco_outlined,
+                  size: 16, color: AppColors.textSecondary),
+              const SizedBox(width: 6),
+              Text(
+                context.l10n.leavesDetected(result.leavesCount!),
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ],
         const SizedBox(height: 10),
         SizedBox(
           width: double.infinity,

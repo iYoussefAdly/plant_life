@@ -131,6 +131,7 @@
   "viewScanHistory": "عرض سجل الفحوصات",
   "diseasesFound": "{count, plural, =1{تم العثور على مرض واحد} =2{تم العثور على مرضين} few{تم العثور على {count} أمراض} other{تم العثور على {count} مرضًا}}",
   "confidencePct": "دقة {pct}٪",
+  "leavesDetected": "عدد الأوراق المكتشفة: {count}",
   "noScansYet": "لا توجد فحوصات بعد",
   "healthy": "سليم",
   "diseaseDetected": "تم اكتشاف مرض",

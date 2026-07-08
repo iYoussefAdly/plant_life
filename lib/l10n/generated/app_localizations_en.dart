@@ -416,6 +416,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String leavesDetected(int count) {
+    return 'Leaves detected: $count';
+  }
+
+  @override
   String get noScansYet => 'No scans yet';
 
   @override
