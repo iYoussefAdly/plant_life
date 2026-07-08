@@ -24,4 +24,8 @@ abstract final class SensorApiEndpoints {
 
   // FCM device-token registration (account-level, on this backend).
   static const fcmToken = '/auth/fcm-token';
+
+  // Registers a sensor Device ID to the account. Must succeed before the
+  // device's readings/notifications can be loaded — see "Connect Device".
+  static const registerDevice = '/auth/device';
 }

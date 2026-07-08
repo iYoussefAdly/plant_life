@@ -5,7 +5,8 @@ enum ProductCategory {
   plantDiseaseTreatment('plant-disease-treatment'),
   plantTools('plant-tools'),
   seeds('seeds'),
-  fertilizers('fertilizers');
+  fertilizers('fertilizers'),
+  devices('devices');
 
   final String apiValue;
 

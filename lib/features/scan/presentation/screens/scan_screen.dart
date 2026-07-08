@@ -54,9 +54,19 @@ class ScanScreen extends StatelessWidget {
     BuildContext context,
     ScanImageSource source,
   ) async {
+    final cubit = context.read<ScanCubit>();
+
+    // Gallery supports selecting multiple images; camera/ESP32 stay single.
+    if (source == ScanImageSource.gallery) {
+      final paths = await pickScanImagePaths();
+      if (paths.isEmpty) return;
+      cubit.scanImages(paths, source);
+      return;
+    }
+
     final path = await pickScanImagePath(context, source);
-    if (path == null || !context.mounted) return;
-    context.read<ScanCubit>().scanImage(path);
+    if (path == null) return;
+    cubit.scanImages([path], source);
   }
 }
 
@@ -134,6 +144,11 @@ class _ResultView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDiseased = result.status == ScanStatus.diseased;
+    // Start Treatment needs a persisted scanId to create a heal plan. Camera
+    // results come from the AI model service, which returns no scanId, so the
+    // button is hidden for them — the (always-present) Rescan action remains.
+    // Gallery results carry a valid scanId and still show Start Treatment.
+    final canStartTreatment = isDiseased && result.id.isNotEmpty;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
@@ -141,7 +156,7 @@ class _ResultView extends StatelessWidget {
         result: result,
         onScanAgain: onScanAgain,
         onStartTreatment:
-            isDiseased ? () => _startTreatment(context) : null,
+            canStartTreatment ? () => _startTreatment(context) : null,
       ),
     );
   }

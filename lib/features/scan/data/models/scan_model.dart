@@ -31,6 +31,42 @@ class ScanModel extends ScanResultEntity {
     );
   }
 
+  /// Parses the AI model service's `/analyze` response (used for camera
+  /// captures): `{ source, images_count, leaves_count, result, confidence }`.
+  ///
+  /// `result` is the predicted class (e.g. `Early_blight` / `healthy`) and
+  /// `confidence` its score. This service returns no persisted scan, so there
+  /// is no id/image URL. If `result` ever arrives object-shaped, fall back to
+  /// the standard [ScanModel.fromJson] parsing.
+  factory ScanModel.fromCameraJson(Map<String, dynamic> json) {
+    final rawResult = json['result'];
+    if (rawResult is Map<String, dynamic>) {
+      return ScanModel.fromJson(json);
+    }
+
+    final label = rawResult?.toString().trim() ?? '';
+    final isHealthy =
+        label.isEmpty || label.toLowerCase().contains('healthy');
+    final confidence = _normalizeConfidence(json['confidence'] as num?);
+
+    return ScanModel(
+      id: '',
+      imagePath: '',
+      status: isHealthy ? ScanStatus.healthy : ScanStatus.diseased,
+      diseases: isHealthy
+          ? const []
+          : [
+              DiseaseEntity(
+                name: _prettify(label),
+                confidence: confidence,
+                // The model service doesn't report severity — the UI renders 0%.
+                severityPercent: 0,
+              ),
+            ],
+      scannedAt: DateTime.now(),
+    );
+  }
+
   /// Builds the disease list from `per_image_details`, falling back to the
   /// overall `main_disease` + `avg_severity_all_images` when details are absent.
   static List<DiseaseEntity> _diseases(Map<String, dynamic> result) {

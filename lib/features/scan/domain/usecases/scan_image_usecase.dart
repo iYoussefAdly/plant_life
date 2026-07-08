@@ -7,7 +7,10 @@ class ScanImageUseCase {
 
   ScanImageUseCase(this._repository);
 
-  Future<ApiResult<ScanResultEntity>> call({required String imagePath}) {
-    return _repository.scanImage(imagePath: imagePath);
+  Future<ApiResult<ScanResultEntity>> call({
+    required List<String> imagePaths,
+    required ScanImageSource source,
+  }) {
+    return _repository.scanImages(imagePaths: imagePaths, source: source);
   }
 }

@@ -416,6 +416,18 @@ abstract class AppLocalizations {
   /// **'Enter your full name'**
   String get enterYourFullName;
 
+  /// No description provided for @plantType.
+  ///
+  /// In en, this message translates to:
+  /// **'Plant Type'**
+  String get plantType;
+
+  /// No description provided for @plantTypeTomato.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomato'**
+  String get plantTypeTomato;
+
   /// No description provided for @forgotPassword.
   ///
   /// In en, this message translates to:
@@ -697,6 +709,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add your Device ID to monitor your plant and get live alerts.'**
   String get connectSensorCardSubtitle;
+
+  /// No description provided for @connectSensorAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect Sensor'**
+  String get connectSensorAction;
+
+  /// No description provided for @browseSensorsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy device'**
+  String get browseSensorsAction;
 
   /// No description provided for @plantScanner.
   ///
@@ -1225,6 +1249,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Fertilizers'**
   String get catFertilizers;
+
+  /// No description provided for @catDevices.
+  ///
+  /// In en, this message translates to:
+  /// **'Devices'**
+  String get catDevices;
 
   /// No description provided for @noProductsFound.
   ///

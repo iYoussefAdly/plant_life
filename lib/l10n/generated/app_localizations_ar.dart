@@ -178,6 +178,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get enterYourFullName => 'أدخل اسمك الكامل';
 
   @override
+  String get plantType => 'نوع النبات';
+
+  @override
+  String get plantTypeTomato => 'طماطم';
+
+  @override
   String get forgotPassword => 'هل نسيت كلمة المرور؟';
 
   @override
@@ -339,6 +345,12 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get connectSensorCardSubtitle =>
       'أضف معرّف جهازك لمراقبة نباتك وتلقّي التنبيهات الفورية.';
+
+  @override
+  String get connectSensorAction => 'ربط المستشعر';
+
+  @override
+  String get browseSensorsAction => 'اطلب جهاز الأن';
 
   @override
   String get plantScanner => 'فحص النبات';
@@ -648,6 +660,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get catFertilizers => 'أسمدة';
+
+  @override
+  String get catDevices => 'الأجهزة';
 
   @override
   String get noProductsFound => 'لم يتم العثور على منتجات';

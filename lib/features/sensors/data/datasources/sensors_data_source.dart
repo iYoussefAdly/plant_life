@@ -91,4 +91,14 @@ class SensorsDataSource {
       data: {'fcmToken': token},
     );
   }
+
+  /// Registers [deviceId] to the current account (`PATCH /auth/device`).
+  /// Must succeed before the device's data can be loaded — throws on failure
+  /// so the caller never treats an unregistered device as connected.
+  Future<void> registerDevice(String deviceId) async {
+    await _dio.patch<dynamic>(
+      SensorApiEndpoints.registerDevice,
+      data: {'deviceId': deviceId},
+    );
+  }
 }
