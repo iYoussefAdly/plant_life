@@ -141,6 +141,8 @@
   "@diseasesFound": { "placeholders": { "count": { "type": "int" } } },
   "confidencePct": "{pct}% conf.",
   "@confidencePct": { "placeholders": { "pct": { "type": "String" } } },
+  "leavesDetected": "Leaves detected: {count}",
+  "@leavesDetected": { "placeholders": { "count": { "type": "int" } } },
   "noScansYet": "No scans yet",
   "healthy": "Healthy",
   "diseaseDetected": "Disease Detected",

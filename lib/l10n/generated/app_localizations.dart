@@ -830,6 +830,12 @@ abstract class AppLocalizations {
   /// **'{pct}% conf.'**
   String confidencePct(String pct);
 
+  /// No description provided for @leavesDetected.
+  ///
+  /// In en, this message translates to:
+  /// **'Leaves detected: {count}'**
+  String leavesDetected(int count);
+
   /// No description provided for @noScansYet.
   ///
   /// In en, this message translates to:

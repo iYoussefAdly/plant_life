@@ -8,6 +8,7 @@ class ScanModel extends ScanResultEntity {
     required super.status,
     required super.diseases,
     required super.scannedAt,
+    super.leavesCount,
   });
 
   factory ScanModel.fromJson(Map<String, dynamic> json) {
@@ -64,6 +65,7 @@ class ScanModel extends ScanResultEntity {
               ),
             ],
       scannedAt: DateTime.now(),
+      leavesCount: (json['leaves_count'] as num?)?.toInt(),
     );
   }
 

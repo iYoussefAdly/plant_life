@@ -419,6 +419,11 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String leavesDetected(int count) {
+    return 'عدد الأوراق المكتشفة: $count';
+  }
+
+  @override
   String get noScansYet => 'لا توجد فحوصات بعد';
 
   @override
