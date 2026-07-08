@@ -23,6 +23,14 @@ abstract final class ApiEndpoints {
   static String rescan(String parentScanId) => '/scans/$parentScanId/rescan';
   static String scanRescans(String scanId) => '/scans/$scanId/rescans';
 
+  // AI model service — a separate host that camera captures are analyzed by.
+  // Absolute URL (Dio uses it directly, ignoring the plant-life base URL);
+  // overridable at build time like the other base URLs.
+  static const cameraAnalyze = String.fromEnvironment(
+    'CAMERA_ANALYZE_URL',
+    defaultValue: 'https://model-production-bcf1.up.railway.app/analyze',
+  );
+
   // Heal plans
   static const healPlans = '/heal-plans';
   static const healPlanTemplates = '/heal-plans/templates';

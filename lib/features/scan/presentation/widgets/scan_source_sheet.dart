@@ -31,6 +31,14 @@ Future<String?> pickScanImagePath(
   return picked?.path;
 }
 
+/// Gallery multi-select for the Scan flow: returns the picked image paths
+/// (empty when the user cancels). Kept separate from [pickScanImagePath] so the
+/// single-image flows (camera capture, Recovery rescan) stay unchanged.
+Future<List<String>> pickScanImagePaths() async {
+  final picked = await _picker.pickMultiImage(imageQuality: 85);
+  return picked.map((x) => x.path).toList();
+}
+
 /// Bottom sheet offering the same three sources as the Scan screen
 /// (camera / gallery / ESP32-CAM). Returns the chosen source, or null.
 Future<ScanImageSource?> showScanSourceSheet(BuildContext context) {

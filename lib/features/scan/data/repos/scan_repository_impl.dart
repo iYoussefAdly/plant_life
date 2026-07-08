@@ -10,11 +10,15 @@ class ScanRepositoryImpl implements ScanRepository {
   ScanRepositoryImpl(this._dataSource);
 
   @override
-  Future<ApiResult<ScanResultEntity>> scanImage({
-    required String imagePath,
+  Future<ApiResult<ScanResultEntity>> scanImages({
+    required List<String> imagePaths,
+    required ScanImageSource source,
   }) async {
     try {
-      return Success(await _dataSource.createScan(imagePath));
+      final scan = source == ScanImageSource.camera
+          ? await _dataSource.analyzeCameraScan(imagePaths)
+          : await _dataSource.createScan(imagePaths);
+      return Success(scan);
     } catch (e) {
       return Error(ApiErrorHandler.handle(e));
     }
