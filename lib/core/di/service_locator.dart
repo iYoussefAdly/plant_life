@@ -59,6 +59,7 @@ import '../../features/sensors/domain/usecases/get_sensors_data_usecase.dart';
 import '../../features/sensors/domain/usecases/mark_all_sensor_notifications_read_usecase.dart';
 import '../../features/sensors/domain/usecases/mark_sensor_notification_read_usecase.dart';
 import '../../features/sensors/domain/usecases/register_fcm_token_usecase.dart';
+import '../../features/sensors/domain/usecases/register_sensor_device_usecase.dart';
 import '../../features/sensors/presentation/bloc/sensors_cubit.dart';
 import '../../features/scan/data/datasources/scan_data_source.dart';
 import '../../features/scan/data/repos/scan_repository_impl.dart';
@@ -200,6 +201,9 @@ Future<void> setupServiceLocator() async {
   );
   sl.registerLazySingleton(() => GetSensorsDataUseCase(sl<SensorsRepository>()));
   sl.registerLazySingleton(
+    () => RegisterSensorDeviceUseCase(sl<SensorsRepository>()),
+  );
+  sl.registerLazySingleton(
     () => MarkSensorNotificationReadUseCase(sl<SensorsRepository>()),
   );
   sl.registerLazySingleton(
@@ -213,6 +217,7 @@ Future<void> setupServiceLocator() async {
   );
   sl.registerFactory(() => SensorsCubit(
         sl<GetSensorsDataUseCase>(),
+        sl<RegisterSensorDeviceUseCase>(),
         sl<MarkSensorNotificationReadUseCase>(),
         sl<MarkAllSensorNotificationsReadUseCase>(),
         sl<AppPreferences>(),

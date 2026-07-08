@@ -43,6 +43,16 @@ class SensorsRepositoryImpl implements SensorsRepository {
   }
 
   @override
+  Future<ApiResult<void>> registerDevice(String deviceId) async {
+    try {
+      await _dataSource.registerDevice(deviceId);
+      return const Success(null);
+    } catch (e) {
+      return Error(ApiErrorHandler.handle(e));
+    }
+  }
+
+  @override
   Future<ApiResult<SensorNotificationFeed>> getNotificationFeed(
     String deviceId,
   ) async {

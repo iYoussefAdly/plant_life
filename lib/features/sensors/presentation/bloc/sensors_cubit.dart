@@ -10,10 +10,12 @@ import '../../../../core/storage/app_preferences.dart';
 import '../../domain/usecases/get_sensors_data_usecase.dart';
 import '../../domain/usecases/mark_all_sensor_notifications_read_usecase.dart';
 import '../../domain/usecases/mark_sensor_notification_read_usecase.dart';
+import '../../domain/usecases/register_sensor_device_usecase.dart';
 import 'sensors_state.dart';
 
 class SensorsCubit extends Cubit<SensorsState> {
   final GetSensorsDataUseCase _getSensorsData;
+  final RegisterSensorDeviceUseCase _registerDevice;
   final MarkSensorNotificationReadUseCase _markRead;
   final MarkAllSensorNotificationsReadUseCase _markAllRead;
   final AppPreferences _prefs;
@@ -25,6 +27,7 @@ class SensorsCubit extends Cubit<SensorsState> {
 
   SensorsCubit(
     this._getSensorsData,
+    this._registerDevice,
     this._markRead,
     this._markAllRead,
     this._prefs,
@@ -55,6 +58,18 @@ class SensorsCubit extends Cubit<SensorsState> {
   Future<void> saveDeviceId(String deviceId) async {
     final trimmed = deviceId.trim();
     if (trimmed.isEmpty) return;
+
+    // The device must be registered to the account first. Only on success do
+    // we persist it locally and load its data — an unregistered/invalid
+    // Device ID must never be treated as connected.
+    emit(const SensorsLoading());
+    final registerResult = await _registerDevice(trimmed);
+    if (isClosed) return;
+    if (registerResult case Error(:final failure)) {
+      emit(SensorsError(failure.message));
+      return;
+    }
+
     await _prefs.setSensorDeviceId(trimmed);
     // Unlock Home's sensor sections + let the notifications center pull alerts.
     _eventBus.emit(const SensorDeviceChanged());
