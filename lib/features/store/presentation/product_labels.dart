@@ -11,6 +11,7 @@ extension ProductCategoryLabel on ProductCategory {
         ProductCategory.plantTools => context.l10n.catTools,
         ProductCategory.seeds => context.l10n.catSeeds,
         ProductCategory.fertilizers => context.l10n.catFertilizers,
+        ProductCategory.devices => context.l10n.catDevices,
       };
 }
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/localization/l10n.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../bloc/auth_cubit.dart';
@@ -20,6 +21,10 @@ class _RegisterFormState extends State<RegisterForm> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+
+  // UI only for now — only one option exists and it isn't sent to the
+  // register API yet.
+  String _plantType = 'tomato';
 
   @override
   void dispose() {
@@ -62,6 +67,27 @@ class _RegisterFormState extends State<RegisterForm> {
               }
               return null;
             },
+          ),
+          const SizedBox(height: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(l10n.plantType, style: AppTextStyles.labelLarge),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<String>(
+                initialValue: _plantType,
+                icon: const Icon(Icons.keyboard_arrow_down, size: 20),
+                items: [
+                  DropdownMenuItem(
+                    value: 'tomato',
+                    child: Text(l10n.plantTypeTomato),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value != null) setState(() => _plantType = value);
+                },
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           AppTextField(

@@ -177,6 +177,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enterYourFullName => 'Enter your full name';
 
   @override
+  String get plantType => 'Plant Type';
+
+  @override
+  String get plantTypeTomato => 'Tomato';
+
+  @override
   String get forgotPassword => 'Forgot Password?';
 
   @override
@@ -338,6 +344,12 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get connectSensorCardSubtitle =>
       'Add your Device ID to monitor your plant and get live alerts.';
+
+  @override
+  String get connectSensorAction => 'Connect Sensor';
+
+  @override
+  String get browseSensorsAction => 'Buy device';
 
   @override
   String get plantScanner => 'Plant Scanner';
@@ -643,6 +655,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get catFertilizers => 'Fertilizers';
+
+  @override
+  String get catDevices => 'Devices';
 
   @override
   String get noProductsFound => 'No products found';
