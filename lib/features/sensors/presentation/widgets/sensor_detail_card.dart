@@ -127,6 +127,10 @@ class _MiniChart extends StatelessWidget {
       height: 80,
       child: LineChart(
         LineChartData(
+          // Clip drawing to the chart's own bounds so a far-off-scale reading
+          // (e.g. very high light) can't paint its line/area fill outside the
+          // 80px box and bleed over the other cards while scrolling.
+          clipData: const FlClipData.all(),
           gridData: const FlGridData(show: false),
           titlesData: const FlTitlesData(show: false),
           borderData: FlBorderData(show: false),
